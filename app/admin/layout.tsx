@@ -17,6 +17,7 @@ import {
   User,
   BarChart3,
   Settings,
+  Tag,
 } from "lucide-react"
 
 import {
@@ -84,6 +85,7 @@ const menuGroups: MenuItem[] = [
     label: "Académico",
     children: [
       { icon: BookOpen, label: "Cursos", href: "/admin/Cursos" },
+      { icon: Tag, label: "Categorías", href: "/admin/Categorias" },
       { icon: GraduationCap, label: "Control Academico", href: "/admin/ControlAcademico" },
     ],
   },
