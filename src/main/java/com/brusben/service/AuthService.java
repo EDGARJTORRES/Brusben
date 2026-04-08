@@ -19,28 +19,20 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        System.out.println("INTENTO DE LOGIN: " + request.getEmail());
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> {
-                    System.out.println(">>> ERROR: Usuario no encontrado: " + request.getEmail());
-                    return new RuntimeException("Usuario no encontrado");
-                });
+                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPasswordHash())) {
-            System.out.println(">>> ERROR: Contraseña incorrecta para el usuario: " + request.getEmail());
-            throw new RuntimeException("Contraseña incorrecta");
+            throw new RuntimeException("Credenciales inválidas");
         }
 
         if (!usuario.getActivo()) {
-            System.out.println(">>> ERROR: El usuario está inactivo: " + request.getEmail());
-            throw new RuntimeException("El usuario está inactivo");
+            throw new RuntimeException("Usuario inactivo");
         }
 
-        System.out.println(">>> LOGIN EXITOSO: " + request.getEmail());
-
-        // Simplemente retornamos el nombre y el token (puedes personalizar esto si ya tienes un generador de JWT)
+        // Retornar datos del usuario sin información sensible
         return new LoginResponse(
-            "fake-jwt-token-" + usuario.getEmail(),
+            "token-" + System.currentTimeMillis(),
             usuario.getNombres(),
             usuario.getEmail(),
             usuario.getRol().getIdRol(),

@@ -1,6 +1,6 @@
 "use client"
 
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useState } from "react"
 import {
@@ -44,8 +44,25 @@ import {
 } from "@/components/ui/breadcrumb"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useAuth } from "@/lib/auth-context"
 
-const menuGroups = [
+type SingleMenuItem = {
+  type: "single"
+  icon: any
+  label: string
+  href: string
+}
+
+type GroupMenuItem = {
+  type: "group"
+  icon: any
+  label: string
+  children: { icon: any; label: string; href: string }[]
+}
+
+type MenuItem = SingleMenuItem | GroupMenuItem
+
+const menuGroups: MenuItem[] = [
   {
     type: "single",
     icon: Home,
@@ -104,10 +121,24 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, logout } = useAuth()
+
+  // Obtener iniciales del nombre para el avatar
+  const getInitials = (nombre?: string) => {
+    if (!nombre) return "U"
+    const parts = nombre.split(" ")
+    return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase()
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.push("/")
+  }
 
   return (
     <SidebarProvider style={{ "--sidebar-width-icon": "5rem" } as React.CSSProperties}>
-      <AdminSidebar pathname={pathname} />
+      <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
         <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-background/70 backdrop-blur-md px-8">
@@ -169,13 +200,13 @@ export default function AdminLayout({
                 variant="ghost"
                 className="flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-muted transition-all"
               >
-                <div className="h-8 w-8 rounded-full ring-2 ring-background shadow-sm overflow-hidden border border-border flex-shrink-0">
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="" />
+                <div className="h-8 w-8 rounded-full ring-2 ring-background shadow-sm overflow-hidden border border-border flex-shrink-0 bg-primary text-white flex items-center justify-center font-bold text-sm">
+                  {user?.nombre ? getInitials(user.nombre) : "U"}
                 </div>
                 <div className="hidden sm:flex flex-col items-start leading-none">
-                  <span className="text-sm font-bold text-foreground">Felix S.</span>
+                  <span className="text-sm font-bold text-foreground">{user?.nombre || "Usuario"}</span>
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
-                    Admin
+                    {user?.rol || "Sin rol"}
                   </span>
                 </div>
               </Button>
@@ -183,6 +214,7 @@ export default function AdminLayout({
                 variant="ghost"
                 size="icon"
                 title="Cerrar Sesión"
+                onClick={handleLogout}
                 className="h-10 w-10 rounded-xl hover:bg-rose-50 hover:text-rose-600 text-muted-foreground transition-all dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
               >
                 <LogOut className="h-5 w-5" />
@@ -201,13 +233,20 @@ export default function AdminLayout({
   )
 }
 
-function AdminSidebar({ pathname }: { pathname: string }) {
+function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: any; onLogout: () => void }) {
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
 
+  // Obtener iniciales del nombre para el avatar
+  const getInitials = (nombre?: string) => {
+    if (!nombre) return "U"
+    const parts = nombre.split(" ")
+    return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase()
+  }
+
   return (
-    <Sidebar collapsible="icon" className="border-r border-border bg-sidebar z-30">
-      <SidebarHeader className="h-20 flex px-4 relative border-b border-border/60 overflow-visible">
+    <Sidebar collapsible="icon" className="border-r border-border bg-sidebar z-40">
+      <SidebarHeader className="h-auto flex flex-col gap-4 px-4 py-4 border-b border-border/60 overflow-visible">
         <div
           className={cn(
             "flex items-center gap-3 transition-all",
@@ -244,7 +283,7 @@ function AdminSidebar({ pathname }: { pathname: string }) {
         </button>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6 overflow-y-auto">
+      <SidebarContent className="px-3 py-6 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
         <SidebarMenu className="gap-2">
           {menuGroups.map((item) => {
             if (item.type === "single") {
@@ -270,7 +309,7 @@ function AdminSidebar({ pathname }: { pathname: string }) {
                     }}
                   >
                     <Link
-                      href={item.href || "#"}
+                      href={item.href}
                       className={cn("flex items-center gap-4", isCollapsed ? "justify-center gap-0" : "")}
                     >
                       <item.icon
@@ -295,7 +334,7 @@ function AdminSidebar({ pathname }: { pathname: string }) {
             return (
               <SidebarGroupItem
                 key={item.label}
-                item={item}
+                item={item as GroupMenuItem}
                 pathname={pathname}
                 isCollapsed={isCollapsed}
                 hasActiveChild={hasActiveChild}
@@ -307,25 +346,43 @@ function AdminSidebar({ pathname }: { pathname: string }) {
 
       <SidebarFooter className="p-4 border-t border-border">
         <div className="flex flex-col gap-4">
+          {/* User Info Section */}
           <div
             className={cn(
-              "flex items-center gap-3 transition-all",
-              isCollapsed ? "justify-center" : "px-2"
+              "flex items-center gap-3 transition-all p-2 rounded-lg bg-sidebar-accent/30",
+              isCollapsed ? "justify-center" : ""
             )}
           >
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black flex-shrink-0">
-              AD
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black flex-shrink-0 text-sm">
+              {user?.nombre ? getInitials(user.nombre) : "U"}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col justify-center min-w-0 animate-in fade-in duration-300">
-                <span className="text-sm font-black text-sidebar-foreground leading-none">
-                  Admin Account
+                <span className="text-sm font-bold text-sidebar-foreground leading-none truncate">
+                  {user?.nombre || "Usuario"}
                 </span>
-                <span className="text-[10px] font-bold text-muted-foreground mt-1 uppercase tracking-tight leading-none">
-                  Super Administrador
+                <span className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-tight leading-none">
+                  {user?.rol || "Sin rol"}
                 </span>
               </div>
             )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onLogout}
+              className={cn(
+                "h-10 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all flex items-center gap-3 font-medium",
+                isCollapsed ? "w-10 justify-center px-0" : "w-full justify-start px-3"
+              )}
+              title={isCollapsed ? "Cerrar Sesión" : ""}
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              {!isCollapsed && <span>Cerrar Sesión</span>}
+            </Button>
           </div>
         </div>
       </SidebarFooter>
@@ -339,11 +396,7 @@ function SidebarGroupItem({
   isCollapsed,
   hasActiveChild,
 }: {
-  item: {
-    icon: any
-    label: string
-    children: { icon: any; label: string; href: string }[]
-  }
+  item: GroupMenuItem
   pathname: string
   isCollapsed: boolean
   hasActiveChild?: boolean
@@ -362,7 +415,7 @@ function SidebarGroupItem({
           }
         }}
         className={cn(
-          "w-full flex items-center rounded-2xl transition-all duration-200 font-bold",
+          "w-full flex items-center rounded-2xl transition-all duration-200 font-bold relative z-10",
           isCollapsed ? "h-14 w-14 justify-center mx-auto" : "h-12 px-4 justify-between",
           hasActiveChild
             ? "bg-primary/10 text-primary"
@@ -414,7 +467,7 @@ function SidebarGroupItem({
 
       {/* Submenú flotante cuando está colapsado */}
       {isCollapsed && showFloatingMenu && (
-        <div className="absolute left-[4.5rem] top-0 z-50 min-w-[220px] rounded-2xl border border-border bg-background shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed left-[calc(5rem+1rem)] top-[6rem] z-[100] min-w-[220px] rounded-2xl border border-border bg-background shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200">
           <div className="px-3 py-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
             {item.label}
           </div>

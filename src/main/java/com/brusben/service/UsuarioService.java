@@ -36,6 +36,12 @@ public class UsuarioService {
         return convertToDTO(usuario);
     }
 
+    public UsuarioDTO getUserByEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return convertToDTO(usuario);
+    }
+
     public UsuarioDTO createUser(UsuarioDTO dto) {
         Usuario usuario = new Usuario();
         mapDtoToEntity(dto, usuario);
@@ -59,6 +65,18 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         usuario.setActivo(false);
+        usuarioRepository.save(usuario);
+    }
+
+    public void changePassword(Integer id, String passwordActual, String passwordNueva) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(passwordActual, usuario.getPasswordHash())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        usuario.setPasswordHash(passwordEncoder.encode(passwordNueva));
         usuarioRepository.save(usuario);
     }
 

@@ -14,3 +14,21 @@ next.user-config.*
 node_modules
 .next/
 .DS_Store
+
+# Java/Maven
+target/
+.classpath
+.project
+.settings/
+*.class
+*.jar
+*.war
+*.ear
+.metadata/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
