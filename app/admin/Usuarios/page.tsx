@@ -65,7 +65,7 @@ interface Usuario {
 }
 
 const ROLES = [
-  { id: 1, name: "admin", label: "Administradore", color: "bg-purple-500/10 text-purple-600 border-purple-200" },
+  { id: 1, name: "admin", label: "Administrador", color: "bg-purple-500/10 text-purple-600 border-purple-200" },
   { id: 2, name: "docente", label: "Docente", color: "bg-blue-500/10 text-blue-600 border-blue-200" },
   { id: 3, name: "estudiante", label: "Estudiante", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200" },
 ]
@@ -198,7 +198,7 @@ export default function UsuariosPage() {
         </div>
         <Button 
           onClick={() => { resetForm(); setIsDialogOpen(true); }}
-          className="rounded-xl h-11 px-6 font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all gap-2"
+          className="rounded-xl h-11 px-6 font-bold  transition-all gap-2"
         >
           <UserPlus className="h-5 w-5" />
           Nuevo Usuario
@@ -340,7 +340,10 @@ export default function UsuariosPage() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+        <DialogContent 
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl"
+        >
           <form onSubmit={handleSubmit}>
             <div className="bg-primary py-4 px-6 text-white relative">
               <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-3">
@@ -433,7 +436,7 @@ export default function UsuariosPage() {
               </div>
             </div>
 
-            <DialogFooter className="bg-secondary/20 p-8 pt-0">
+            <DialogFooter className="bg-secondary/20 p-8 pt-0 ">
               <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="h-12 px-6 font-bold rounded-2xl">
                 Cancelar
               </Button>

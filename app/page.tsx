@@ -92,7 +92,15 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center lg:text-left">
-            <h2 className="text-3xl font-bold text-foreground">
+            <Image
+              src="/images/logo_brusben2.png"
+              alt="Profesionales capacitándose en Brusben"
+              width={200}
+              height={200}
+              className="mx-auto lg:mx-0"
+              priority
+            />
+            <h2 className="text-3xl font-bold text-foreground mt-4">
               Iniciar Sesión
             </h2>
             <p className="mt-2 text-muted-foreground">
