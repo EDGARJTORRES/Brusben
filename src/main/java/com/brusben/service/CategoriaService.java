@@ -71,6 +71,8 @@ public class CategoriaService {
         }
 
         categoria.setCatNombre(categoriaDTO.getCatNombre());
+        categoria.setCatDescripcion(categoriaDTO.getCatDescripcion());
+        categoria.setCatColor(categoriaDTO.getCatColor());
         categoria.setCatEstado(categoriaDTO.getCatEstado());
 
         Categoria updatedCategoria = categoriaRepository.save(categoria);

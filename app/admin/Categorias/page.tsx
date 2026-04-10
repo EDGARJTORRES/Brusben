@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit2, Trash2, X, Check, Tag, Loader2 } from "lucide-react"
+import { Plus, Edit2, Trash2, X, Check, Tag, Loader2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +10,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface Categoria {
   catId: number
@@ -19,26 +25,19 @@ interface Categoria {
   catEstado: "A" | "I"
 }
 
-const COLORES = [
-  { name: "Rojo", value: "bg-red-500/10 text-red-600 border-red-200" },
-  { name: "Azul", value: "bg-blue-500/10 text-blue-600 border-blue-200" },
-  { name: "Verde", value: "bg-emerald-500/10 text-emerald-600 border-emerald-200" },
-  { name: "Morado", value: "bg-purple-500/10 text-purple-600 border-purple-200" },
-  { name: "Naranja", value: "bg-orange-500/10 text-orange-600 border-orange-200" },
-  { name: "Rosa", value: "bg-pink-500/10 text-pink-600 border-pink-200" },
-]
+
 
 export default function CategoriasPage() {
-  const { token } = useAuth()
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
   const [formData, setFormData] = useState({
     catNombre: "",
     catDescripcion: "",
-    catColor: COLORES[0].value,
+    catColor: "#3b82f6",
   })
 
   // Cargar categorías del backend
@@ -49,11 +48,10 @@ export default function CategoriasPage() {
   const fetchCategorias = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:8080/api/categorias", {
+      const response = await fetch("http://localhost:8081/api/categorias", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
       })
 
@@ -77,14 +75,14 @@ export default function CategoriasPage() {
       setFormData({
         catNombre: categoria.catNombre,
         catDescripcion: categoria.catDescripcion || "",
-        catColor: categoria.catColor || COLORES[0].value,
+        catColor: categoria.catColor?.startsWith("#") ? categoria.catColor : "#3b82f6",
       })
     } else {
       setEditingId(null)
       setFormData({
         catNombre: "",
         catDescripcion: "",
-        catColor: COLORES[0].value,
+        catColor: "#3b82f6",
       })
     }
     setShowModal(true)
@@ -96,7 +94,7 @@ export default function CategoriasPage() {
     setFormData({
       catNombre: "",
       catDescripcion: "",
-      catColor: COLORES[0].value,
+      catColor: "#3b82f6",
     })
   }
 
@@ -111,11 +109,10 @@ export default function CategoriasPage() {
 
       if (editingId) {
         // Actualizar
-        const response = await fetch(`http://localhost:8080/api/categorias/${editingId}`, {
+        const response = await fetch(`http://localhost:8081/api/categorias/${editingId}`, {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             catNombre: formData.catNombre,
@@ -134,11 +131,10 @@ export default function CategoriasPage() {
         fetchCategorias()
       } else {
         // Crear
-        const response = await fetch("http://localhost:8080/api/categorias", {
+        const response = await fetch("http://localhost:8081/api/categorias", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             catNombre: formData.catNombre,
@@ -172,12 +168,9 @@ export default function CategoriasPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/categorias/${id}`, {
+      const response = await fetch(`http://localhost:8081/api/categorias/${id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: {"Content-Type": "application/json"},
       })
 
       if (!response.ok) {
@@ -194,11 +187,10 @@ export default function CategoriasPage() {
 
   const toggleEstado = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/categorias/${id}/toggle-estado`, {
+      const response = await fetch(`http://localhost:8081/api/categorias/${id}/toggle-estado`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
       })
 
@@ -237,6 +229,19 @@ export default function CategoriasPage() {
         </Button>
       </div>
 
+      {/* Buscador y Controles Adicionales */}
+      <div className="flex flex-col md:flex-row gap-4 items-center mb-2">
+        <div className="relative w-full md:max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/70" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre o descripción..."
+            className="pl-12 h-12 rounded-2xl border-muted-foreground/20 bg-card focus-visible:ring-primary shadow-sm"
+          />
+        </div>
+      </div>
+
       {/* Categorías Grid */}
       {loading ? (
         <Card className="border-0 shadow-sm rounded-2xl">
@@ -247,74 +252,110 @@ export default function CategoriasPage() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categorias.map((categoria) => (
-              <Card key={categoria.catId} className="border-0 shadow-sm rounded-2xl hover:shadow-lg transition-all overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {/* Encabezado */}
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1 flex-1">
-                        <h3 className="text-lg font-bold text-foreground">{categoria.catNombre}</h3>
-                        <Badge
-                          variant={categoria.catEstado === "A" ? "default" : "secondary"}
-                          className="rounded-full"
-                        >
-                          {categoria.catEstado === "A" ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </div>
-                      <div
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {categorias
+              .filter((c) => 
+                c.catNombre.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                (c.catDescripcion?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+              )
+              .map((categoria) => (
+              <div 
+                key={categoria.catId} 
+                className="group flex flex-col md:flex-row md:items-center justify-between gap-4 py-3 px-4 rounded-xl bg-card border hover:border-primary/20 hover:shadow-sm hover:bg-muted/30 transition-all duration-300"
+              >
+                {/* Info Izquierda */}
+                <div className="flex items-center gap-4 flex-1">
+                  <div
+                    className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0 border"
+                    style={{
+                      backgroundColor: `${categoria.catColor?.startsWith("#") ? categoria.catColor : "#3b82f6"}15`,
+                      color: categoria.catColor?.startsWith("#") ? categoria.catColor : "#3b82f6",
+                      borderColor: `${categoria.catColor?.startsWith("#") ? categoria.catColor : "#3b82f6"}30`
+                    }}
+                  >
+                    <Tag className="h-4 w-4" />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-semibold text-foreground tracking-tight">{categoria.catNombre}</h3>
+                      <Badge
+                        variant="outline"
                         className={cn(
-                          "h-12 w-12 rounded-xl flex items-center justify-center border",
-                          categoria.catColor || COLORES[0].value
+                          "rounded-full px-2 py-0 text-[10px] uppercase font-bold border",
+                          categoria.catEstado === "A" 
+                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" 
+                            : "bg-red-500/10 text-red-600 border-red-500/20"
                         )}
                       >
-                        <Tag className="h-6 w-6" />
-                      </div>
+                        {categoria.catEstado === "A" ? "Activo" : "Inactivo"}
+                      </Badge>
                     </div>
-
-                    {/* Descripción */}
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {categoria.catDescripcion || "Sin descripción"}
-                    </p>
-
-                    {/* Acciones */}
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        onClick={() => handleOpenModal(categoria)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 rounded-lg gap-2"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                        Editar
-                      </Button>
-                      <Button
-                        onClick={() => toggleEstado(categoria.catId)}
-                        variant={categoria.catEstado === "A" ? "default" : "secondary"}
-                        size="sm"
-                        className="flex-1 rounded-lg gap-2"
-                      >
-                        <Check className="h-4 w-4" />
-                        {categoria.catEstado === "A" ? "Desactivar" : "Activar"}
-                      </Button>
-                      <Button
-                        onClick={() => handleDelete(categoria.catId)}
-                        variant="destructive"
-                        size="sm"
-                        className="rounded-lg"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {categoria.catDescripcion && (
+                      <p className="text-xs text-muted-foreground line-clamp-1 max-w-xl pr-4">
+                        {categoria.catDescripcion}
+                      </p>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                {/* Acciones Derecha */}
+                <div className="flex items-center gap-1">
+                  <Button
+                    onClick={() => handleOpenModal(categoria)}
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"
+                    title="Editar"
+                  >
+                    <Edit2 className="h-4 w-4 text-foreground/70" />
+                  </Button>
+                  
+                  <Button
+                    onClick={() => toggleEstado(categoria.catId)}
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-8 w-8 rounded-lg",
+                      categoria.catEstado === "A" 
+                        ? "hover:bg-red-500/10 hover:text-red-700 text-muted-foreground" 
+                        : "hover:bg-emerald-500/10 hover:text-emerald-700 text-muted-foreground"
+                    )}
+                    title={categoria.catEstado === "A" ? "Desactivar" : "Activar"}
+                  >
+                    {categoria.catEstado === "A" ? (
+                      <X className="h-4 w-4" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
 
-          {categorias.length === 0 && (
-            <Card className="border-0 shadow-sm rounded-2xl">
+          {categorias.length > 0 && categorias.filter(c => c.catNombre.toLowerCase().includes(searchQuery.toLowerCase()) || (c.catDescripcion?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 && (
+            <Card className="border-0 shadow-sm rounded-2xl bg-card">
+              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground font-medium">No se encontraron resultados</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  No hay categorías que coincidan con tu búsqueda actual "{searchQuery}"
+                </p>
+                <Button
+                  onClick={() => setSearchQuery("")}
+                  variant="outline"
+                  className="rounded-lg gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Limpiar Búsqueda
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {categorias.length === 0 && !loading && (
+            <Card className="border-0 shadow-sm rounded-2xl bg-card">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                 <Tag className="h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground font-medium">No hay categorías creadas</p>
@@ -334,105 +375,90 @@ export default function CategoriasPage() {
         </>
       )}
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md rounded-2xl">
-            <CardHeader className="flex flex-row items-center justify-between border-b p-6">
-              <CardTitle>
-                {editingId ? "Editar Categoría" : "Nueva Categoría"}
-              </CardTitle>
-              <button
-                onClick={handleCloseModal}
+      <Dialog open={showModal} onOpenChange={(open) => { if(!open) handleCloseModal() }}>
+        <DialogContent className="sm:max-w-md rounded-2xl p-0 gap-0 border-0 shadow-xl overflow-hidden focus:outline-none">
+          <DialogHeader className="flex flex-row items-center justify-between border-b p-6 bg-muted/20">
+            <DialogTitle className="text-xl">
+              {editingId ? "Editar Categoría" : "Nueva Categoría"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6 space-y-5">
+            {/* Nombre */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase text-muted-foreground tracking-wider">
+                Nombre
+              </label>
+              <Input
+                value={formData.catNombre}
+                onChange={(e) =>
+                  setFormData({ ...formData, catNombre: e.target.value })
+                }
+                placeholder="Ej: Programación"
+                className="rounded-lg h-11"
                 disabled={saving}
-                className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              />
+            </div>
+
+            {/* Descripción */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase text-muted-foreground tracking-wider">
+                Descripción
+              </label>
+              <Textarea
+                value={formData.catDescripcion}
+                onChange={(e) =>
+                  setFormData({ ...formData, catDescripcion: e.target.value })
+                }
+                placeholder="Describe la categoría..."
+                className="rounded-lg min-h-[100px] resize-none"
+                disabled={saving}
+              />
+            </div>
+
+            {/* Color */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase text-muted-foreground tracking-wider">
+                Color
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="color"
+                  value={formData.catColor?.startsWith("#") ? formData.catColor : "#3b82f6"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, catColor: e.target.value })
+                  }
+                  disabled={saving}
+                  className="w-16 h-12 p-1 cursor-pointer rounded-xl bg-background border ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                  title="Elegir color"
+                />
+                <span className="text-sm text-muted-foreground flex-1">
+                  Haz clic para elegir un color personalizado. Este color representará gráfica y visualmente a la categoría.
+                </span>
+              </div>
+            </div>
+
+            {/* Botones */}
+            <div className="flex gap-3 pt-4 border-t mt-6">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex-1 rounded-xl h-11 bg-primary gap-2 font-bold"
               >
-                <X className="h-5 w-5" />
-              </button>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              {/* Nombre */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold uppercase text-muted-foreground">
-                  Nombre
-                </label>
-                <Input
-                  value={formData.catNombre}
-                  onChange={(e) =>
-                    setFormData({ ...formData, catNombre: e.target.value })
-                  }
-                  placeholder="Ej: Programación"
-                  className="rounded-lg h-10"
-                  disabled={saving}
-                />
-              </div>
-
-              {/* Descripción */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold uppercase text-muted-foreground">
-                  Descripción
-                </label>
-                <Textarea
-                  value={formData.catDescripcion}
-                  onChange={(e) =>
-                    setFormData({ ...formData, catDescripcion: e.target.value })
-                  }
-                  placeholder="Describe la categoría..."
-                  className="rounded-lg min-h-24 resize-none"
-                  disabled={saving}
-                />
-              </div>
-
-              {/* Color */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold uppercase text-muted-foreground">
-                  Color
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {COLORES.map((color) => (
-                    <button
-                      key={color.value}
-                      onClick={() =>
-                        setFormData({ ...formData, catColor: color.value })
-                      }
-                      disabled={saving}
-                      className={cn(
-                        "h-10 rounded-lg border-2 transition-all disabled:opacity-50",
-                        formData.catColor === color.value
-                          ? "border-primary scale-105"
-                          : "border-transparent opacity-60 hover:opacity-100",
-                        color.value
-                      )}
-                      title={color.name}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Botones */}
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1 rounded-lg bg-primary gap-2"
-                >
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {editingId ? "Actualizar" : "Crear"}
-                </Button>
-                <Button
-                  onClick={handleCloseModal}
-                  variant="outline"
-                  className="flex-1 rounded-lg"
-                  disabled={saving}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                {editingId ? "Actualizar" : "Crear"}
+              </Button>
+              <Button
+                onClick={handleCloseModal}
+                variant="outline"
+                className="flex-1 rounded-xl h-11 font-bold"
+                disabled={saving}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

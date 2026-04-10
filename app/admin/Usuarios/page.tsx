@@ -14,7 +14,9 @@ import {
   XCircle,
   Filter,
   User as UserIcon,
-  Fingerprint
+  Fingerprint,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -76,6 +78,8 @@ export default function UsuariosPage() {
   const [search, setSearch] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<Usuario | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
   const [formData, setFormData] = useState<Usuario>({
     dni: "",
     nombres: "",
@@ -186,6 +190,18 @@ export default function UsuariosPage() {
     u.dni.includes(search)
   )
 
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  // Reset to page 1 whenever search changes
+  const handleSearchChange = (val: string) => {
+    setSearch(val)
+    setCurrentPage(1)
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -225,22 +241,22 @@ export default function UsuariosPage() {
         ))}
       </div>
 
-      <Card className="border-none shadow-xl bg-background/50 backdrop-blur-sm overflow-hidden">
-        <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="text-lg font-bold">Listado de Usuarios</CardTitle>
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar por nombre, email o DNI..." 
-                className="pl-10 h-10 rounded-xl bg-background border-border/50 focus:ring-primary/20"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+      <div className="rounded-2xl shadow-xl bg-background/50 backdrop-blur-sm overflow-hidden border border-border/30">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50 bg-muted/20 px-6 py-4">
+          <h2 className="text-lg font-bold text-foreground">Listado de Usuarios</h2>
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Buscar por nombre, email o DNI..." 
+              className="pl-10 h-10 rounded-xl bg-background border-border/50 focus:ring-primary/20"
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
+        </div>
+        {/* Tabla */}
+        <div className="p-0">
           <Table>
             <TableHeader className="bg-muted/30">
               <TableRow className="hover:bg-transparent border-border/50">
@@ -265,7 +281,7 @@ export default function UsuariosPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => (
+                paginatedUsers.map((user) => (
                   <TableRow key={user.idUsuario} className="hover:bg-muted/30 transition-colors border-border/40">
                     <TableCell className="py-4">
                       <div className="flex items-center gap-3">
@@ -336,8 +352,69 @@ export default function UsuariosPage() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Pagination Footer */}
+        {!loading && filteredUsers.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border/40 bg-muted/10">
+            <p className="text-xs text-muted-foreground font-medium">
+              Mostrando{" "}
+              <span className="font-bold text-foreground">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}
+              </span>{" "}
+              de <span className="font-bold text-foreground">{filteredUsers.length}</span> usuarios
+            </p>
+
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...")
+                  acc.push(p)
+                  return acc
+                }, [])
+                .map((p, i) =>
+                  p === "..." ? (
+                    <span key={`dots-${i}`} className="px-2 text-muted-foreground text-sm">…</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={currentPage === p ? "default" : "outline"}
+                      size="icon"
+                      className={cn(
+                        "h-9 w-9 rounded-xl border-border/50 text-sm font-bold",
+                        currentPage === p ? "shadow-sm" : "hover:bg-muted"
+                      )}
+                      onClick={() => setCurrentPage(p as number)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent 
@@ -359,7 +436,7 @@ export default function UsuariosPage() {
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 ">Nombre Completo</label>
                   <Input 
-                    placeholder="Ej. Juan Pérez" 
+                    placeholder="Ej. Luis Alejandro Flores García" 
                     className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
                     value={formData.nombres}
                     onChange={(e) => setFormData({...formData, nombres: e.target.value})}
@@ -367,10 +444,11 @@ export default function UsuariosPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">DNI / ID</label>
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">DNI</label>
                   <Input 
                     placeholder="12345678" 
                     className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                    maxLength={8}
                     value={formData.dni}
                     onChange={(e) => setFormData({...formData, dni: e.target.value})}
                     required
