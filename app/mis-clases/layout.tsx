@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   User,
   Calendar,
+  HelpCircle,
 } from "lucide-react"
 
 import {
@@ -50,6 +51,7 @@ const menuItems = [
   { icon: PaymentIcon, label: "Mis Pagos", href: "/mis-clases/pagos" },
   { icon: Calendar, label: "Calendario", href: "/mis-clases/calendario" },
   { icon: User, label: "Mi Perfil", href: "/mis-clases/Perfil" },
+  { icon: HelpCircle, label: "Ayuda", href: "/mis-clases/Ayuda" },
 ]
 
 export default function StudentLayout({
@@ -76,9 +78,9 @@ export default function StudentLayout({
   return (
     <SidebarProvider style={{"--sidebar-width-icon": "5rem"} as React.CSSProperties}>
       <StudentSidebar pathname={pathname} user={user} onLogout={handleLogout} />
-      <SidebarInset className="bg-[#f8fafc]">
+      <SidebarInset className="bg-background">
         {/* Modern Header */}
-        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-white/70 backdrop-blur-md px-8">
+        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-background/70 backdrop-blur-md px-8">
           <div className="flex items-center gap-4 flex-1">
             <SidebarTrigger className="md:hidden" />
             
@@ -86,8 +88,8 @@ export default function StudentLayout({
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem>
-                    <BreadcrumbLink href="/mis-clases" className="flex items-center gap-1.5 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                      <Home className="h-3 w-3" />
+                    <BreadcrumbLink href="/mis-clases"  className="flex items-center gap-1.5 text-sm font-bold tracking-wider">
+                      <Home className="h-6 w-4" />
                       Home
                     </BreadcrumbLink>
                   </BreadcrumbItem>
@@ -207,7 +209,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
                 asChild
                 isActive={pathname === item.href}
                 className={cn(
-                  "h-14 px-4 rounded-2xl transition-all duration-200 font-bold",
+                  "h-12 px-4 rounded-2xl transition-all duration-200 font-bold",
                   isCollapsed ? "w-14 h-14 p-0 justify-center items-center" : "w-full",
                   pathname === item.href 
                     ? "bg-primary text-white hover:bg-primary/90" 
@@ -215,7 +217,8 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
                 )}
                 tooltip={{
                   children: item.label,
-                  className: "z-[210] bg-slate-900 text-white font-bold p-2 px-3 rounded-lg shadow-xl",
+                  className:
+                        "z-[210] bg-slate-900 text-white font-bold p-2 px-3 rounded-lg shadow-xl",
                   sideOffset: 12
                 }}
               >

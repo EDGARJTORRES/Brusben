@@ -257,14 +257,14 @@ export default function StudentsPage() {
                       <DropdownMenuContent align="end" className="w-[180px] p-2 rounded-xl shadow-xl border-border">
                         <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground px-3 pb-2">Opciones Estudiante</DropdownMenuLabel>
                         <DropdownMenuItem className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted">
-                          <UserCheck className="mr-2 h-4 w-4 text-emerald-500" /> Ver Perfil Admin
+                          <UserCheck className="mr-2 h-4 w-4 text-emerald-500" /> Ver Cursos
                         </DropdownMenuItem>
                         <DropdownMenuItem className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted">
                           <Mail className="mr-2 h-4 w-4 text-blue-500" /> Enviar Correo
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="my-2 bg-border" />
                         <DropdownMenuItem className="rounded-lg h-10 px-3 cursor-pointer font-bold text-rose-600 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-500/10">
-                          <UserX className="mr-2 h-4 w-4" /> Suspender
+                          <UserX className="mr-2 h-4 w-4" /> Retirar Curso
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
