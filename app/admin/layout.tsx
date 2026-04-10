@@ -18,6 +18,7 @@ import {
   BarChart3,
   Settings,
   Tag,
+  HelpCircle,
 } from "lucide-react"
 
 import {
@@ -115,6 +116,12 @@ const menuGroups: MenuItem[] = [
     label: "Ver Perfil",
     href: "/admin/Perfil",
   },
+  {
+    type: "single",
+    icon: HelpCircle,
+    label:"Ayuda",
+    href:"/admin/Ayuda"
+  }
 ]
 
 export default function AdminLayout({
