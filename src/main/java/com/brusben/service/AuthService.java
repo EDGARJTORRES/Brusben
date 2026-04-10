@@ -30,13 +30,13 @@ public class AuthService {
             throw new RuntimeException("Usuario inactivo");
         }
 
-        // Retornar datos del usuario sin información sensible
         return new LoginResponse(
-            "token-" + System.currentTimeMillis(),
-            usuario.getNombres(),
-            usuario.getEmail(),
-            usuario.getRol().getIdRol(),
-            usuario.getRol().getNombreRol()
+                null,
+                usuario.getIdUsuario(),
+                usuario.getNombres(),
+                usuario.getEmail(),
+                usuario.getRol().getIdRol(),
+                usuario.getRol().getNombreRol()
         );
     }
 }
