@@ -90,8 +90,8 @@ export default function ClassmatesPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between items-start">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 leading-tight">Compañeros de Clase</h1>
-          <p className="text-slate-500 font-medium">Conéctate con otros estudiantes de tus programas académicos.</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">Compañeros de Clase</h1>
+          <p className="text-muted-foreground font-medium">Conéctate con otros estudiantes de tus programas académicos.</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" className="gap-2 h-11 px-6 rounded-xl border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-all">
@@ -133,11 +133,11 @@ export default function ClassmatesPage() {
           <Table>
             <TableHeader className="bg-slate-50/30">
               <TableRow className="border-b border-slate-100 h-14">
-                <TableHead className="px-10 font-bold text-slate-600 text-[11px] uppercase tracking-widest">Compañero</TableHead>
-                <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-widest">Curso Compartido</TableHead>
-                <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-widest">Actividad</TableHead>
-                <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-widest">Estado</TableHead>
-                <TableHead className="text-right px-10 font-bold text-slate-600 text-[11px] uppercase tracking-widest">Chat</TableHead>
+                <TableHead className="px-10 font-bold text-foreground text-[11px] uppercase tracking-widest">Compañero</TableHead>
+                <TableHead className="font-bold  text-[11px] uppercase tracking-widest text-foreground">Curso Compartido</TableHead>
+                <TableHead className="font-bold text-foreground text-[11px] uppercase tracking-widest">Actividad</TableHead>
+                <TableHead className="font-bold text-foreground text-[11px] uppercase tracking-widest">Estado</TableHead>
+                <TableHead className="text-right px-10 font-bold text-foreground text-[11px] uppercase tracking-widest">Chat</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -170,7 +170,7 @@ export default function ClassmatesPage() {
                   <TableCell>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
                       <Clock className="h-3.5 w-3.5" />
-                      {student.lastLogin}
+                        {student.lastLogin}
                     </div>
                   </TableCell>
                   <TableCell>

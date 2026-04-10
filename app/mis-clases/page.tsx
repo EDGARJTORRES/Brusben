@@ -73,10 +73,10 @@ export default function StudentDashboard() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
            ¡Hola, {user?.nombre || "Estudiante"}! 👋
           </h1>
-          <p className="text-slate-500 font-medium">
+          <p className="text-muted-foreground font-medium">
             Continúa donde lo dejaste y alcanza tus metas en <span className="text-primary font-bold">Brusben</span>.
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function StudentDashboard() {
         {/* Main List Section */}
         <Card className="lg:col-span-8 border-0 shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="px-8 py-6 border-b border-slate-50 flex flex-row items-center justify-between">
-            <CardTitle className="text-xl font-bold text-slate-900">Mis Clases en Progreso</CardTitle>
+            <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Mis Clases en Progreso</CardTitle>
             <Button variant="ghost" className="text-primary font-bold gap-2 hover:bg-primary/5">
               Ir a mis cursos <ChevronRight className="h-4 w-4" />
             </Button>

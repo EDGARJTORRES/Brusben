@@ -1,13 +1,26 @@
+"use client"
+
+import { useTheme } from "next-themes"
+import React from "react"
 import Image from "next/image"
 import { LoginForm } from "@/components/login-form"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { GraduationCap, BookOpen, Users } from "lucide-react"
 
 export default function LoginPage() {
+  const { resolvedTheme } = useTheme()
+
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-foreground">
+      <div className="hidden lg:flex lg:w-1/2 relative">
         <Image
           src="/images/professionals-training.jpg"
           alt="Profesionales capacitándose en Brusben"
@@ -93,8 +106,12 @@ export default function LoginPage() {
 
           <div className="text-center lg:text-left">
             <Image
-              src="/images/logo_brusben2.png"
-              alt="Profesionales capacitándose en Brusben"
+              src={
+                resolvedTheme === "dark"
+                  ? "/images/logo_brusben_dark.png"
+                  : "/images/logo_brusben_light.png"
+              }
+              alt="Logo Brusben"
               width={200}
               height={200}
               className="mx-auto lg:mx-0"
