@@ -112,9 +112,9 @@ export default function StudentDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 pb-20">
+      <div className="grid gap-8 lg:grid-cols-12">
         {/* Main List Section */}
-        <Card className="p-0 border-0 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group rounded-3xl bg-white ring-1 ring-slate-100">
+        <Card className="lg:col-span-8 border-0 shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="px-8 py-6 border-b border-slate-50 flex flex-row items-center justify-between">
             <CardTitle className="text-xl font-bold text-slate-900">Mis Clases en Progreso</CardTitle>
             <Button variant="ghost" className="text-primary font-bold gap-2 hover:bg-primary/5">

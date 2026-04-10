@@ -49,6 +49,7 @@ const menuItems = [
   { icon: Users, label: "Compañeros", href: "/mis-clases/estudiantes" },
   { icon: PaymentIcon, label: "Mis Pagos", href: "/mis-clases/pagos" },
   { icon: Calendar, label: "Calendario", href: "/mis-clases/calendario" },
+  { icon: User, label: "Mi Perfil", href: "/mis-clases/Perfil" },
 ]
 
 export default function StudentLayout({
@@ -180,7 +181,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
           </div>
           {!isCollapsed && (
             <div className="flex flex-col justify-center min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
-              <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">Brusben</span>
+              <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">Brusben E.I.R.L</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-primary mt-1 leading-none">Mis Clases</span>
             </div>
           )}
@@ -249,18 +250,6 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
 
            {/* Action Buttons */}
            <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "")}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-10 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center gap-3 font-medium",
-                  isCollapsed ? "w-10 justify-center px-0" : "w-full justify-start px-3"
-                )}
-                title={isCollapsed ? "Mi Perfil" : ""}
-              >
-                <User className="h-4 w-4 flex-shrink-0" />
-                {!isCollapsed && <span>Mi Perfil</span>}
-              </Button>
               <Button
                 variant="ghost"
                 size="sm"
