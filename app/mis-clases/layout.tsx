@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Input } from "@/components/ui/input"
 import {
   Breadcrumb,
@@ -80,7 +81,7 @@ export default function StudentLayout({
       <StudentSidebar pathname={pathname} user={user} onLogout={handleLogout} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
-        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-background/70 backdrop-blur-md px-8">
+        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
           <div className="flex items-center gap-4 flex-1">
             <SidebarTrigger className="md:hidden" />
             
@@ -118,7 +119,8 @@ export default function StudentLayout({
             </div>
 
             <div className="flex items-center gap-2">
-               <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-600">
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-600">
                 <div className="relative">
                   <Bell className="h-5 w-5" />
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-500 border-2 border-white ring-1 ring-rose-200 text-[8px] font-black text-white flex items-center justify-center">2</span>
@@ -149,7 +151,7 @@ export default function StudentLayout({
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-8 overflow-y-auto bg-sidebar">
           <div className="max-w-7xl mx-auto space-y-8">
             {children}
           </div>
@@ -236,37 +238,46 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
       </SidebarContent>
 
       {/* Footer with border-top */}
-      <SidebarFooter className="p-4 border-t border-slate-100">
+      <SidebarFooter className="p-4 border-t border-border">
         <div className="flex flex-col gap-4">
-           {/* User Info Section */}
-           <div className={cn("flex items-center gap-3 transition-all p-2 rounded-lg bg-slate-50", isCollapsed ? "justify-center" : "")}>
-              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black flex-shrink-0 text-sm">
-                {user?.nombre ? getInitials(user.nombre) : "E"}
+          {/* User Info Section */}
+          <div
+            className={cn(
+              "flex items-center gap-3 transition-all p-2 rounded-lg bg-sidebar-accent/30",
+              isCollapsed ? "justify-center" : ""
+            )}
+          >
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black flex-shrink-0 text-sm">
+              {user?.nombre ? getInitials(user.nombre) : "U"}
+            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col justify-center min-w-0 animate-in fade-in duration-300">
+                <span className="text-sm font-bold text-sidebar-foreground leading-none truncate">
+                  {user?.nombre || "Usuario"}
+                </span>
+                <span className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-tight leading-none">
+                  {user?.rol || "Sin rol"}
+                </span>
               </div>
-              {!isCollapsed && (
-                <div className="flex flex-col justify-center min-w-0 animate-in fade-in duration-300">
-                  <span className="text-sm font-bold text-slate-900 leading-none truncate">{user?.nombre || "Estudiante"}</span>
-                  <span className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-tight leading-none">{user?.rol || "Estudiante"}</span>
-                </div>
-              )}
-           </div>
+            )}
+          </div>
 
-           {/* Action Buttons */}
-           <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "")}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onLogout}
-                className={cn(
-                  "h-10 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center gap-3 font-medium",
-                  isCollapsed ? "w-10 justify-center px-0" : "w-full justify-start px-3"
-                )}
-                title={isCollapsed ? "Cerrar Sesión" : ""}
-              >
-                <LogOut className="h-5 w-5 flex-shrink-0" />
-                {!isCollapsed && <span>Cerrar Sesión</span>}
-              </Button>
-           </div>
+          {/* Action Buttons */}
+          <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onLogout}
+              className={cn(
+                "h-10 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all flex items-center gap-3 font-medium",
+                isCollapsed ? "w-10 justify-center px-0" : "w-full justify-start px-3"
+              )}
+              title={isCollapsed ? "Cerrar Sesión" : ""}
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              {!isCollapsed && <span>Cerrar Sesión</span>}
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

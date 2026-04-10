@@ -141,7 +141,7 @@ export default function StudentsPage() {
         </Card>
       </div>
 
-      <Card className="border border-border shadow-sm rounded-2xl overflow-hidden bg-background">
+      <Card className="border border-border shadow-sm rounded-2xl overflow-hidden bg-card">
         <CardHeader className="p-8 border-b border-border">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="relative w-full md:w-96 group">
