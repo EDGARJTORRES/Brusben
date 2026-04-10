@@ -241,7 +241,7 @@ export default function UsuariosPage() {
         ))}
       </div>
 
-      <div className="rounded-2xl shadow-xl bg-background/50 backdrop-blur-sm overflow-hidden border border-border/30">
+      <div className="rounded-2xl shadow-xl bg-card backdrop-blur-sm overflow-hidden border border-border/30">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50 bg-muted/20 px-6 py-4">
           <h2 className="text-lg font-bold text-foreground">Listado de Usuarios</h2>

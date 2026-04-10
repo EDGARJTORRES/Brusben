@@ -150,7 +150,7 @@ export default function AdminLayout({
       <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
-        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-background/70 backdrop-blur-md px-8">
+        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
           <div className="flex items-center gap-4 flex-1">
             <SidebarTrigger className="md:hidden" />
 
@@ -234,7 +234,7 @@ export default function AdminLayout({
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-8 overflow-y-auto bg-sidebar">
           <div className="max-w-7xl mx-auto space-y-8">{children}</div>
         </main>
       </SidebarInset>

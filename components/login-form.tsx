@@ -61,7 +61,7 @@ export function LoginForm() {
       }
 
       setUser(userData)
-      setError("Login exitoso")
+
 
       setTimeout(() => {
         const rol = (data.nombreRol || "").toLowerCase()
