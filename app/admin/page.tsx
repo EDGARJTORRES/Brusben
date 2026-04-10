@@ -30,7 +30,7 @@ const statsCards = [
   },
   {
     title: "CURSOS ACTIVOS",
-    value: "32",
+    value: "0",
     badge: "Del día",
     icon: Package,
     color: "text-rose-600",
@@ -39,7 +39,7 @@ const statsCards = [
   },
   {
     title: "ESTUDIANTES ACTIVOS",
-    value: "1,284",
+    value: "0",
     badge: "Registrados",
     icon: Users,
     color: "text-slate-600",
@@ -48,7 +48,7 @@ const statsCards = [
   },
   {
     title: "INGRESOS DEL MES",
-    value: "S/ 45,680.00",
+    value: "S/ 0.00",
     badge: "Apr 2026",
     icon: DollarSign,
     color: "text-emerald-600",

@@ -73,7 +73,7 @@ const menuGroups: MenuItem[] = [
   {
     type: "group",
     icon: User,
-    label: "Gestión de Usuarios",
+    label: "Gestión de Personas",
     children: [
       { icon: User, label: "Usuarios", href: "/admin/Usuarios" },
       { icon: Users, label: "Estudiantes", href: "/admin/Estudiantes" },

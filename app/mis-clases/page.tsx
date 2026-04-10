@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button"
 const statsCards = [
   {
     title: "MIS CURSOS",
-    value: "4",
+    value: "0",
     badge: "ACTIVOS",
     icon: BookOpen,
     color: "text-blue-600",
@@ -29,7 +29,7 @@ const statsCards = [
   },
   {
     title: "HORAS DE ESTUDIO",
-    value: "128h",
+    value: "0 h",
     badge: "TOTAL",
     icon: Clock,
     color: "text-rose-600",
@@ -38,7 +38,7 @@ const statsCards = [
   },
   {
     title: "CERTIFICADOS",
-    value: "2",
+    value: "0",
     badge: "OBTENIDOS",
     icon: Award,
     color: "text-slate-600",
@@ -47,7 +47,7 @@ const statsCards = [
   },
   {
     title: "PROMEDIO ACTUAL",
-    value: "18.5",
+    value: "0.0",
     badge: "EXCELENTE",
     icon: TrendingUp,
     color: "text-emerald-600",
@@ -112,9 +112,9 @@ export default function StudentDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-12">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 pb-20">
         {/* Main List Section */}
-        <Card className="lg:col-span-8 border-0 shadow-sm rounded-3xl overflow-hidden">
+        <Card className="p-0 border-0 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group rounded-3xl bg-white ring-1 ring-slate-100">
           <CardHeader className="px-8 py-6 border-b border-slate-50 flex flex-row items-center justify-between">
             <CardTitle className="text-xl font-bold text-slate-900">Mis Clases en Progreso</CardTitle>
             <Button variant="ghost" className="text-primary font-bold gap-2 hover:bg-primary/5">
