@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 
 interface User {
-  id: string
+  id: number
   email: string
   nombre: string
   rol: string
@@ -23,16 +23,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Cargar usuario desde sessionStorage al iniciar
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user")
+
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser))
+        const parsedUser = JSON.parse(storedUser)
+
+        setUser({
+          id: Number(parsedUser.id),
+          email: parsedUser.email || "",
+          nombre: parsedUser.nombre || "",
+          rol: parsedUser.rol || "",
+          avatar: parsedUser.avatar || undefined,
+        })
       } catch (error) {
         console.error("Error al parsear usuario guardado:", error)
+        sessionStorage.removeItem("user")
       }
     }
+
     setLoading(false)
   }, [])
 
@@ -51,8 +61,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
+
   if (!context) {
     throw new Error("useAuth debe ser usado dentro de AuthProvider")
   }
+
   return context
 }
