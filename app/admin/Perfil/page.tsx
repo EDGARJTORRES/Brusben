@@ -276,7 +276,7 @@ export default function PerfilPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Card Principal */}
-        <Card className="lg:col-span-2 border-none shadow-xl bg-background/50 backdrop-blur-sm">
+        <Card className="lg:col-span-2 border-none shadow-xl bg-card backdrop-blur-sm">
           <CardHeader className="border-b border-border/50 bg-muted/20 px-4 py-3">
             <CardTitle className="m-0">Información Personal</CardTitle>
           </CardHeader>
@@ -414,7 +414,7 @@ export default function PerfilPage() {
         </Card>
 
         {/* Card Seguridad */}
-        <Card className="border-none shadow-xl bg-background/50 backdrop-blur-sm">
+        <Card className="border-none shadow-xl bg-card backdrop-blur-sm">
           <CardHeader className="border-b border-border/50 bg-muted/20 px-4 py-3">
             <CardTitle className="m-0 flex items-center gap-2">
               <Lock className="h-5 w-5 text-rose-500" />

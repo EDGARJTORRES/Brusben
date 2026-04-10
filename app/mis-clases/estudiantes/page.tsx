@@ -115,7 +115,7 @@ export default function ClassmatesPage() {
         </Card>
       </div>
 
-      <Card className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-white">
+      <Card className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-card">
         <CardHeader className="p-8 border-b border-slate-50">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="relative w-full md:w-96 group">

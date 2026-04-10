@@ -83,7 +83,7 @@ export default function PagosPage() {
          ))}
       </div>
 
-      <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-background">
+      <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-card">
         <CardHeader className="p-8 border-b border-border space-y-6">
           <div className="flex flex-col lg:flex-row lg:items-center gap-6 justify-between">
             <div className="relative flex-1 max-w-md group">
