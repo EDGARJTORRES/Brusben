@@ -3,6 +3,7 @@ package com.brusben.dto;
 public class LoginResponse {
 
     private String token;
+    private Integer idUsuario; // 🔥 NUEVO CAMPO
     private String nombre;
     private String email;
     private Integer rolId;
@@ -11,8 +12,9 @@ public class LoginResponse {
     public LoginResponse() {
     }
 
-    public LoginResponse(String token, String nombre, String email, Integer rolId, String nombreRol) {
+    public LoginResponse(String token, Integer idUsuario, String nombre, String email, Integer rolId, String nombreRol) {
         this.token = token;
+        this.idUsuario = idUsuario;
         this.nombre = nombre;
         this.email = email;
         this.rolId = rolId;
@@ -25,6 +27,14 @@ public class LoginResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Integer getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
     public String getNombre() {
