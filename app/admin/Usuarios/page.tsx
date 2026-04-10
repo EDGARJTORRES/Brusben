@@ -227,7 +227,7 @@ export default function UsuariosPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{role.label}s</p>
+                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{role.label}: </p>
                   <p className="text-3xl font-black mt-1">
                     {users.filter(u => u.idRol === role.id).length}
                   </p>

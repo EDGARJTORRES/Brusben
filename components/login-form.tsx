@@ -71,7 +71,7 @@ export function LoginForm() {
         } else if (rol === "docente") {
           window.location.href = "/docente"
         } else if (rol === "estudiante") {
-          window.location.href = "/mis-clases/cursos"
+          window.location.href = "/mis-clases/"
         } else {
           window.location.href = "/"
         }

@@ -51,15 +51,14 @@ const menuItems = [
   { icon: Users, label: "Compañeros", href: "/mis-clases/estudiantes" },
   { icon: PaymentIcon, label: "Mis Pagos", href: "/mis-clases/pagos" },
   { icon: Calendar, label: "Calendario", href: "/mis-clases/calendario" },
-  { icon: User, label: "Mi Perfil", href: "/mis-clases/Perfil" },
   { icon: HelpCircle, label: "Ayuda", href: "/mis-clases/Ayuda" },
 ]
 
 export default function StudentLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+  }: {
+    children: React.ReactNode
+  }) {
   const pathname = usePathname()
   const router = useRouter()
   const { user, logout } = useAuth()
@@ -127,7 +126,7 @@ export default function StudentLayout({
                 </div>
               </Button>
               <div className="h-8 w-[1px] bg-slate-100 mx-2" />
-              <Button variant="ghost" className="hidden sm:flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-slate-100 transition-all">
+              <Button variant="ghost" className="hidden sm:flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-slate-100 transition-all" onClick={() => router.push("/mis-clases/Perfil")}>
                 <div className="h-8 w-8 rounded-full ring-2 ring-white shadow-sm overflow-hidden border border-slate-100 bg-primary text-white flex items-center justify-center flex-shrink-0 font-bold text-xs">
                   {user?.nombre ? getInitials(user.nombre) : "E"}
                 </div>

@@ -147,7 +147,7 @@ export default function StudentCoursesPage() {
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 pb-20">
         {courses.map((course) => (
-          <Card key={course.id} className="overflow-hidden border-0 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group rounded-3xl bg-white ring-1 ring-slate-100">
+          <Card key={course.id} className="overflow-hidden border-0 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group rounded-3xl bg-card ring-1 ring-slate-100">
             <div className="relative h-56 overflow-hidden">
               <img 
                 src={course.image} 
