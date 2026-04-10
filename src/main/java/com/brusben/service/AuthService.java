@@ -12,10 +12,12 @@ public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -30,8 +32,10 @@ public class AuthService {
             throw new RuntimeException("Usuario inactivo");
         }
 
+        String token = jwtService.generateToken(usuario.getEmail(), usuario.getRol().getNombreRol());
+
         return new LoginResponse(
-                null,
+                token,
                 usuario.getIdUsuario(),
                 usuario.getNombres(),
                 usuario.getEmail(),
