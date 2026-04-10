@@ -46,9 +46,8 @@ export function LoginForm() {
         throw new Error(data.message || "Correo electrónico o contraseña incorrectos.")
       }
 
-      // Guardar usuario en sessionStorage y contexto
       const userData = {
-        id: data.id || data.rolId || "",
+        id: data.idUsuario ?? "",
         email: data.email || email,
         nombre: data.nombre || "Usuario",
         rol: data.nombreRol || "Sin rol",
@@ -56,18 +55,27 @@ export function LoginForm() {
       }
 
       sessionStorage.setItem("user", JSON.stringify(userData))
+
       if (data.token) {
         localStorage.setItem("token", data.token)
       }
-      setUser(userData)
 
+      setUser(userData)
       setError("Login exitoso")
 
       setTimeout(() => {
-        // Redirige después del login
-        window.location.href = "/admin"
-      }, 1000)
+        const rol = (data.nombreRol || "").toLowerCase()
 
+        if (rol === "admin" || rol === "administrador") {
+          window.location.href = "/admin"
+        } else if (rol === "docente") {
+          window.location.href = "/docente"
+        } else if (rol === "estudiante") {
+          window.location.href = "/mis-clases/cursos"
+        } else {
+          window.location.href = "/"
+        }
+      }, 1000)
     } catch (err: any) {
       setError(err.message || "Error al conectar con el servidor.")
     } finally {
