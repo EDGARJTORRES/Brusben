@@ -4,16 +4,18 @@ import {
   BookOpen,
   TrendingUp,
   Award,
-  GraduationCap,
   Clock,
   PlayCircle,
   FileText,
-  Plus,
   ChevronRight,
   LayoutGrid,
+  DollarSign,
+  Users,
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
@@ -63,13 +65,16 @@ const myClasses = [
 ]
 
 export default function StudentDashboard() {
+  const { user } = useAuth()
+  const router = useRouter()
+
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
-            ¡Hola de nuevo, Estudiante! 👋
+           ¡Hola, {user?.nombre || "Estudiante"}! 👋
           </h1>
           <p className="text-slate-500 font-medium">
             Continúa donde lo dejaste y alcanza tus metas en <span className="text-primary font-bold">Brusben</span>.
@@ -161,23 +166,23 @@ export default function StudentDashboard() {
                 <p className="text-slate-400 text-sm font-medium">Gestiona tu aprendizaje hoy.</p>
               </div>
               <div className="grid gap-4 mt-10">
-                <Button className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 group shadow-lg">
+                <Button className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 group shadow-lg" onClick={() => router.push("/mis-clases/cursos")}>
                   <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-slate-100 transition-colors">
                     <PlayCircle className="h-5 w-5" />
                   </div>
                   <span className="font-bold text-lg">Continuar Clase</span>
                 </Button>
-                <Button className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 shadow-lg">
+                <Button className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 shadow-lg" onClick={() => router.push("/mis-clases/pagos")}>
                   <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-                    < Award className="h-5 w-5" />
+                    <DollarSign className="h-5 w-5" />
                   </div>
-                  <span className="font-bold text-lg">Mis Certificados</span>
+                  <span className="font-bold text-lg">Ver mis pagos</span>
                 </Button>
-                <Button className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 shadow-lg">
+                <Button className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 shadow-lg" onClick={() => router.push("/mis-clases/apoyo")}>
                   <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-                    <FileText className="h-5 w-5" />
+                    <Users className="h-5 w-5" />
                   </div>
-                  <span className="font-bold text-lg">Solicitar Apoyo</span>
+                  <span className="font-bold text-lg">Mis Compañeros</span>
                 </Button>
               </div>
             </div>

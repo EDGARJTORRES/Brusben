@@ -19,6 +19,8 @@ import {
   Settings,
   Tag,
   HelpCircle,
+  ClipboardList,
+  Wrench,
 } from "lucide-react"
 
 import {
@@ -86,8 +88,8 @@ const menuGroups: MenuItem[] = [
     label: "Académico",
     children: [
       { icon: BookOpen, label: "Cursos", href: "/admin/Cursos" },
-      { icon: Tag, label: "Categorías", href: "/admin/Categorias" },
       { icon: GraduationCap, label: "Control Academico", href: "/admin/ControlAcademico" },
+      { icon: ClipboardList, label: "Matrículas", href: "/admin/Matriculas" },
     ],
   },
   {
@@ -96,6 +98,14 @@ const menuGroups: MenuItem[] = [
     label: "Finanzas",
     children: [
       { icon: PaymentIcon, label: "Pagos", href: "/admin/Pagos" },
+    ],
+  },
+  {
+    type: "group",
+    icon: Wrench,
+    label: "Mantenimientos",
+    children: [
+       { icon: Tag, label: "Categorías", href: "/admin/Categorias" },
     ],
   },
   {
@@ -112,12 +122,6 @@ const menuGroups: MenuItem[] = [
   },
   {
     type: "single",
-    icon: User,
-    label: "Ver Perfil",
-    href: "/admin/Perfil",
-  },
-  {
-    type: "single",
     icon: HelpCircle,
     label:"Ayuda",
     href:"/admin/Ayuda"
@@ -126,9 +130,10 @@ const menuGroups: MenuItem[] = [
 
 export default function AdminLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+  }: {
+    children: React.ReactNode
+  }){
+
   const pathname = usePathname()
   const router = useRouter()
   const { user, logout } = useAuth()
@@ -207,6 +212,7 @@ export default function AdminLayout({
               <div className="h-8 w-[1px] bg-border mx-2" />
               <Button
                 variant="ghost"
+                onClick={() => router.push("/admin/Perfil")}
                 className="flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-muted transition-all"
               >
                 <div className="h-8 w-8 rounded-full ring-2 ring-background shadow-sm overflow-hidden border border-border flex-shrink-0 bg-primary text-white flex items-center justify-center font-bold text-sm">
@@ -435,7 +441,7 @@ function SidebarGroupItem({
         <div className={cn("flex items-center gap-4", isCollapsed ? "justify-center" : "")}>
           <item.icon
             className={cn(
-              "h-6 w-6 flex-shrink-0",
+              "h-4 w-4 flex-shrink-0",
               hasActiveChild ? "text-primary" : "text-muted-foreground"
             )}
           />
