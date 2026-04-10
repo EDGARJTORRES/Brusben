@@ -97,8 +97,8 @@ export default function StudentCoursesPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between items-start">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 leading-tight">Mis Cursos</h1>
-          <p className="text-slate-500 font-medium">Continúa tu aprendizaje y desarrolla nuevas habilidades estratégicas.</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">Mis Cursos</h1>
+          <p className="text-muted-foreground font-medium">Continúa tu aprendizaje y desarrolla nuevas habilidades estratégicas.</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" className="gap-2 h-11 px-6 rounded-xl border-slate-200 hover:bg-slate-50 transition-all duration-200 font-bold">
@@ -191,7 +191,7 @@ export default function StudentCoursesPage() {
                   {course.category.toUpperCase()}
                 </Badge>
               </div>
-              <CardTitle className="text-lg font-bold leading-snug text-slate-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[3.5rem]">
+              <CardTitle className="text-1xl font-extrabold tracking-tight text-foreground">
                 {course.title}
               </CardTitle>
             </CardHeader>
