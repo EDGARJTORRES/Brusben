@@ -1,55 +1,60 @@
 package com.brusben.dto;
 
+import java.time.LocalDate;
+import java.math.BigDecimal;
+
 public class CursoDTO {
 
-    private Integer curId;
-    private String curNombre;
-    private String curDescripcion;
-    private Double curPrecio;
-    private String curDuracion;
-    private String curImagen;
-    private String curEstado;
+    private Integer idCurso;
+    private Integer idDocente;
+    private String docenteNombre;  // Para mostrar en el select
+    private String titulo;
+    private String descripcion;
+    private LocalDate fechaRegistro;
     private Integer catId;
-    private String catNombre;
+    private String catNombre;      // Para mostrar en el select
     private String catColor;
+    private String imgCurso;
+    private String estCurso;
+    private BigDecimal precioCurso;
 
     public CursoDTO() {}
 
-    public CursoDTO(Integer curId, String curNombre, String curDescripcion,
-                    Double curPrecio, String curDuracion, String curImagen,
-                    String curEstado, Integer catId, String catNombre, String catColor) {
-        this.curId = curId;
-        this.curNombre = curNombre;
-        this.curDescripcion = curDescripcion;
-        this.curPrecio = curPrecio;
-        this.curDuracion = curDuracion;
-        this.curImagen = curImagen;
-        this.curEstado = curEstado;
+    public CursoDTO(Integer idCurso, Integer idDocente, String docenteNombre,
+                    String titulo, String descripcion, LocalDate fechaRegistro,
+                    Integer catId, String catNombre, String catColor,
+                    String imgCurso, String estCurso, BigDecimal precioCurso) {
+        this.idCurso = idCurso;
+        this.idDocente = idDocente;
+        this.docenteNombre = docenteNombre;
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.fechaRegistro = fechaRegistro;
         this.catId = catId;
         this.catNombre = catNombre;
         this.catColor = catColor;
+        this.imgCurso = imgCurso;
+        this.estCurso = estCurso;
+        this.precioCurso = precioCurso;
     }
 
-    public Integer getCurId() { return curId; }
-    public void setCurId(Integer curId) { this.curId = curId; }
+    public Integer getIdCurso() { return idCurso; }
+    public void setIdCurso(Integer idCurso) { this.idCurso = idCurso; }
 
-    public String getCurNombre() { return curNombre; }
-    public void setCurNombre(String curNombre) { this.curNombre = curNombre; }
+    public Integer getIdDocente() { return idDocente; }
+    public void setIdDocente(Integer idDocente) { this.idDocente = idDocente; }
 
-    public String getCurDescripcion() { return curDescripcion; }
-    public void setCurDescripcion(String curDescripcion) { this.curDescripcion = curDescripcion; }
+    public String getDocenteNombre() { return docenteNombre; }
+    public void setDocenteNombre(String docenteNombre) { this.docenteNombre = docenteNombre; }
 
-    public Double getCurPrecio() { return curPrecio; }
-    public void setCurPrecio(Double curPrecio) { this.curPrecio = curPrecio; }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
 
-    public String getCurDuracion() { return curDuracion; }
-    public void setCurDuracion(String curDuracion) { this.curDuracion = curDuracion; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public String getCurImagen() { return curImagen; }
-    public void setCurImagen(String curImagen) { this.curImagen = curImagen; }
-
-    public String getCurEstado() { return curEstado; }
-    public void setCurEstado(String curEstado) { this.curEstado = curEstado; }
+    public LocalDate getFechaRegistro() { return fechaRegistro; }
+    public void setFechaRegistro(LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }
 
     public Integer getCatId() { return catId; }
     public void setCatId(Integer catId) { this.catId = catId; }
@@ -59,4 +64,13 @@ public class CursoDTO {
 
     public String getCatColor() { return catColor; }
     public void setCatColor(String catColor) { this.catColor = catColor; }
+
+    public String getImgCurso() { return imgCurso; }
+    public void setImgCurso(String imgCurso) { this.imgCurso = imgCurso; }
+
+    public String getEstCurso() { return estCurso; }
+    public void setEstCurso(String estCurso) { this.estCurso = estCurso; }
+
+    public BigDecimal getPrecioCurso() { return precioCurso; }
+    public void setPrecioCurso(BigDecimal precioCurso) { this.precioCurso = precioCurso; }
 }
