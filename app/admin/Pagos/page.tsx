@@ -55,7 +55,7 @@ export default function PagosPage() {
              <Download className="h-5 w-5 text-muted-foreground" />
              Exportar
            </Button>
-           <Button className="rounded-2xl h-12 bg-primary hover:bg-primary/90 gap-2 font-black shadow-lg shadow-primary/20 text-primary-foreground">
+           <Button className="rounded-2xl h-12 bg-primary hover:bg-primary/90 gap-2 font-black  text-primary-foreground">
              <Plus className="h-5 w-5" />
              Registrar Pago
            </Button>

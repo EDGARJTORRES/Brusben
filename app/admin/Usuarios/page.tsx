@@ -432,28 +432,27 @@ export default function UsuariosPage() {
 
             
             <div className="p-8 space-y-6 pt-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 ">Nombre Completo</label>
-                  <Input 
-                    placeholder="Ej. Luis Alejandro Flores García" 
-                    className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
-                    value={formData.nombres}
-                    onChange={(e) => setFormData({...formData, nombres: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">DNI</label>
-                  <Input 
-                    placeholder="12345678" 
-                    className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
-                    maxLength={8}
-                    value={formData.dni}
-                    onChange={(e) => setFormData({...formData, dni: e.target.value})}
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 ">Nombre Completo</label>
+                <Input 
+                  placeholder="Ej. Luis Alejandro Flores García" 
+                  className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                  value={formData.nombres}
+                  onChange={(e) => setFormData({...formData, nombres: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">DNI</label>
+                <Input 
+                  placeholder="12345678" 
+                  className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                  maxLength={8}
+                  value={formData.dni}
+                  onChange={(e) => setFormData({...formData, dni: e.target.value})}
+                  required
+                />
               </div>
 
               <div className="space-y-2">
@@ -469,29 +468,41 @@ export default function UsuariosPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">Contraseña</label>
+                {/* PASSWORD */}
+                <div className="space-y-2 w-full">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">
+                    Contraseña
+                  </label>
                   <Input 
                     type="password"
-                    placeholder={editingUser ? "•••••••• (Opcional)" : "••••••••"}
-                    className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                    placeholder="••••••••"
+                    className="h-12 w-full rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required={!editingUser}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">Rol Asignado</label>
+                {/* SELECT */}
+                <div className="space-y-2 w-full">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">
+                    Rol Asignado
+                  </label>
+
                   <Select 
                     value={formData.idRol.toString()} 
                     onValueChange={(v) => setFormData({...formData, idRol: parseInt(v)})}
                   >
-                    <SelectTrigger className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold">
+                    <SelectTrigger className="h-12 min-h-[48px]  w-full rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold flex items-center">
                       <SelectValue placeholder="Seleccionar Rol" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+
+                    <SelectContent className="w-full rounded-2xl border-border/50 shadow-2xl">
                       {ROLES.map(role => (
-                        <SelectItem key={role.id} value={role.id.toString()} className="font-bold py-3">
+                        <SelectItem 
+                          key={role.id} 
+                          value={role.id.toString()} 
+                          className="font-bold py-3"
+                        >
                           {role.label}
                         </SelectItem>
                       ))}
@@ -500,7 +511,7 @@ export default function UsuariosPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
                 <input 
                   type="checkbox" 
                   id="activo" 
@@ -513,14 +524,26 @@ export default function UsuariosPage() {
                 </label>
               </div>
             </div>
+            <DialogFooter className="w-full bg-secondary/20 p-8 pt-0">
+              <div className="flex justify-between w-full">
+                
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setIsDialogOpen(false)} 
+                  className="h-12 px-6 font-bold rounded-2xl"
+                >
+                  Cancelar
+                </Button>
 
-            <DialogFooter className="bg-secondary/20 p-8 pt-0 ">
-              <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="h-12 px-6 font-bold rounded-2xl">
-                Cancelar
-              </Button>
-              <Button type="submit" className="h-12 px-8 font-black rounded-2xl bg-primary shadow-lg shadow-primary/20">
-                {editingUser ? "Guardar Cambios" : "Crear Usuario"}
-              </Button>
+                <Button 
+                  type="submit" 
+                  className="h-12 px-8 font-black rounded-2xl bg-primary shadow-lg shadow-primary/20"
+                >
+                  {editingUser ? "Guardar Cambios" : "Crear Usuario"}
+                </Button>
+
+              </div>
             </DialogFooter>
           </form>
         </DialogContent>

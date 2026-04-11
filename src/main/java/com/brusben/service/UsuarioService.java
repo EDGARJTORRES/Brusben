@@ -105,4 +105,14 @@ public class UsuarioService {
             usuario.setRol(rol);
         }
     }
+    public List<UsuarioDTO> getUsersByRol(String nombreRol) {
+        return usuarioRepository.findAll()
+                .stream()
+                .filter(u -> u.getRol() != null &&
+                            u.getRol().getNombreRol().equalsIgnoreCase(nombreRol) &&
+                            Boolean.TRUE.equals(u.getActivo()))
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
 }

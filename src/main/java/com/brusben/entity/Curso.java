@@ -1,61 +1,69 @@
 package com.brusben.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "curso", schema = "sc_sistema")
+@Table(name = "cursos", schema = "sc_sistema")
 public class Curso {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cur_id")
-    private Integer curId;
-
-    @Column(name = "cur_nombre", nullable = false, length = 200)
-    private String curNombre;
-
-    @Column(name = "cur_descripcion", length = 1000)
-    private String curDescripcion;
-
-    @Column(name = "cur_precio")
-    private Double curPrecio;
-
-    @Column(name = "cur_duracion", length = 100)
-    private String curDuracion;
-
-    @Column(name = "cur_imagen", length = 500)
-    private String curImagen;
-
-    @Column(name = "cur_estado", nullable = false, length = 1)
-    private String curEstado = "A";
+    @Column(name = "id_curso")
+    private Integer idCurso;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "cat_id", nullable = false)
+    @JoinColumn(name = "id_docente", nullable = false)
+    private Usuario docente;
+
+    @Column(name = "titulo", nullable = false, length = 200)
+    private String titulo;
+
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
+
+    @Column(name = "fecha_registro")
+    private java.time.LocalDate fechaRegistro;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "cat_id")
     private Categoria categoria;
+
+    @Column(name = "img_curso", length = 500)
+    private String imgCurso;
+
+    @Column(name = "est_curso", length = 10)
+    private String estCurso = "A";
+
+    @Column(name = "precio_curso", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precioCurso;
 
     public Curso() {}
 
-    public Integer getCurId() { return curId; }
-    public void setCurId(Integer curId) { this.curId = curId; }
+    public Integer getIdCurso() { return idCurso; }
+    public void setIdCurso(Integer idCurso) { this.idCurso = idCurso; }
 
-    public String getCurNombre() { return curNombre; }
-    public void setCurNombre(String curNombre) { this.curNombre = curNombre; }
+    public Usuario getDocente() { return docente; }
+    public void setDocente(Usuario docente) { this.docente = docente; }
 
-    public String getCurDescripcion() { return curDescripcion; }
-    public void setCurDescripcion(String curDescripcion) { this.curDescripcion = curDescripcion; }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
 
-    public Double getCurPrecio() { return curPrecio; }
-    public void setCurPrecio(Double curPrecio) { this.curPrecio = curPrecio; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public String getCurDuracion() { return curDuracion; }
-    public void setCurDuracion(String curDuracion) { this.curDuracion = curDuracion; }
-
-    public String getCurImagen() { return curImagen; }
-    public void setCurImagen(String curImagen) { this.curImagen = curImagen; }
-
-    public String getCurEstado() { return curEstado; }
-    public void setCurEstado(String curEstado) { this.curEstado = curEstado; }
+    public java.time.LocalDate getFechaRegistro() { return fechaRegistro; }
+    public void setFechaRegistro(java.time.LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }
 
     public Categoria getCategoria() { return categoria; }
     public void setCategoria(Categoria categoria) { this.categoria = categoria; }
+
+    public String getImgCurso() { return imgCurso; }
+    public void setImgCurso(String imgCurso) { this.imgCurso = imgCurso; }
+
+    public String getEstCurso() { return estCurso; }
+    public void setEstCurso(String estCurso) { this.estCurso = estCurso; }
+
+    public BigDecimal getPrecioCurso() { return precioCurso; }
+    public void setPrecioCurso(BigDecimal precioCurso) { this.precioCurso = precioCurso; }
 }

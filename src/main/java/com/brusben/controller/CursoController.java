@@ -1,7 +1,9 @@
 package com.brusben.controller;
 
 import com.brusben.dto.CursoDTO;
+import com.brusben.dto.UsuarioDTO;
 import com.brusben.service.CursoService;
+import com.brusben.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +28,12 @@ public class CursoController {
     @Autowired
     private CursoService cursoService;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     private static final String UPLOAD_DIR = "uploads/cursos/";
 
+    // ─── GET todos los cursos ───────────────────────────────────────────────
     @GetMapping
     public ResponseEntity<?> getAllCursos() {
         try {
@@ -38,12 +44,14 @@ public class CursoController {
         }
     }
 
+    // ─── GET curso por ID ───────────────────────────────────────────────────
     @GetMapping("/{id}")
     public ResponseEntity<?> getCursoById(@PathVariable Integer id) {
         try {
             CursoDTO curso = cursoService.getCursoById(id);
-            if (curso == null) return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Curso no encontrado"));
+            if (curso == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Curso no encontrado"));
             return ResponseEntity.ok(curso);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -51,13 +59,23 @@ public class CursoController {
         }
     }
 
-    /**
-     * Upload image and return the saved path
-     */
-    @PostMapping("/upload-imagen")
+    // ─── GET docentes para el SELECT del formulario ─────────────────────────
+    // Retorna solo usuarios con rol "docente"
+    @GetMapping("/docentes")
+    public ResponseEntity<?> getDocentes() {
+        try {
+            List<UsuarioDTO> docentes = usuarioService.getUsersByRol("docente");
+            return ResponseEntity.ok(docentes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener docentes: " + e.getMessage()));
+        }
+    }
+
+    // ─── POST subir imagen ──────────────────────────────────────────────────
+    @PostMapping("/cursos")
     public ResponseEntity<?> uploadImagen(@RequestParam("file") MultipartFile file) {
         try {
-            // Create directory if not exists
             Path uploadPath = Paths.get(UPLOAD_DIR);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
@@ -71,21 +89,24 @@ public class CursoController {
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            String relativePath = "/" + UPLOAD_DIR + fileName;
-            return ResponseEntity.ok(Map.of("path", relativePath));
+            return ResponseEntity.ok(Map.of("path", "/" + UPLOAD_DIR + fileName));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al subir imagen: " + e.getMessage()));
         }
     }
 
+    // ─── POST crear curso ───────────────────────────────────────────────────
     @PostMapping
     public ResponseEntity<?> createCurso(@RequestBody CursoDTO dto) {
         try {
-            if (dto.getCurNombre() == null || dto.getCurNombre().isEmpty())
-                return ResponseEntity.badRequest().body(Map.of("error", "El nombre del curso es requerido"));
+            if (dto.getTitulo() == null || dto.getTitulo().isEmpty())
+                return ResponseEntity.badRequest().body(Map.of("error", "El título del curso es requerido"));
+            if (dto.getIdDocente() == null)
+                return ResponseEntity.badRequest().body(Map.of("error", "El docente es requerido"));
             if (dto.getCatId() == null)
                 return ResponseEntity.badRequest().body(Map.of("error", "La categoría es requerida"));
+
             return ResponseEntity.status(HttpStatus.CREATED).body(cursoService.createCurso(dto));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
@@ -94,11 +115,17 @@ public class CursoController {
         }
     }
 
+    // ─── PUT actualizar curso ───────────────────────────────────────────────
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCurso(@PathVariable Integer id, @RequestBody CursoDTO dto) {
         try {
-            if (dto.getCurNombre() == null || dto.getCurNombre().isEmpty())
-                return ResponseEntity.badRequest().body(Map.of("error", "El nombre del curso es requerido"));
+            if (dto.getTitulo() == null || dto.getTitulo().isEmpty())
+                return ResponseEntity.badRequest().body(Map.of("error", "El título del curso es requerido"));
+            if (dto.getIdDocente() == null)
+                return ResponseEntity.badRequest().body(Map.of("error", "El docente es requerido"));
+            if (dto.getCatId() == null)
+                return ResponseEntity.badRequest().body(Map.of("error", "La categoría es requerida"));
+
             return ResponseEntity.ok(cursoService.updateCurso(id, dto));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
@@ -107,6 +134,7 @@ public class CursoController {
         }
     }
 
+    // ─── PUT toggle estado A/I ──────────────────────────────────────────────
     @PutMapping("/{id}/toggle-estado")
     public ResponseEntity<?> toggleEstado(@PathVariable Integer id) {
         try {
@@ -116,6 +144,7 @@ public class CursoController {
         }
     }
 
+    // ─── DELETE curso ───────────────────────────────────────────────────────
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCurso(@PathVariable Integer id) {
         try {

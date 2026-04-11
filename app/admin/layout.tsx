@@ -361,27 +361,6 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
 
       <SidebarFooter className="p-4 border-t border-border">
         <div className="flex flex-col gap-4">
-          {/* User Info Section */}
-          <div
-            className={cn(
-              "flex items-center gap-3 transition-all p-2 rounded-lg bg-sidebar-accent/30",
-              isCollapsed ? "justify-center" : ""
-            )}
-          >
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black flex-shrink-0 text-sm">
-              {user?.nombre ? getInitials(user.nombre) : "U"}
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col justify-center min-w-0 animate-in fade-in duration-300">
-                <span className="text-sm font-bold text-sidebar-foreground leading-none truncate">
-                  {user?.nombre || "Usuario"}
-                </span>
-                <span className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-tight leading-none">
-                  {user?.rol || "Sin rol"}
-                </span>
-              </div>
-            )}
-          </div>
 
           {/* Action Buttons */}
           <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "")}>
