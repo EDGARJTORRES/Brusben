@@ -28,7 +28,7 @@ export default function LoginPage() {
           className="object-cover opacity-80"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/30 to-foreground/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-900/20 shadow-inner" />
         
         {/* Content Overlay */}
         <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground">

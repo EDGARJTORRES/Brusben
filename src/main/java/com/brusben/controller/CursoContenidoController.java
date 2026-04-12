@@ -126,6 +126,17 @@ public class CursoContenidoController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/foros/{id}")
+    public ResponseEntity<?> updateForo(@PathVariable Integer id, @RequestBody Foro foroDetails) {
+        return foroRepository.findById(id).map(foro -> {
+            foro.setTitulo(foroDetails.getTitulo());
+            foro.setTemaDiscusion(foroDetails.getTemaDiscusion());
+            foro.setDescripcion(foroDetails.getDescripcion());
+            Foro updated = foroRepository.save(foro);
+            return ResponseEntity.ok(mapToForoDTO(updated));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     // --- MAPPERS ---
 
     private ModuloDTO mapToModuloDTO(Modulo m) {
