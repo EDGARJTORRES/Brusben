@@ -31,7 +31,7 @@ public class CursoController {
     @Autowired
     private UsuarioService usuarioService;
 
-    private static final String UPLOAD_DIR = "uploads/cursos/";
+    private static final String UPLOAD_DIR = "public/cursos/";
 
     // ─── GET todos los cursos ───────────────────────────────────────────────
     @GetMapping
@@ -73,7 +73,7 @@ public class CursoController {
     }
 
     // ─── POST subir imagen ──────────────────────────────────────────────────
-    @PostMapping("/cursos")
+    @PostMapping("/upload")
     public ResponseEntity<?> uploadImagen(@RequestParam("file") MultipartFile file) {
         try {
             Path uploadPath = Paths.get(UPLOAD_DIR);
@@ -87,9 +87,10 @@ public class CursoController {
                     : "";
             String fileName = UUID.randomUUID() + extension;
             Path filePath = uploadPath.resolve(fileName);
+            System.out.println("Guardando imagen en: " + filePath.toAbsolutePath());
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            return ResponseEntity.ok(Map.of("path", "/" + UPLOAD_DIR + fileName));
+            return ResponseEntity.ok(Map.of("path", fileName));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al subir imagen: " + e.getMessage()));
