@@ -82,7 +82,7 @@ export default function AdminDashboard() {
         </div>
         
         {/* Date Badge */}
-        <div className="flex items-center gap-4 bg-background p-3 px-5 rounded-2xl border border-border shadow-sm">
+        <div className="flex items-center gap-4 bg-card p-3 px-5 rounded-2xl border border-border shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
             <TrendingUp className="h-5 w-5" />
           </div>

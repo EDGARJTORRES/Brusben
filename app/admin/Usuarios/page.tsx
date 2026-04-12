@@ -67,9 +67,9 @@ interface Usuario {
 }
 
 const ROLES = [
-  { id: 1, name: "admin", label: "Administrador", color: "bg-purple-500/10 text-purple-600 border-purple-200" },
-  { id: 2, name: "docente", label: "Docente", color: "bg-blue-500/10 text-blue-600 border-blue-200" },
-  { id: 3, name: "estudiante", label: "Estudiante", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200" },
+  { id: 1, name: "admin", label: "Administrador", color: "bg-purple-400/10 text-purple-400 border-purple-400/20" },
+  { id: 2, name: "docente", label: "Docente", color: "bg-blue-400/10 text-blue-400 border-blue-400/20" },
+  { id: 3, name: "estudiante", label: "Estudiante", color: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20" },
 ]
 
 export default function UsuariosPage() {
@@ -333,7 +333,7 @@ export default function UsuariosPage() {
                             <Edit2 className="h-4 w-4 text-blue-500" /> Editar Datos
                           </DropdownMenuItem>
                           <DropdownMenuSeparator className="my-1" />
-                          <DropdownMenuItem onClick={() => toggleStatus(user)} className="rounded-lg gap-2 font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 cursor-pointer">
+                          <DropdownMenuItem onClick={() => toggleStatus(user)} className="rounded-lg gap-2 font-bold text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer">
                             {user.activo ? (
                               <>
                                 <Trash2 className="h-4 w-4" /> Desactivar Usuario
@@ -421,22 +421,24 @@ export default function UsuariosPage() {
           onOpenAutoFocus={(e) => e.preventDefault()}
           className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl"
         >
-          <form onSubmit={handleSubmit}>
-            <div className="bg-primary py-4 px-6 text-white relative">
-              <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-3">
-                <UserPlus className="h-6 w-6" />
-                {editingUser ? "Editar Usuario" : "Crear Usuario"}
+          <form onSubmit={handleSubmit} className="bg-card">
+            <div className="bg-gradient-to-r from-primary to-indigo-600 py-4 px-8 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+              <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-3 relative z-10">
+                {editingUser ? <Edit2 className="h-6 w-6" /> : <UserPlus className="h-6 w-6" />}
+                {editingUser ? "Editar Usuario" : "Nuevo Usuario"}
               </DialogTitle>
-              
             </div>
 
             
-            <div className="p-8 space-y-6 pt-6">
+            <div className="p-8 space-y-5 pt-6">
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 ">Nombre Completo</label>
+                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                  <UserIcon className="h-3 w-3 text-primary" /> Nombre Completo
+                </label>
                 <Input 
                   placeholder="Ej. Luis Alejandro Flores García" 
-                  className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                  className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
                   value={formData.nombres}
                   onChange={(e) => setFormData({...formData, nombres: e.target.value})}
                   required
@@ -444,10 +446,12 @@ export default function UsuariosPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">DNI</label>
+                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                  <Fingerprint className="h-3 w-3 text-primary" /> DNI
+                </label>
                 <Input 
                   placeholder="12345678" 
-                  className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                  className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
                   maxLength={8}
                   value={formData.dni}
                   onChange={(e) => setFormData({...formData, dni: e.target.value})}
@@ -456,11 +460,13 @@ export default function UsuariosPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">Correo Electrónico</label>
+                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                  <Mail className="h-3 w-3 text-primary" /> Correo Electrónico
+                </label>
                 <Input 
                   type="email"
                   placeholder="usuario@brusben.com" 
-                  className="h-12 rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                  className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold transition-all focus-visible:bg-background"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   required
@@ -468,41 +474,33 @@ export default function UsuariosPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* PASSWORD */}
-                <div className="space-y-2 w-full">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">
-                    Contraseña
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                    <Shield className="h-3 w-3 text-primary" /> Contraseña
                   </label>
                   <Input 
                     type="password"
                     placeholder="••••••••"
-                    className="h-12 w-full rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold"
+                    className="h-12 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required={!editingUser}
                   />
                 </div>
-                {/* SELECT */}
-                <div className="space-y-2 w-full">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1">
-                    Rol Asignado
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                    <Shield className="h-3 w-3 text-primary" /> Rol
                   </label>
-
                   <Select 
                     value={formData.idRol.toString()} 
                     onValueChange={(v) => setFormData({...formData, idRol: parseInt(v)})}
                   >
-                    <SelectTrigger className="h-12 min-h-[48px]  w-full rounded-2xl bg-secondary/30 border-none focus:ring-2 focus:ring-primary/20 font-bold flex items-center">
-                      <SelectValue placeholder="Seleccionar Rol" />
+                    <SelectTrigger className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold">
+                      <SelectValue placeholder="Rol" />
                     </SelectTrigger>
-
-                    <SelectContent className="w-full rounded-2xl border-border/50 shadow-2xl">
+                    <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
                       {ROLES.map(role => (
-                        <SelectItem 
-                          key={role.id} 
-                          value={role.id.toString()} 
-                          className="font-bold py-3"
-                        >
+                        <SelectItem key={role.id} value={role.id.toString()} className="font-bold py-3">
                           {role.label}
                         </SelectItem>
                       ))}
@@ -511,38 +509,35 @@ export default function UsuariosPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-400/5 border border-emerald-400/10 transition-all select-none">
                 <input 
                   type="checkbox" 
                   id="activo" 
-                  className="h-5 w-5 rounded-md border-emerald-500/20 bg-white"
+                  className="h-5 w-5 rounded-md border-emerald-400/20 bg-background checked:bg-emerald-500"
                   checked={formData.activo}
                   onChange={(e) => setFormData({...formData, activo: e.target.checked})}
                 />
-                <label htmlFor="activo" className="text-sm font-bold text-emerald-700 cursor-pointer">
-                  Habilitar acceso al usuario (Activo)
+                <label htmlFor="activo" className="text-sm font-bold text-emerald-500 cursor-pointer">
+                  Habilitar acceso inmediato al usuario
                 </label>
               </div>
             </div>
-            <DialogFooter className="w-full bg-secondary/20 p-8 pt-0">
-              <div className="flex justify-between w-full">
-                
+            <DialogFooter className="w-full bg-muted/20 p-4 pt-6 border-t border-border/30">
+              <div className="flex justify-between w-full gap-4">
                 <Button 
                   type="button" 
                   variant="ghost" 
                   onClick={() => setIsDialogOpen(false)} 
-                  className="h-12 px-6 font-bold rounded-2xl"
+                  className="h-12 px-10 font-bold rounded-2xl"
                 >
-                  Cancelar
+                  Cancelar Registro
                 </Button>
-
                 <Button 
                   type="submit" 
-                  className="h-12 px-8 font-black rounded-2xl bg-primary shadow-lg shadow-primary/20"
+                  className="h-12 px-10 font-black rounded-2xl bg-primary  flex-1"
                 >
                   {editingUser ? "Guardar Cambios" : "Crear Usuario"}
                 </Button>
-
               </div>
             </DialogFooter>
           </form>

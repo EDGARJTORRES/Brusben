@@ -18,18 +18,14 @@ export function ClientProvider({
 
   return (
     <AuthProvider>
-      {mounted ? (
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-      ) : (
-        children
-      )}
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider>
       <Analytics />
     </AuthProvider>
   )
