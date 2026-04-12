@@ -9,6 +9,9 @@ import com.brusben.repository.CursoRepository;
 import com.brusben.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +29,18 @@ public class CursoService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Transactional
+    public void resetSequence() {
+        try {
+            entityManager.createNativeQuery("SELECT setval(pg_get_serial_sequence('sc_sistema.cursos', 'id_curso'), coalesce((SELECT MAX(id_curso) FROM sc_sistema.cursos), 0) + 1, false)").getSingleResult();
+        } catch (Exception e) {
+            System.err.println("Error reseteando secuencia: " + e.getMessage());
+        }
+    }
 
     public List<CursoDTO> getAllCursos() {
         return cursoRepository.findAll()
@@ -58,7 +73,15 @@ public class CursoService {
         curso.setEstCurso(dto.getEstCurso() != null ? dto.getEstCurso() : "A");
         curso.setPrecioCurso(dto.getPrecioCurso());
 
-        return convertToDTO(cursoRepository.save(curso));
+        try {
+            return convertToDTO(cursoRepository.save(curso));
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("llave duplicada")) {
+                resetSequence();
+                return convertToDTO(cursoRepository.save(curso));
+            }
+            throw e;
+        }
     }
 
     public CursoDTO updateCurso(Integer id, CursoDTO dto) {
@@ -75,7 +98,11 @@ public class CursoService {
         curso.setTitulo(dto.getTitulo());
         curso.setDescripcion(dto.getDescripcion());
         curso.setCategoria(categoria);
-        curso.setEstCurso(dto.getEstCurso());
+        curso.setPrecioCurso(dto.getPrecioCurso());
+        
+        if (dto.getEstCurso() != null) {
+            curso.setEstCurso(dto.getEstCurso());
+        }
 
         // Solo actualiza imagen si viene una nueva
         if (dto.getImgCurso() != null && !dto.getImgCurso().isEmpty()) {
