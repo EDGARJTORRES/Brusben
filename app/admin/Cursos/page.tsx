@@ -4,7 +4,9 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { 
   Plus, Search, MoreVertical, BookOpen, LayoutGrid,
-  Edit, Trash, ChevronLeft, ChevronRight, FileText
+  Edit, Trash, ChevronLeft, ChevronRight, FileText,
+  GripVertical, Paperclip, MessageSquare, PlusCircle, Trash2,
+  Video, Link as LinkIcon, File, ArrowLeft
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +23,8 @@ import {
 import {
   Tabs, TabsContent, TabsList, TabsTrigger
 } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
 
 interface Curso {
   idCurso?: number
@@ -60,6 +64,15 @@ export default function CoursesPage() {
     estCurso: true,
     catId: 0
   })
+
+  // --- CONTENT MANAGEMENT STATES ---
+  const [selectedCourseContent, setSelectedCourseContent] = useState<Curso | null>(null)
+  const [contentModules, setContentModules] = useState<any[]>([])
+  const [contentForos, setContentForos] = useState<any[]>([])
+  const [isLoadingContent, setIsLoadingContent] = useState(false)
+  const [newModuleName, setNewModuleName] = useState("")
+  const [newForo, setNewForo] = useState({ titulo: "", temaDiscusion: "", descripcion: "" })
+  const [contentTab, setContentTab] = useState("curricula")
 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 9
@@ -248,6 +261,383 @@ export default function CoursesPage() {
     currentPage * itemsPerPage
   )
 
+  // --- CONTENT FETCHING ---
+  const [viewMode, setViewMode] = useState<"list" | "content">("list")
+
+  const openContentManager = async (course: Curso) => {
+    setSelectedCourseContent(course)
+    setViewMode("content")
+    setContentTab("curricula") // Forzar pestaña por defecto
+    setIsLoadingContent(true)
+    try {
+      const [modRes, foroRes] = await Promise.all([
+        fetch(`http://localhost:8081/api/cursos-contenido/${course.idCurso}/modulos`),
+        fetch(`http://localhost:8081/api/cursos-contenido/${course.idCurso}/foros`)
+      ])
+      setContentModules(await modRes.json())
+      setContentForos(await foroRes.json())
+    } catch {
+      toast.error("Error al cargar contenido")
+    } finally {
+      setIsLoadingContent(false)
+    }
+  }
+
+  const addModule = async () => {
+    if (!newModuleName.trim()) return
+    try {
+      const res = await fetch(`http://localhost:8081/api/cursos-contenido/${selectedCourseContent?.idCurso}/modulos`, {
+        method: "POST",
+        headers: { "Content-Type" : "application/json" },
+        body: JSON.stringify({ nombre: newModuleName })
+      })
+      if (res.ok) {
+        setNewModuleName("")
+        openContentManager(selectedCourseContent!)
+        toast.success("Módulo añadido")
+      }
+    } catch {
+      toast.error("Error al añadir módulo")
+    }
+  }
+
+  const deleteModulo = async (id: number) => {
+     try {
+       await fetch(`http://localhost:8081/api/cursos-contenido/modulos/${id}`, { method: "DELETE" })
+       openContentManager(selectedCourseContent!)
+       toast.success("Módulo eliminado")
+     } catch { toast.error("Error al eliminar") }
+  }
+
+  const addMaterial = async (idModulo: number) => {
+    const titulo = prompt("Título del material:")
+    if (!titulo) return
+    const url = prompt("URL del material (o nombre de archivo):")
+    if (!url) return
+    const tipo = prompt("Tipo (VIDEO, PDF, LINK):", "VIDEO") || "VIDEO"
+
+    try {
+      const res = await fetch(`http://localhost:8081/api/cursos-contenido/modulos/${idModulo}/materiales`, {
+        method: "POST",
+        headers: { "Content-Type" : "application/json" },
+        body: JSON.stringify({ titulo, urlMaterial: url, tipoMaterial: tipo })
+      })
+      if (res.ok) {
+        openContentManager(selectedCourseContent!)
+        toast.success("Material añadido")
+      }
+    } catch { toast.error("Error al añadir") }
+  }
+
+  const deleteMaterial = async (id: number) => {
+    try {
+      await fetch(`http://localhost:8081/api/cursos-contenido/materiales/${id}`, { method: "DELETE" })
+      openContentManager(selectedCourseContent!)
+      toast.success("Material eliminado")
+    } catch { toast.error("Error al eliminar") }
+  }
+
+  const addForo = async () => {
+    if (!newForo.titulo.trim() || !newForo.temaDiscusion.trim()) {
+       toast.warning("Título y Tema son obligatorios")
+       return
+    }
+    try {
+      const res = await fetch(`http://localhost:8081/api/cursos-contenido/${selectedCourseContent?.idCurso}/foros`, {
+        method: "POST",
+        headers: { "Content-Type" : "application/json" },
+        body: JSON.stringify(newForo)
+      })
+      if (res.ok) {
+        setNewForo({ titulo: "", temaDiscusion: "", descripcion: "" })
+        openContentManager(selectedCourseContent!)
+        toast.success("Foro creado")
+      }
+    } catch { toast.error("Error al crear foro") }
+  }
+
+  const deleteForo = async (id: number) => {
+    try {
+      await fetch(`http://localhost:8081/api/cursos-contenido/foros/${id}`, { method: "DELETE" })
+      openContentManager(selectedCourseContent!)
+      toast.success("Foro eliminado")
+    } catch { toast.error("Error al eliminar") }
+  }
+
+  if (viewMode === "content" && selectedCourseContent) {
+    return (
+      <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+        
+        {/* HEADER DE GESTIÓN */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900 px-4 py-3 rounded-2xl  text-white relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
+           <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full -ml-24 -mb-24 blur-2xl opacity-30" />
+           
+           <div className="relative z-10 flex items-center gap-6">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-14 w-14 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all border border-white/10"
+                onClick={() => { setViewMode("list"); setSelectedCourseContent(null); }}
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </Button>
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                   <Badge className="bg-primary text-white border-0 font-bold uppercase tracking-widest text-[10px] px-3">Gestión de Contenido</Badge>
+                   <span className="text-slate-400 text-xs font-bold ring-1 ring-slate-700 px-2 py-0.5 rounded-full">ID: {selectedCourseContent.idCurso}</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight">{selectedCourseContent.titulo}</h2>
+              </div>
+           </div>
+
+           <div className="relative z-10 hidden lg:flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
+              <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                 <BookOpen className="h-6 w-6 text-white" />
+              </div>
+              <div className="pr-4">
+                 <p className="text-[10px] font-black uppercase tracking-widest text-primary">Docente</p>
+                 <p className="font-bold text-sm">{selectedCourseContent.docenteNombre}</p>
+              </div>
+           </div>
+        </div>
+
+        <Tabs value={contentTab} onValueChange={setContentTab} className="w-full">
+           <div className="flex items-center justify-between mb-8">
+              <TabsList className="bg-card/50 p-1.5 rounded-2xl h-14 border border-border shadow-inner">
+                <TabsTrigger value="curricula" className="px-8 font-black data-[state=active]:bg-primary data-[state=active]:text-white rounded-xl transition-all">
+                  Plan de Estudios
+                </TabsTrigger>
+                <TabsTrigger value="foros" className="px-8 font-black data-[state=active]:bg-primary data-[state=active]:text-white rounded-xl transition-all">
+                  Foros Académicos
+                </TabsTrigger>
+              </TabsList>
+           </div>
+
+           <TabsContent value="curricula" className="space-y-10 mt-0 animate-in slide-in-from-bottom-4 duration-500">
+              
+              <div className="grid lg:grid-cols-12 gap-10">
+                 
+                 {/* Lado Izquierdo: Lista de Módulos (Scrollable) */}
+                 <div className="lg:col-span-8 space-y-6">
+                    <div className="flex items-center justify-between mb-2 pl-2">
+                       <h3 className="text-xl font-black text-foreground flex items-center gap-3">
+                          <LayoutGrid className="h-5 w-5 text-primary" />
+                          Módulos Estructurados
+                       </h3>
+                       <Badge variant="outline" className="font-bold">{contentModules.length} Secciones</Badge>
+                    </div>
+
+                    {isLoadingContent ? (
+                      <div className="grid gap-6">
+                         {[1,2].map(i => <div key={i} className="h-32 bg-card animate-pulse rounded-[32px] border" />)}
+                      </div>
+                    ) : (
+                      <div className="grid gap-6">
+                        {contentModules.map((modulo: any) => (
+                           <Card key={modulo.idModulo} className="border-border/40 shadow-xl shadow-slate-200/50 rounded-[32px] overflow-hidden group hover:ring-2 ring-primary/20 transition-all">
+                              <div className="bg-card p-6 flex items-center justify-between border-b border-border/40">
+                                 <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors">
+                                       <GripVertical className="h-5 w-5" />
+                                    </div>
+                                    <h4 className="text-lg font-black text-foreground">{modulo.nombre}</h4>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-10 px-4 font-bold gap-2" onClick={() => addMaterial(modulo.idModulo)}>
+                                       <PlusCircle className="h-4 w-4" /> Clase
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl" onClick={() => deleteModulo(modulo.idModulo)}>
+                                       <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                 </div>
+                              </div>
+                              <CardContent className="p-6 bg-muted/10">
+                                 {modulo.materiales?.length > 0 ? (
+                                   <div className="grid gap-3">
+                                      {modulo.materiales.map((mat: any) => (
+                                        <div key={mat.idMaterial} className="flex items-center justify-between p-4 bg-background rounded-2xl group/mat border border-border/40 hover:shadow-md transition-all">
+                                           <div className="flex items-center gap-4">
+                                              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${mat.tipoMaterial === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
+                                                 {mat.tipoMaterial === 'VIDEO' ? <Video className="h-5 w-5" /> : <File className="h-5 w-5" />}
+                                              </div>
+                                              <div>
+                                                 <p className="font-bold text-sm text-foreground">{mat.titulo}</p>
+                                                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{mat.tipoMaterial}</p>
+                                              </div>
+                                           </div>
+                                           <div className="flex items-center gap-2">
+                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg" onClick={() => window.open(mat.urlMaterial, '_blank')}>
+                                                 <LinkIcon className="h-4 w-4" />
+                                              </Button>
+                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg group-hover/mat:opacity-100 transition-opacity" onClick={() => deleteMaterial(mat.idMaterial)}>
+                                                 <Trash2 className="h-4 w-4" />
+                                              </Button>
+                                           </div>
+                                        </div>
+                                      ))}
+                                   </div>
+                                 ) : (
+                                   <div className="text-center py-6 border-2 border-dashed border-border/50 rounded-2xl bg-background/50">
+                                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aún no hay materiales en este módulo</p>
+                                   </div>
+                                 )}
+                              </CardContent>
+                           </Card>
+                        ))}
+
+                        {contentModules.length === 0 && (
+                          <div className="bg-card rounded-[40px] p-20 text-center border-2 border-dashed border-border shadow-inner">
+                             <div className="h-24 w-24 bg-muted rounded-[32px] flex items-center justify-center mx-auto mb-6">
+                                <PlusCircle className="h-10 w-10 text-muted-foreground" />
+                             </div>
+                             <h4 className="text-xl font-bold text-foreground mb-2">Comienza tu currícula</h4>
+                             <p className="text-muted-foreground max-w-sm mx-auto">Añade tu primer módulo a la derecha para empezar a organizar el contenido del curso.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                 </div>
+
+                 {/* Lado Derecho: Acciones y Sidebar */}
+                 <div className="lg:col-span-4 space-y-8">
+                    <Card className="border-0 shadow-2xl rounded-[32px] overflow-hidden bg-slate-900 text-white p-8 relative">
+                       <div className="absolute top-0 right-0 p-6 opacity-10">
+                          <PlusCircle className="h-12 w-12" />
+                       </div>
+                       <h4 className="text-xl font-black mb-6 relative z-10 underline decoration-primary decoration-4 underline-offset-8">Nuevo Módulo</h4>
+                       <div className="space-y-4 relative z-10">
+                          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nombre del Módulo</p>
+                          <Input 
+                            placeholder="Ej: Fundamentos Avanzados" 
+                            className="bg-white/10 border-white/10 text-white placeholder:text-slate-500 h-14 rounded-2xl focus:ring-primary"
+                            value={newModuleName}
+                            onChange={(e) => setNewModuleName(e.target.value)}
+                          />
+                          <Button className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 group" onClick={addModule}>
+                            Añadir Módulo
+                            <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          </Button>
+                       </div>
+                    </Card>
+
+                    <div className="bg-primary/5 rounded-[32px] p-8 border border-primary/10">
+                       <h4 className="font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-tight text-sm">
+                          <BookOpen className="h-4 w-4" /> Tips del Administrador
+                       </h4>
+                       <ul className="space-y-4">
+                          <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
+                             <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">1</div>
+                             Organiza por orden lógico para mejorar la experiencia del estudiante.
+                          </li>
+                          <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
+                             <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">2</div>
+                             Combina videos y lecturas (PDF) para un aprendizaje interactivo.
+                          </li>
+                       </ul>
+                    </div>
+                 </div>
+
+              </div>
+
+           </TabsContent>
+
+           <TabsContent value="foros" className="space-y-8 mt-0 animate-in slide-in-from-right-4 duration-500">
+              <div className="grid lg:grid-cols-12 gap-10">
+                 
+                 <div className="lg:col-span-8 space-y-6">
+                    <div className="flex items-center justify-between pl-2">
+                       <h3 className="text-xl font-black text-foreground flex items-center gap-3">
+                          <MessageSquare className="h-5 w-5 text-primary" />
+                          Hilos de Discusión
+                       </h3>
+                       <Badge className="bg-emerald-500">{contentForos.length} Activos</Badge>
+                    </div>
+
+                    <div className="grid gap-6">
+                       {contentForos.map((foro: any) => (
+                         <Card key={foro.idForo} className="border-border/40 shadow-sm rounded-[32px] p-8 bg-card hover:shadow-xl transition-all group border hover:border-primary/20">
+                            <div className="flex justify-between items-start mb-4">
+                               <div className="space-y-1">
+                                  <h4 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{foro.titulo}</h4>
+                                  <div className="flex items-center gap-3">
+                                     <Badge variant="outline" className="text-primary border-primary/30 text-[9px] uppercase font-black">{foro.temaDiscusion}</Badge>
+                                     <span className="text-[10px] text-muted-foreground font-bold">{new Date(foro.fechaCreacion).toLocaleDateString(undefined, { day:'2-digit', month:'long' })}</span>
+                                  </div>
+                               </div>
+                               <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-rose-500 rounded-xl" onClick={() => deleteForo(foro.idForo)}>
+                                  <Trash2 className="h-5 w-5" />
+                               </Button>
+                            </div>
+                            <p className="text-sm text-muted-foreground leading-relaxed mb-6">{foro.descripcion}</p>
+                            <div className="flex items-center gap-4 pt-6 border-t border-border/40">
+                               <div className="flex -space-x-2">
+                                  {[1,2,3].map(i => <div key={i} className="h-7 w-7 rounded-full border-2 border-background bg-muted text-[8px] flex items-center justify-center font-bold">U</div>)}
+                               </div>
+                               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Más de 20 estudiantes conversando</span>
+                            </div>
+                         </Card>
+                       ))}
+
+                       {contentForos.length === 0 && (
+                          <div className="text-center py-20 opacity-30 italic">
+                             <MessageSquare className="h-20 w-20 mx-auto mb-4 opacity-10" />
+                             <p className="font-bold text-sm">Aún no hay discusiones iniciadas en este curso</p>
+                          </div>
+                       )}
+                    </div>
+                 </div>
+
+                 <div className="lg:col-span-4">
+                    <Card className="bg-card border-border/40  rounded-[40px] p-10 space-y-8 sticky top-24">
+                       <div className="space-y-2">
+                          <h3 className="text-2xl font-black text-foreground">Iniciar Debate</h3>
+                          <p className="text-muted-foreground text-sm font-medium">Crea un espacio para resolver dudas y compartir ideas.</p>
+                       </div>
+                       
+                       <div className="space-y-5">
+                          <div className="space-y-2">
+                             <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Título de la Discusión</label>
+                             <Input 
+                               placeholder="Ej. Dudas sobre responsive design" 
+                               className="h-14 rounded-2xl bg-muted/30 border-0 focus:ring-primary font-bold" 
+                               value={newForo.titulo}
+                               onChange={(e) => setNewForo({...newForo, titulo: e.target.value})}
+                             />
+                          </div>
+                          <div className="space-y-2">
+                             <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Tema Clave</label>
+                             <Input 
+                               placeholder="Ej. Mobile First" 
+                               className="h-14 rounded-2xl bg-muted/30 border-0 focus:ring-primary font-bold" 
+                               value={newForo.temaDiscusion}
+                               onChange={(e) => setNewForo({...newForo, temaDiscusion: e.target.value})}
+                             />
+                          </div>
+                          <div className="space-y-2">
+                             <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Contexto Extra</label>
+                             <Textarea 
+                               placeholder="Escribe aquí los puntos principales a debatir..." 
+                               className="rounded-2xl bg-muted/30 border-0 focus:ring-primary min-h-[120px] font-medium" 
+                               value={newForo.descripcion}
+                               onChange={(e) => setNewForo({...newForo, descripcion: e.target.value})}
+                             />
+                          </div>
+                          <Button className="w-full h-15 rounded-2xl font-black text-lg shadow-xl shadow-primary/10" onClick={addForo}>
+                             Publicar Foro
+                          </Button>
+                       </div>
+                    </Card>
+                 </div>
+
+              </div>
+           </TabsContent>
+
+        </Tabs>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
 
@@ -268,7 +658,7 @@ export default function CoursesPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
           {/* IZQUIERDA: TABS */}
-          <TabsList className="bg-slate-100 p-1 rounded-xl h-12">
+          <TabsList className="bg-card p-1 rounded-xl h-12">
             <TabsTrigger value="listado" className="px-6 font-bold" onClick={resetForm}>
               Listado
             </TabsTrigger>
@@ -291,7 +681,7 @@ export default function CoursesPage() {
             </div>
 
             <select
-              className="h-12 rounded-xl border px-4 bg-white"
+              className="h-12 rounded-xl border px-4 bg-card"
               onChange={(e) => setCategoriaFilter(e.target.value)}
               value={categoriaFilter}
             >
@@ -424,9 +814,10 @@ export default function CoursesPage() {
 
                   <Button
                     size="icon"
-                    className="bg-slate-900 text-white rounded-2xl h-10 w-10 hover:scale-110 transition-transform"
+                    className="bg-primary text-white rounded-2xl h-10 w-30 hover:scale-110 transition-transform "
+                    onClick={() => openContentManager(course)}
                   >
-                    <Plus className="h-5 w-5" />
+                    <Plus className="h-5 w-5" /> Contenido
                   </Button>
                 </CardFooter>
               </Card>
@@ -499,21 +890,21 @@ export default function CoursesPage() {
                   
                   {/* SECCIÓN 1: GENERAL */}
                   <div className="space-y-6">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-center gap-3 border-b border-border pb-4">
+                      <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
                         <FileText className="h-4 w-4 text-primary" />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-800">Información General</h3>
+                      <h3 className="text-xl font-bold text-foreground">Información General</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Curso</label>
+                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1">Nombre del Curso</label>
                         <div className="relative group">
                            <Input 
                             name="titulo" 
                             placeholder="Ej. Arquitectura Frontend Pro" 
-                            className="h-14 rounded-2xl bg-slate-50 border-0 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-semibold px-4"
+                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-semibold px-4"
                             value={formData.titulo}
                             onChange={handleChange}
                             required
@@ -522,14 +913,14 @@ export default function CoursesPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Costo (S/.)</label>
+                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1">Costo (S/.)</label>
                         <div className="relative group">
                           <Input 
                             name="precioCurso" 
                             type="number" 
                             step="0.01" 
                             placeholder="0.00" 
-                            className="h-14 rounded-2xl bg-slate-50 border-0 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-bold px-4 text-lg"
+                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-bold px-4 text-lg"
                             value={formData.precioCurso}
                             onChange={handleChange}
                             required
@@ -539,11 +930,11 @@ export default function CoursesPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Descripción del Programa</label>
+                      <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1">Descripción del Programa</label>
                       <textarea 
                         name="descripcion" 
                         placeholder="Define los objetivos, temario y beneficios..." 
-                        className="w-full h-32 p-5 rounded-2xl bg-slate-50 border-0 focus:ring-2 ring-primary/20 outline-none resize-none transition-all focus:bg-white font-medium leading-relaxed shadow-inner"
+                        className="w-full h-32 p-5 rounded-2xl bg-muted/40 border-0 focus:ring-2 ring-primary/20 outline-none resize-none transition-all focus:bg-background font-medium leading-relaxed shadow-inner text-foreground"
                         value={formData.descripcion}
                         onChange={handleChange}
                         required
@@ -553,19 +944,19 @@ export default function CoursesPage() {
 
                   {/* SECCIÓN 2: ACADÉMICO */}
                   <div className="space-y-6">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                      <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                        <LayoutGrid className="h-4 w-4 text-amber-600" />
+                    <div className="flex items-center gap-3 border-b border-border pb-4">
+                      <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                        <LayoutGrid className="h-4 w-4 text-amber-500" />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-800">Categorización y Docencia</h3>
+                      <h3 className="text-xl font-bold text-foreground">Categorización y Docencia</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Categoría Académica</label>
+                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1">Categoría Académica</label>
                         <select
                           name="catId"
-                          className="w-full h-14 rounded-2xl bg-slate-50 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-slate-600 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
+                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors"
                           value={formData.catId || ""}
                           onChange={handleChange}
                           required
@@ -581,10 +972,10 @@ export default function CoursesPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Especialista / Docente</label>
+                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1">Especialista / Docente</label>
                         <select
                           name="idDocente"
-                          className="w-full h-14 rounded-2xl bg-slate-50 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-slate-600 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
+                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors"
                           value={formData.idDocente || ""}
                           onChange={handleChange}
                           required
@@ -603,16 +994,16 @@ export default function CoursesPage() {
 
                   {/* SECCIÓN 3: MULTIMEDIA */}
                   <div className="space-y-6">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                      <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                        <LayoutGrid className="h-4 w-4 text-emerald-600" />
+                    <div className="flex items-center gap-3 border-b border-border pb-4">
+                      <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                        <LayoutGrid className="h-4 w-4 text-emerald-500" />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-800">Identidad Visual</h3>
+                      <h3 className="text-xl font-bold text-foreground">Identidad Visual</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                       <div className="space-y-4">
-                        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[32px] p-8 text-center hover:border-primary/40 hover:bg-primary/5 transition-all group relative">
+                        <div className="bg-muted/40 border-2 border-dashed border-border rounded-[32px] p-8 text-center hover:border-primary/40 hover:bg-primary/5 transition-all group relative">
                           <input 
                             type="file" 
                             accept="image/*"
@@ -620,31 +1011,31 @@ export default function CoursesPage() {
                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                           />
                           <div className="space-y-3">
-                            <div className="h-16 w-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                            <div className="h-16 w-16 rounded-2xl bg-background shadow-sm flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                               <Plus className="h-8 w-8 text-primary" />
                             </div>
                             <div>
-                              <p className="text-sm font-black text-slate-700">Subir Portada</p>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">PNG, JPG hasta 5MB</p>
+                              <p className="text-sm font-black text-foreground">Subir Portada</p>
+                              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1">PNG, JPG hasta 5MB</p>
                             </div>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="relative group h-48 rounded-[32px] overflow-hidden border-4 border-white bg-slate-100 flex items-center justify-center">
+                      <div className="relative group h-48 rounded-[32px] overflow-hidden border-4 border-background bg-muted/30 flex items-center justify-center">
                         {formData.imgCurso ? (
                           <img 
                             src={getImageUrl(formData.imgCurso)} 
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                           />
                         ) : (
-                          <div className="flex flex-col items-center gap-2 text-slate-300">
+                          <div className="flex flex-col items-center gap-2 text-muted-foreground/30">
                              <BookOpen className="h-12 w-12 opacity-20" />
                              <p className="text-[10px] font-black uppercase tracking-[0.2em]">Vista previa</p>
                           </div>
                         )}
                         {formData.imgCurso && (
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                              <p className="text-white text-xs font-black uppercase tracking-widest">Cambiar Imagen</p>
                           </div>
                         )}
@@ -656,14 +1047,14 @@ export default function CoursesPage() {
                     <Button 
                       type="button" 
                       variant="outline"
-                      className="h-16 rounded-2xl font-bold px-10 border-2 hover:bg-slate-50"
+                      className="h-16 rounded-2xl font-bold px-10 border-2 hover:bg-muted/50"
                       onClick={() => { resetForm(); setActiveTab("listado"); }}
                     >
                       Descartar
                     </Button>
                     <Button 
                       type="submit" 
-                      className="h-16 rounded-2xl font-bold px-10 bg-slate-900 text-white hover:bg-slate-800 shadow-2xl shadow-slate-200 flex-1 text-lg group"
+                      className="h-16 rounded-2xl font-bold px-10 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 text-lg group shadow-xl shadow-primary/10"
                     >
                       {isEditing ? "Guardar Cambios" : "Publicar Ahora"}
                       <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -674,9 +1065,7 @@ export default function CoursesPage() {
               </div>
             </div>
           </div>
-
         </TabsContent>
-
       </Tabs>
     </div>
   )
