@@ -58,10 +58,16 @@ public class AuthService {
         // Generar un código de 6 dígitos único
         String token = String.format("%06d", new Random().nextInt(999999));
         
-        // Limpiamos tokens anteriores del usuario
-        passwordResetTokenRepository.findByUsuario(usuario).ifPresent(passwordResetTokenRepository::delete);
+        // Si ya existe un token para este usuario, lo actualizamos en lugar de intentar borrar/insertar
+        // Esto evita errores de integridad (Unique Constraint) si el flush es lento
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByUsuario(usuario)
+                .map(existingToken -> {
+                    existingToken.setToken(token);
+                    existingToken.setExpiryDate(java.time.LocalDateTime.now().plusHours(1));
+                    return existingToken;
+                })
+                .orElse(new PasswordResetToken(token, usuario));
         
-        PasswordResetToken resetToken = new PasswordResetToken(token, usuario);
         passwordResetTokenRepository.save(resetToken);
         
         System.out.println(">>> [DEBUG] CÓDIGO DE RECUPERACIÓN PARA " + email + ": " + token);
