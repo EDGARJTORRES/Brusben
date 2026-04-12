@@ -16,6 +16,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface Categoria {
   catId: number
@@ -163,10 +174,6 @@ export default function CategoriasPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar esta categoría?")) {
-      return
-    }
-
     try {
       const response = await fetch(`http://localhost:8081/api/categorias/${id}`, {
         method: "DELETE",
@@ -301,7 +308,7 @@ export default function CategoriasPage() {
 
                 {/* Acciones Derecha */}
                 <div className="flex items-center gap-1">
-                  <Button
+                   <Button
                     onClick={() => handleOpenModal(categoria)}
                     variant="ghost"
                     size="icon"
@@ -310,25 +317,67 @@ export default function CategoriasPage() {
                   >
                     <Edit2 className="h-4 w-4 text-foreground/70" />
                   </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg hover:bg-rose-500/10 hover:text-rose-700 text-muted-foreground"
+                        title="Eliminar Categoría"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-3xl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="font-black">¿Eliminar Categoría?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Estás a punto de borrar <b>"{categoria.catNombre}"</b>. Esto podría afectar a los cursos asociados.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(categoria.catId)} className="rounded-xl bg-rose-600 font-bold">Eliminar</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   
-                  <Button
-                    onClick={() => toggleEstado(categoria.catId)}
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "h-8 w-8 rounded-lg",
-                      categoria.catEstado === "A" 
-                        ? "hover:bg-red-500/10 hover:text-red-700 text-muted-foreground" 
-                        : "hover:bg-emerald-500/10 hover:text-emerald-700 text-muted-foreground"
-                    )}
-                    title={categoria.catEstado === "A" ? "Desactivar" : "Activar"}
-                  >
-                    {categoria.catEstado === "A" ? (
-                      <X className="h-4 w-4" />
-                    ) : (
-                      <Check className="h-4 w-4" />
-                    )}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "h-8 w-8 rounded-lg",
+                          categoria.catEstado === "A" 
+                            ? "hover:bg-orange-500/10 hover:text-orange-700 text-muted-foreground" 
+                            : "hover:bg-emerald-500/10 hover:text-emerald-700 text-muted-foreground"
+                        )}
+                        title={categoria.catEstado === "A" ? "Desactivar" : "Activar"}
+                      >
+                        {categoria.catEstado === "A" ? (
+                          <X className="h-4 w-4" />
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="rounded-3xl">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="font-black">
+                          {categoria.catEstado === "A" ? "Desactivar Categoría" : "Activar Categoría"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          ¿Seguro que deseas {categoria.catEstado === "A" ? "desactivar" : "activar"} la categoría <b>"{categoria.catNombre}"</b>?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => toggleEstado(categoria.catId)} className="rounded-xl bg-primary font-black">Continuar</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             ))}

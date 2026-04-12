@@ -51,9 +51,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 interface Usuario {
   idUsuario?: number
@@ -136,8 +148,6 @@ export default function UsuariosPage() {
 
   const toggleStatus = async (user: Usuario) => {
     const action = user.activo ? "desactivar" : "reactivar"
-    if (!confirm(`¿Estás seguro de ${action} este usuario?`)) return
-
     try {
       let res;
       if (user.activo) {
@@ -333,17 +343,37 @@ export default function UsuariosPage() {
                             <Edit2 className="h-4 w-4 text-blue-500" /> Editar Datos
                           </DropdownMenuItem>
                           <DropdownMenuSeparator className="my-1" />
-                          <DropdownMenuItem onClick={() => toggleStatus(user)} className="rounded-lg gap-2 font-bold text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer">
-                            {user.activo ? (
-                              <>
-                                <Trash2 className="h-4 w-4" /> Desactivar Usuario
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Reactivar Usuario
-                              </>
-                            )}
-                          </DropdownMenuItem>
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="rounded-lg gap-2 font-bold text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer">
+                                {user.activo ? (
+                                  <>
+                                    <Trash2 className="h-4 w-4" /> Desactivar Usuario
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Reactivar Usuario
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="rounded-3xl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="font-black text-xl">
+                                  {user.activo ? "Confirmar Desactivación" : "Confirmar Reactivación"}
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  ¿Seguro que deseas {user.activo ? "quitar el acceso" : "devolver el acceso"} a <b>{user.nombres}</b>?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => toggleStatus(user)} className="rounded-xl font-black bg-primary">Continuar</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -546,5 +576,3 @@ export default function UsuariosPage() {
     </div>
   )
 }
-
-import { cn } from "@/lib/utils"

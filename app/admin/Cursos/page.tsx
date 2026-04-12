@@ -23,6 +23,17 @@ import {
 import {
   Tabs, TabsContent, TabsList, TabsTrigger
 } from "@/components/ui/tabs"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 
@@ -72,6 +83,8 @@ export default function CoursesPage() {
   const [isLoadingContent, setIsLoadingContent] = useState(false)
   const [newModuleName, setNewModuleName] = useState("")
   const [newForo, setNewForo] = useState({ titulo: "", temaDiscusion: "", descripcion: "" })
+  const [isEditingForo, setIsEditingForo] = useState(false)
+  const [currentForoId, setCurrentForoId] = useState<number | null>(null)
   const [contentTab, setContentTab] = useState("curricula")
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -227,7 +240,6 @@ export default function CoursesPage() {
   }
 
   const deleteCurso = async (id: number) => {
-    if(!confirm("¿Estás seguro de eliminar este curso?")) return
     try {
       const res = await fetch(`http://localhost:8081/api/cursos/${id}`, {
         method: "DELETE"
@@ -343,24 +355,41 @@ export default function CoursesPage() {
        return
     }
     try {
-      const res = await fetch(`http://localhost:8081/api/cursos-contenido/${selectedCourseContent?.idCurso}/foros`, {
-        method: "POST",
+      const url = isEditingForo 
+        ? `http://localhost:8081/api/cursos-contenido/foros/${currentForoId}`
+        : `http://localhost:8081/api/cursos-contenido/${selectedCourseContent?.idCurso}/foros`
+      
+      const res = await fetch(url, {
+        method: isEditingForo ? "PUT" : "POST",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify(newForo)
       })
       if (res.ok) {
         setNewForo({ titulo: "", temaDiscusion: "", descripcion: "" })
+        setIsEditingForo(false)
+        setCurrentForoId(null)
         openContentManager(selectedCourseContent!)
-        toast.success("Foro creado")
+        toast.success(isEditingForo ? "Foro actualizado" : "Foro creado")
       }
-    } catch { toast.error("Error al crear foro") }
+    } catch { toast.error("Error en la operación") }
+  }
+
+  const startEditForo = (foro: any) => {
+    setNewForo({
+      titulo: foro.titulo,
+      temaDiscusion: foro.temaDiscusion,
+      descripcion: foro.descripcion
+    })
+    setIsEditingForo(true)
+    setCurrentForoId(foro.idForo)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const deleteForo = async (id: number) => {
     try {
       await fetch(`http://localhost:8081/api/cursos-contenido/foros/${id}`, { method: "DELETE" })
       openContentManager(selectedCourseContent!)
-      toast.success("Foro eliminado")
+      toast.success("Foro desactivado")
     } catch { toast.error("Error al eliminar") }
   }
 
@@ -447,9 +476,27 @@ export default function CoursesPage() {
                                     <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-10 px-4 font-bold gap-2" onClick={() => addMaterial(modulo.idModulo)}>
                                        <PlusCircle className="h-4 w-4" /> Clase
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl" onClick={() => deleteModulo(modulo.idModulo)}>
-                                       <Trash2 className="h-4 w-4" />
-                                    </Button>
+
+                                    <AlertDialog>
+                                       <AlertDialogTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl">
+                                             <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                       </AlertDialogTrigger>
+                                       <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+                                          <AlertDialogHeader>
+                                             <AlertDialogTitle className="text-2xl font-black">Eliminar Módulo</AlertDialogTitle>
+                                             <AlertDialogDescription className="text-slate-500 font-medium">
+                                                ¿Seguro que deseas eliminar <b>"{modulo.nombre}"</b>? Se borrarán todos los materiales contenidos en él.
+                                             </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                             <AlertDialogCancel className="rounded-2xl font-bold">Cancelar</AlertDialogCancel>
+                                             <AlertDialogAction onClick={() => deleteModulo(modulo.idModulo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Eliminar Módulo</AlertDialogAction>
+                                          </AlertDialogFooter>
+                                       </AlertDialogContent>
+                                    </AlertDialog>
+
                                  </div>
                               </div>
                               <CardContent className="p-6 bg-muted/10">
@@ -470,9 +517,25 @@ export default function CoursesPage() {
                                               <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg" onClick={() => window.open(mat.urlMaterial, '_blank')}>
                                                  <LinkIcon className="h-4 w-4" />
                                               </Button>
-                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg group-hover/mat:opacity-100 transition-opacity" onClick={() => deleteMaterial(mat.idMaterial)}>
-                                                 <Trash2 className="h-4 w-4" />
-                                              </Button>
+                                              
+                                              <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                   <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg group-hover/mat:opacity-100 transition-opacity">
+                                                      <Trash2 className="h-4 w-4" />
+                                                   </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="rounded-3xl">
+                                                   <AlertDialogHeader>
+                                                      <AlertDialogTitle className="font-black">Borrar Recurso</AlertDialogTitle>
+                                                      <AlertDialogDescription>¿Deseas quitar <b>{mat.titulo}</b> de este curso?</AlertDialogDescription>
+                                                   </AlertDialogHeader>
+                                                   <AlertDialogFooter>
+                                                      <AlertDialogCancel className="rounded-xl">Mejor no</AlertDialogCancel>
+                                                      <AlertDialogAction onClick={() => deleteMaterial(mat.idMaterial)} className="rounded-xl bg-destructive font-bold">Sí, borrar</AlertDialogAction>
+                                                   </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                              </AlertDialog>
+
                                            </div>
                                         </div>
                                       ))}
@@ -565,9 +628,32 @@ export default function CoursesPage() {
                                      <span className="text-[10px] text-muted-foreground font-bold">{new Date(foro.fechaCreacion).toLocaleDateString(undefined, { day:'2-digit', month:'long' })}</span>
                                   </div>
                                </div>
-                               <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-rose-500 rounded-xl" onClick={() => deleteForo(foro.idForo)}>
-                                  <Trash2 className="h-5 w-5" />
-                               </Button>
+                               <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-primary rounded-xl" onClick={() => startEditForo(foro)}>
+                                     <Edit className="h-5 w-5" />
+                                  </Button>
+                                  
+                                  <AlertDialog>
+                                     <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-rose-500 rounded-xl">
+                                           <Trash2 className="h-5 w-5" />
+                                        </Button>
+                                     </AlertDialogTrigger>
+                                     <AlertDialogContent className="rounded-3xl shadow-2xl border-none">
+                                        <AlertDialogHeader>
+                                           <AlertDialogTitle className="text-xl font-black">Cerrar Discusión</AlertDialogTitle>
+                                           <AlertDialogDescription className="font-medium">
+                                              ¿Estás seguro de desactivar el foro <b>"{foro.titulo}"</b>? Ya no será visible para los estudiantes.
+                                           </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                           <AlertDialogCancel className="rounded-2xl font-bold">Mantener abierto</AlertDialogCancel>
+                                           <AlertDialogAction onClick={() => deleteForo(foro.idForo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Desactivar Foro</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                     </AlertDialogContent>
+                                  </AlertDialog>
+
+                               </div>
                             </div>
                             <p className="text-sm text-muted-foreground leading-relaxed mb-6">{foro.descripcion}</p>
                             <div className="flex items-center gap-4 pt-6 border-t border-border/40">
@@ -591,11 +677,20 @@ export default function CoursesPage() {
                  <div className="lg:col-span-4">
                     <Card className="bg-card border-border/40  rounded-[40px] p-10 space-y-8 sticky top-24">
                        <div className="space-y-2">
-                          <h3 className="text-2xl font-black text-foreground">Iniciar Debate</h3>
-                          <p className="text-muted-foreground text-sm font-medium">Crea un espacio para resolver dudas y compartir ideas.</p>
+                          <h3 className="text-2xl font-black text-foreground">
+                            {isEditingForo ? "Editar Debate" : "Iniciar Debate"}
+                          </h3>
+                          <p className="text-muted-foreground text-sm font-medium">
+                            {isEditingForo ? "Actualiza los detalles de esta discusión académica." : "Crea un espacio para resolver dudas y compartir ideas."}
+                          </p>
                        </div>
                        
                        <div className="space-y-5">
+                          {isEditingForo && (
+                            <Button variant="outline" className="w-full rounded-xl border-dashed h-10 text-xs font-bold" onClick={() => { setIsEditingForo(false); setNewForo({titulo:"", temaDiscusion:"", descripcion:""}); }}>
+                              Cancelar Edición
+                            </Button>
+                          )}
                           <div className="space-y-2">
                              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Título de la Discusión</label>
                              <Input 
@@ -623,8 +718,8 @@ export default function CoursesPage() {
                                onChange={(e) => setNewForo({...newForo, descripcion: e.target.value})}
                              />
                           </div>
-                          <Button className="w-full h-15 rounded-2xl font-black text-lg shadow-xl shadow-primary/10" onClick={addForo}>
-                             Publicar Foro
+                          <Button className={`w-full h-15 rounded-2xl font-black text-lg shadow-xl ${isEditingForo ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/10' : 'shadow-primary/10'}`} onClick={addForo}>
+                             {isEditingForo ? "Actualizar Foro" : "Publicar Foro"}
                           </Button>
                        </div>
                     </Card>
@@ -658,7 +753,7 @@ export default function CoursesPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
           {/* IZQUIERDA: TABS */}
-          <TabsList className="bg-card p-1 rounded-xl h-12">
+          <TabsList className="bg-card p-1 rounded-xl h-12 border-1 border-gray-200">
             <TabsTrigger value="listado" className="px-6 font-bold" onClick={resetForm}>
               Listado
             </TabsTrigger>
@@ -749,21 +844,65 @@ export default function CoursesPage() {
                           Editar
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem 
-                          onClick={() => toggleStatus(course)}
-                          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition cursor-pointer"
-                        >
-                          <LayoutGrid className="h-4 w-4" />
-                          {(course.estCurso === "A" || course.estCurso === true) ? "Desactivar" : "Reactivar"}
-                        </DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem 
+                              onSelect={(e) => e.preventDefault()}
+                              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition cursor-pointer"
+                            >
+                              <LayoutGrid className="h-4 w-4" />
+                              {(course.estCurso === "A" || course.estCurso === true) ? "Desactivar" : "Reactivar"}
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+                             <AlertDialogHeader>
+                               <AlertDialogTitle className="text-2xl font-black">
+                                 {course.estCurso === "A" || course.estCurso === true ? "Confirmar Desactivación" : "Confirmar Activación"}
+                               </AlertDialogTitle>
+                               <AlertDialogDescription className="font-medium text-slate-500">
+                                 ¿Estás seguro de que deseas {(course.estCurso === "A" || course.estCurso === true) ? "desactivar" : "reactivar"} el curso <b>"{course.titulo}"</b>?
+                               </AlertDialogDescription>
+                             </AlertDialogHeader>
+                             <AlertDialogFooter>
+                               <AlertDialogCancel className="rounded-2xl font-bold">Cancelar</AlertDialogCancel>
+                               <AlertDialogAction 
+                                 onClick={() => toggleStatus(course)} 
+                                 className="rounded-2xl font-black bg-primary"
+                               >
+                                 Continuar
+                               </AlertDialogAction>
+                             </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                         
-                        <DropdownMenuItem 
-                          onClick={() => deleteCurso(course.idCurso)}
-                          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                        >
-                          <Trash className="h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem 
+                              onSelect={(e) => e.preventDefault()}
+                              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                            >
+                              <Trash className="h-4 w-4" />
+                              Eliminar Curso
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-2xl font-black text-slate-900">¿Estás completamente seguro?</AlertDialogTitle>
+                              <AlertDialogDescription className="text-slate-500 font-medium leading-relaxed">
+                                Esta acción eliminará permanentemente el curso <b>"{course.titulo}"</b> y todo su contenido asociado (módulos, materiales y foros). Esta acción no se puede deshacer.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="mt-6">
+                              <AlertDialogCancel className="rounded-2xl h-12 px-6 font-bold border-2">Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => deleteCurso(course.idCurso)}
+                                className="rounded-2xl h-12 px-6 font-black bg-rose-500 hover:bg-rose-600 text-white border-0 shadow-lg shadow-rose-500/20"
+                              >
+                                Sí, eliminar curso
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
