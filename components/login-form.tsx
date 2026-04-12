@@ -7,11 +7,17 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
+import { toast } from "sonner"
+
+type ViewMode = "login" | "forgot" | "reset"
 
 export function LoginForm() {
+  const [view, setView] = useState<ViewMode>("login")
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [recoveryToken, setRecoveryToken] = useState("")
+  const [newPassword, setNewPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { setUser } = useAuth()
@@ -83,8 +89,167 @@ export function LoginForm() {
     }
   }
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) {
+      setError("Por favor, ingresa tu correo electrónico.")
+      return
+    }
+    setIsLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`http://localhost:8081/api/auth/forgot-password?email=${email}`, {
+        method: "POST"
+      })
+      const data = await res.json()
+      if (res.ok) {
+        toast.info(`Código enviado (Simulación): ${data.token}`, { duration: 10000 })
+        setView("reset")
+      } else {
+        setError(data.message)
+      }
+    } catch {
+      setError("Error al solicitar recuperación.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!recoveryToken || !newPassword) {
+      setError("Completa todos los campos.")
+      return
+    }
+    setIsLoading(true)
+    setError(null)
+    try {
+      const res = await fetch("http://localhost:8081/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: recoveryToken, newPassword })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        toast.success("Contraseña actualizada. Ya puedes iniciar sesión.")
+        setView("login")
+      } else {
+        setError(data.message)
+      }
+    } catch {
+      setError("Error al actualizar contraseña.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (view === "forgot") {
+    return (
+      <form onSubmit={handleForgotPassword} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-bold text-foreground">Recuperar Acceso</h3>
+          <p className="text-sm text-muted-foreground mt-1">Ingresa tu correo para recibir un código de seguridad.</p>
+        </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="forgot-email">Correo electrónico</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="forgot-email"
+              type="email"
+              placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pl-10 h-12 bg-secondary/50"
+              required
+            />
+          </div>
+        </div>
+
+        <Button disabled={isLoading} className="w-full h-12 font-bold transition-all">
+          {isLoading ? "Enviando..." : "Enviar Código de Recuperación"}
+        </Button>
+
+        <button
+          type="button"
+          onClick={() => { setView("login"); setError(null); }}
+          className="w-full text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+        >
+          Volver al inicio de sesión
+        </button>
+      </form>
+    )
+  }
+
+  if (view === "reset") {
+    return (
+      <form onSubmit={handleResetPassword} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-bold text-foreground">Nueva Contraseña</h3>
+          <p className="text-sm text-muted-foreground mt-1">Ingresa el código enviado y tu nueva clave.</p>
+        </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="token">Código de 6 dígitos</Label>
+          <Input
+            id="token"
+            placeholder="000000"
+            value={recoveryToken}
+            onChange={(e) => setRecoveryToken(e.target.value)}
+            className="h-12 bg-secondary/50 font-mono text-center text-lg tracking-widest"
+            maxLength={6}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="new-password">Nueva Contraseña</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="new-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="pl-10 h-12 bg-secondary/50"
+              required
+            />
+          </div>
+        </div>
+
+        <Button disabled={isLoading} className="w-full h-12 font-black">
+          {isLoading ? "Actualizando..." : "Restablecer Contraseña"}
+        </Button>
+
+        <button
+          type="button"
+          onClick={() => { setView("login"); setError(null); }}
+          className="w-full text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+        >
+          Cancelar
+        </button>
+      </form>
+    )
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in duration-500">
       {error && (
         <Alert
           variant={error.includes("exitoso") ? "default" : "destructive"}
@@ -158,12 +323,13 @@ export function LoginForm() {
           />
           <span className="text-muted-foreground">Recordarme</span>
         </label>
-        <a
-          href="#"
+        <button
+          type="button"
+          onClick={() => { setView("forgot"); setError(null); }}
           className="text-primary hover:text-primary/80 font-medium transition-colors"
         >
           ¿Olvidaste tu contraseña?
-        </a>
+        </button>
       </div>
 
       <Button
