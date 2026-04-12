@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { 
   Plus, Search, MoreVertical, BookOpen, LayoutGrid,
-  Edit, Trash, ChevronLeft, ChevronRight
+  Edit, Trash, ChevronLeft, ChevronRight, FileText
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -263,9 +263,9 @@ export default function CoursesPage() {
       </div>
       
       {/* TOOLBAR SUPERIOR */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 
           {/* IZQUIERDA: TABS */}
           <TabsList className="bg-slate-100 p-1 rounded-xl h-12">
@@ -280,7 +280,7 @@ export default function CoursesPage() {
           {/* DERECHA: BUSCADOR + SELECT */}
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
 
-            <div className="relative w-full sm:w-72">
+            <div className="relative w-full sm:w-120">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
               <Input
                 placeholder="Buscar cursos..."
@@ -296,16 +296,19 @@ export default function CoursesPage() {
               value={categoriaFilter}
             >
               <option value="all">Todas las categorías</option>
-              {categorias.map(cat => (
-                <option key={cat.catId} value={cat.catNombre}>{cat.catNombre}</option>
-              ))}
+              {categorias
+                .filter(cat => cat.catEstado === "A" || cat.catEstado === true)
+                .map(cat => (
+                  <option key={cat.catId} value={cat.catNombre}>{cat.catNombre}</option>
+                ))
+              }
             </select>
 
           </div>
 
         </div>
 
-        <TabsContent value="listado">
+        <TabsContent value="listado" className="p-0 border-none outline-none">
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 pb-10">
             {paginatedCourses.map((course: any) => (
@@ -470,139 +473,207 @@ export default function CoursesPage() {
 
         </TabsContent>
 
-        <TabsContent value="nuevo">
+        <TabsContent value="nuevo" className="p-0 border-none outline-none">
 
-          <Card className="p-8 rounded-[40px] border-0 shadow-2xl bg-white  mx-auto overflow-hidden relative bg-card">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl" />
-            
-            <CardHeader className="relative px-0 pt-0 pb-8">
-              <CardTitle className="text-3xl font-black">{isEditing ? "Actualizar Curso" : "Crear Nuevo Curso"}</CardTitle>
-              <CardDescription className="text-base">Completa los detalles para publicar el curso académico</CardDescription>
-            </CardHeader>
-
-            <CardContent className="px-0">
-              <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="mx-auto py-0">
+            <div className=" border-none shadow-2xl bg-card overflow-hidden">
+              <div className="bg-slate-900 p-5 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-10 h-20 bg-primary/20 rounded-full -mr-10 -mt-10 blur-3xl opacity-50" />
+                <div className="absolute bottom-0 left-0 w-20 h-20 bg-emerald-500/10 rounded-full -ml-10 -mb-10 blur-2xl opacity-30" />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Título */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold ml-2">Título del Curso</label>
-                    <Input 
-                      name="titulo" 
-                      placeholder="Ej. Master en React & Next.js" 
-                      className="h-14 rounded-2xl bg-slate-50 border-0 focus:ring-2 ring-primary/20"
-                      value={formData.titulo}
-                      onChange={handleChange}
-                      required
-                    />
+                <div className="relative z-10 flex items-center gap-6">
+                  <div className="h-20 w-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
+                    <BookOpen className="h-10 w-10 text-primary" />
                   </div>
-
-                  {/* Precio */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold ml-2">Precio (S/.)</label>
-                    <Input 
-                      name="precioCurso" 
-                      type="number" 
-                      step="0.01" 
-                      placeholder="0.00" 
-                      className="h-14 rounded-2xl bg-slate-50 border-0 focus:ring-2 ring-primary/20"
-                      value={formData.precioCurso}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  {/* Categoría */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold ml-2">Categoría</label>
-                    <select
-                      name="catId"
-                      className="w-full h-14 rounded-2xl bg-slate-50 border-0 px-4 focus:ring-2 ring-primary/20 outline-none"
-                      value={formData.catId || ""}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Seleccionar Categoría</option>
-                      {categorias.map(cat => (
-                        <option key={cat.catId} value={cat.catId}>{cat.catNombre}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Docente */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold ml-2">Docente Asignado</label>
-                    <select
-                      name="idDocente"
-                      className="w-full h-14 rounded-2xl bg-slate-50 border-0 px-4 focus:ring-2 ring-primary/20 outline-none"
-                      value={formData.idDocente || ""}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Seleccionar Docente</option>
-                      {docentes.map(doc => (
-                        <option key={doc.idUsuario} value={doc.idUsuario}>{doc.nombres} {doc.apellidos}</option>
-                      ))}
-                    </select>
+                  <div>
+                    <h2 className="text-2xl font-black tracking-tight">{isEditing ? "Edición Maestra" : "Nueva Publicación"}</h2>
+                    <p className="text-slate-400 font-medium text-lg mt-1">
+                      {isEditing ? `Modificando: ${formData.titulo}` : "Crea una experiencia educativa de alto impacto"}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                {/* Descripción */}
-                <div className="space-y-2">
-                  <label className="text-sm font-bold ml-2">Descripción Completa</label>
-                  <textarea 
-                    name="descripcion" 
-                    placeholder="Describe los objetivos y contenido del curso..." 
-                    className="w-full h-32 p-4 rounded-2xl bg-slate-50 border-0 focus:ring-2 ring-primary/20 outline-none resize-none"
-                    value={formData.descripcion}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+              <div className="p-10">
+                <form onSubmit={handleSubmit} className="space-y-12">
+                  
+                  {/* SECCIÓN 1: GENERAL */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800">Información General</h3>
+                    </div>
 
-                {/* Subida de Imagen */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold ml-2">Portada del Curso</label>
-                    <div className="relative group overflow-hidden rounded-2xl">
-                      <Input 
-                        type="file" 
-                        accept="image/*"
-                        className="h-14 rounded-2xl bg-slate-50 border-0 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary file:text-white hover:file:bg-primary/80 cursor-pointer"
-                        onChange={handleFileChange}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Nombre del Curso</label>
+                        <div className="relative group">
+                           <Input 
+                            name="titulo" 
+                            placeholder="Ej. Arquitectura Frontend Pro" 
+                            className="h-14 rounded-2xl bg-slate-50 border-0 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-semibold px-4"
+                            value={formData.titulo}
+                            onChange={handleChange}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Costo (S/.)</label>
+                        <div className="relative group">
+                          <Input 
+                            name="precioCurso" 
+                            type="number" 
+                            step="0.01" 
+                            placeholder="0.00" 
+                            className="h-14 rounded-2xl bg-slate-50 border-0 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-bold px-4 text-lg"
+                            value={formData.precioCurso}
+                            onChange={handleChange}
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Descripción del Programa</label>
+                      <textarea 
+                        name="descripcion" 
+                        placeholder="Define los objetivos, temario y beneficios..." 
+                        className="w-full h-32 p-5 rounded-2xl bg-slate-50 border-0 focus:ring-2 ring-primary/20 outline-none resize-none transition-all focus:bg-white font-medium leading-relaxed shadow-inner"
+                        value={formData.descripcion}
+                        onChange={handleChange}
+                        required
                       />
                     </div>
                   </div>
-                  
-                  {formData.imgCurso && (
-                    <div className="h-14 flex items-center gap-4 bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                      <div className="h-8 w-8 rounded-lg overflow-hidden shrink-0">
-                        <img src={getImageUrl(formData.imgCurso)} className="w-full h-full object-cover" />
+
+                  {/* SECCIÓN 2: ACADÉMICO */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                      <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                        <LayoutGrid className="h-4 w-4 text-amber-600" />
                       </div>
-                      <p className="text-xs font-bold text-emerald-700 truncate">Imagen: {formData.imgCurso.split('/').pop()}</p>
+                      <h3 className="text-xl font-bold text-slate-800">Categorización y Docencia</h3>
                     </div>
-                  )}
-                </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button 
-                    type="button" 
-                    className="flex-1 h-14 rounded-2xl font-bold border border-slate-200 hover:bg-slate-50 transition-colors"
-                    onClick={() => { resetForm(); setActiveTab("listado"); }}
-                  >
-                    Cancelar
-                  </button>
-                  <Button 
-                    type="submit" 
-                    className="flex-[2] h-14 rounded-2xl font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200"
-                  >
-                    {isEditing ? "Guardar Cambios" : "Publicar Curso"}
-                  </Button>
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Categoría Académica</label>
+                        <select
+                          name="catId"
+                          className="w-full h-14 rounded-2xl bg-slate-50 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-slate-600 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
+                          value={formData.catId || ""}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value="">Seleccionar Categoría</option>
+                          {categorias
+                            .filter(cat => cat.catEstado === "A" || cat.catEstado === true)
+                            .map(cat => (
+                              <option key={cat.catId} value={cat.catId}>{cat.catNombre}</option>
+                            ))
+                          }
+                        </select>
+                      </div>
 
-              </form>
-            </CardContent>
-          </Card>
+                      <div className="space-y-3">
+                        <label className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Especialista / Docente</label>
+                        <select
+                          name="idDocente"
+                          className="w-full h-14 rounded-2xl bg-slate-50 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-slate-600 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
+                          value={formData.idDocente || ""}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value="">Asignar Docente</option>
+                          {docentes
+                            .filter(doc => doc.activo === true)
+                            .map(doc => (
+                              <option key={doc.idUsuario} value={doc.idUsuario}>{doc.nombres}</option>
+                            ))
+                          }
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECCIÓN 3: MULTIMEDIA */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                      <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <LayoutGrid className="h-4 w-4 text-emerald-600" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800">Identidad Visual</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                      <div className="space-y-4">
+                        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[32px] p-8 text-center hover:border-primary/40 hover:bg-primary/5 transition-all group relative">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                          />
+                          <div className="space-y-3">
+                            <div className="h-16 w-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                              <Plus className="h-8 w-8 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-black text-slate-700">Subir Portada</p>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">PNG, JPG hasta 5MB</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="relative group h-48 rounded-[32px] overflow-hidden border-4 border-white bg-slate-100 flex items-center justify-center">
+                        {formData.imgCurso ? (
+                          <img 
+                            src={getImageUrl(formData.imgCurso)} 
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-slate-300">
+                             <BookOpen className="h-12 w-12 opacity-20" />
+                             <p className="text-[10px] font-black uppercase tracking-[0.2em]">Vista previa</p>
+                          </div>
+                        )}
+                        {formData.imgCurso && (
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                             <p className="text-white text-xs font-black uppercase tracking-widest">Cambiar Imagen</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      className="h-16 rounded-2xl font-bold px-10 border-2 hover:bg-slate-50"
+                      onClick={() => { resetForm(); setActiveTab("listado"); }}
+                    >
+                      Descartar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="h-16 rounded-2xl font-bold px-10 bg-slate-900 text-white hover:bg-slate-800 shadow-2xl shadow-slate-200 flex-1 text-lg group"
+                    >
+                      {isEditing ? "Guardar Cambios" : "Publicar Ahora"}
+                      <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
+
+                </form>
+              </div>
+            </div>
+          </div>
 
         </TabsContent>
 
