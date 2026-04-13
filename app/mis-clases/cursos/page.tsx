@@ -97,10 +97,10 @@ export default function StudentCoursesPage() {
         </div>
       </div>
 
-      <Card className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-white/70 backdrop-blur-xl p-2 px-6">
+      <Card className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-card backdrop-blur-xl p-2 px-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between py-4">
           <Tabs defaultValue="progress" className="w-full md:w-auto">
-            <TabsList className="bg-slate-100/50 p-1 rounded-xl h-12">
+            <TabsList className="bg-card p-1 rounded-xl h-12">
               <TabsTrigger value="all" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">TODOS</TabsTrigger>
               <TabsTrigger value="progress" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">EN PROGRESO</TabsTrigger>
               <TabsTrigger value="completed" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">COMPLETADOS</TabsTrigger>
@@ -152,72 +152,100 @@ export default function StudentCoursesPage() {
              </Button>
           </div>
         ) : courses.map((course) => (
-          <Card key={course.idMatricula || course.idCurso} className="overflow-hidden border-0 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group rounded-3xl bg-card ring-1 ring-slate-100">
-            <div className="relative h-56 overflow-hidden">
+          <Card key={course.idPago || course.idCurso} className="p-0 overflow-hidden border-0 group rounded-3xl bg-card ring-1 ring-slate-100 dark:ring-slate-800 flex flex-col h-full">
+            
+            {/* Imagen con overlay */}
+            <div className="relative h-48 overflow-hidden">
               <img 
-                src={course.imgCurso?.startsWith("http") ? course.imgCurso : "/images/course-marketing.jpg"} 
+                src={"/cursos/" + course.imgCurso} 
                 alt={course.titulo}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/10 to-transparent" />
               
-              <div className="absolute top-4 left-4">
+              {/* Badge de estado */}
+              <div className="absolute top-3 left-3">
                 <Badge 
-                  className={`rounded-full px-4 py-1.5 border-0 font-bold tracking-tight text-[10px] shadow-lg flex items-center gap-1.5 ${
+                  className={cn(
+                    "rounded-full px-3 py-1 border-0 font-bold text-[10px] shadow-lg flex items-center gap-1.5 backdrop-blur-sm",
                     course.status === "Completado"
-                      ? "bg-emerald-500 text-white"
-                      : "bg-blue-500 text-white"
-                  }`}
+                      ? "bg-emerald-500/90 text-white"
+                      : "bg-blue-500/90 text-white"
+                  )}
                 >
                   {course.status === "Completado" && <CheckCircle2 className="h-3 w-3" />}
                   {course.status?.toUpperCase() || "EN PROGRESO"}
                 </Badge>
               </div>
+
+              {/* Badge categoría */}
+              {course.categoria && (
+                <div className="absolute top-3 right-3">
+                  <Badge className="rounded-full px-3 py-1 border-0 font-bold text-[10px] bg-white/20 text-white backdrop-blur-sm shadow-lg">
+                    {course.categoria}
+                  </Badge>
+                </div>
+              )}
+
+              {/* Título sobre la imagen */}
+              <div className="absolute bottom-0 left-0 right-0 p-5">
+                <h3 className="text-lg font-extrabold text-white leading-tight line-clamp-2 drop-shadow-lg">
+                  {course.titulo}
+                </h3>
+              </div>
             </div>
 
-            <CardHeader className="p-6 pb-2">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge className="rounded-lg text-[10px] font-bold bg-violet-50 text-violet-600 ring-1 ring-violet-100 border-0 h-6 px-2">
-                  {course.categoria?.toUpperCase() || "ACADÉMICO"}
-                </Badge>
-              </div>
-              <CardTitle className="text-1xl font-extrabold tracking-tight text-foreground line-clamp-2 min-h-[48px]">
-                {course.titulo}
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="px-6 py-4">
-              <div className="mt-2 flex flex-col gap-2">
+            {/* Contenido */}
+            <CardContent className="px-5 py-4 flex-1 flex flex-col gap-4">
+              
+              {/* Barra de progreso */}
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PROGRESO DEL CURSO</span>
-                  <span className="text-[10px] font-bold text-slate-900">{course.progreso || 0}%</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Progreso</span>
+                  <span className="text-xs font-black text-foreground">{course.progreso || 0}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div 
                     className={cn(
-                      "h-full rounded-full transition-all duration-1000",
-                      course.progreso === 100 ? "bg-emerald-500" : "bg-primary"
+                      "h-full rounded-full transition-all duration-1000 ease-out",
+                      course.progreso === 100 
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-400" 
+                        : "bg-gradient-to-r from-primary to-blue-400"
                     )}
                     style={{ width: `${course.progreso || 0}%` }}
                   />
                 </div>
               </div>
+
+              {/* Info extra */}
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <MonitorPlay className="h-3.5 w-3.5" />
+                  <span className="text-[11px] font-medium">Clases</span>
+                </div>
+                <div className="h-3 w-px bg-slate-200 dark:bg-slate-700" />
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span className="text-[11px] font-medium">En curso</span>
+                </div>
+              </div>
             </CardContent>
 
-            <CardFooter className="px-6 py-6 pt-2">
+            {/* Footer con botón */}
+            <CardFooter className="px-5 pb-5 pt-0">
               <Button 
                 className={cn(
-                  "w-full rounded-xl h-12 font-bold shadow-xl transition-all duration-200 gap-2 flex items-center justify-center",
+                  "w-full rounded-2xl h-12 font-bold shadow-lg transition-all duration-300 gap-2 flex items-center justify-center group/btn",
                   course.status === "Completado" 
-                    ? "bg-slate-100 text-slate-900 hover:bg-slate-200" 
-                    : "bg-primary text-white hover:bg-primary/90"
+                    ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 shadow-emerald-100" 
+                    : "bg-primary text-white hover:bg-primary/90 "
                 )}
                 onClick={() => router.push(`/clase/${course.idCurso}`)}
               >
                 {course.status === "Completado" ? (
-                  <>Ver Certificado <Award className="h-4 w-4" /></>
+                  <>Ver Certificado <Award className="h-4 w-4 group-hover/btn:rotate-12 transition-transform" /></>
                 ) : (
-                  <>Continuar Clase <PlayCircle className="h-4 w-4" /></>
+                  <>Continuar Clase <PlayCircle className="h-4 w-4 group-hover/btn:translate-x-0.5 transition-transform" /></>
                 )}
               </Button>
             </CardFooter>

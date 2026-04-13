@@ -1,10 +1,8 @@
 package com.brusben.controller;
 
-import com.brusben.entity.Matricula;
 import com.brusben.entity.Pago;
 import com.brusben.entity.Usuario;
 import com.brusben.entity.Curso;
-import com.brusben.repository.MatriculaRepository;
 import com.brusben.repository.PagoRepository;
 import com.brusben.repository.UsuarioRepository;
 import com.brusben.repository.CursoRepository;
@@ -28,9 +26,6 @@ public class PagoController {
     private PagoRepository pagoRepository;
 
     @Autowired
-    private MatriculaRepository matriculaRepository;
-
-    @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired
@@ -41,7 +36,7 @@ public class PagoController {
 
     @GetMapping
     public List<Map<String, Object>> listarPagos() {
-        return pagoRepository.findAll().stream().map(p -> {
+        return pagoRepository.findAllByOrderByIdPagoDesc().stream().map(p -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("idPago", p.getIdPago());
             map.put("student", p.getUsuario().getNombres());
@@ -55,13 +50,14 @@ public class PagoController {
     }
 
     @PostMapping("/registrar")
-    public ResponseEntity<?> registrarPagoEInscribir(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> registrarPago(@RequestBody Map<String, Object> payload) {
         try {
             Integer idUsuario = Integer.parseInt(payload.get("idUsuario").toString());
             Integer idCurso = Integer.parseInt(payload.get("idCurso").toString());
             Double monto = Double.valueOf(payload.get("monto").toString());
             String metodo = (String) payload.get("metodoPago");
-            String operacion = (String) payload.get("nroOperacion");
+            String operacion = payload.get("nroOperacion") != null ? payload.get("nroOperacion").toString() : null;
+            String estado = payload.get("estado") != null ? payload.get("estado").toString() : "COMPLETADO";
 
             Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             Curso curso = cursoRepository.findById(idCurso).orElseThrow(() -> new RuntimeException("Curso no encontrado"));
@@ -76,7 +72,7 @@ public class PagoController {
                         return estudianteRepository.save(nuevo);
                     });
 
-            // 1. Registrar Pago
+            // Registrar Pago
             Pago pago = new Pago();
             pago.setUsuario(usuario);
             pago.setCurso(curso);
@@ -84,39 +80,49 @@ public class PagoController {
             pago.setFechaPago(LocalDateTime.now());
             pago.setMetodoPago(metodo);
             pago.setNroOperacion(operacion);
-            pago.setEstado("COMPLETADO");
+            pago.setEstado(estado);
             pagoRepository.save(pago);
 
-            // 2. Crear Matrícula (Solo si no está ya matriculado)
-            if (matriculaRepository.findByUsuarioAndCurso(usuario, curso).isEmpty()) {
-                Matricula matricula = new Matricula();
-                matricula.setUsuario(usuario);
-                matricula.setEstudiante(estudiante); // <--- AHORA SE SETEA EL ESTUDIANTE
-                matricula.setCurso(curso);
-                matricula.setFechaMatricula(LocalDateTime.now());
-                matricula.setEstado("ACTIVA");
-                matriculaRepository.save(matricula);
-            }
-
-            return ResponseEntity.ok(Map.of("message", "Pago registrado y matrícula activa"));
+            return ResponseEntity.ok(Map.of("message", "Pago registrado exitosamente"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
     
+    @PutMapping("/{idPago}")
+    public ResponseEntity<?> actualizarEstadoPago(@PathVariable Integer idPago, @RequestBody Map<String, Object> payload) {
+        try {
+            Pago pago = pagoRepository.findById(idPago).orElseThrow(() -> new RuntimeException("Pago no encontrado"));
+            
+            if (payload.containsKey("status")) {
+                pago.setEstado(payload.get("status").toString());
+            } else if (payload.containsKey("estadoPago")) {
+                pago.setEstado(payload.get("estadoPago").toString());
+            }
+            
+            pagoRepository.save(pago);
+            return ResponseEntity.ok(Map.of("message", "Estado actualizado correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/usuario/{idUsuario}")
     public List<Map<String, Object>> listarCursosUsuario(@PathVariable Integer idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return matriculaRepository.findByUsuario(usuario).stream().map(m -> {
-             Map<String, Object> map = new java.util.HashMap<>();
-             map.put("idMatricula", m.getIdMatricula());
-             map.put("idCurso", m.getCurso().getIdCurso());
-             map.put("titulo", m.getCurso().getTitulo());
-             map.put("imgCurso", m.getCurso().getImgCurso());
-             map.put("categoria", m.getCurso().getCategoria() != null ? m.getCurso().getCategoria().getCatNombre() : "");
-             map.put("progreso", 0); // Placeholder
-             map.put("status", "En Progreso");
-             return map;
-        }).collect(Collectors.toList());
+        // Ahora usa la tabla pagos en vez de matriculas
+        return pagoRepository.findAll().stream()
+                .filter(p -> p.getUsuario().getIdUsuario().equals(idUsuario) && "COMPLETADO".equals(p.getEstado()))
+                .map(p -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("idPago", p.getIdPago());
+                    map.put("idCurso", p.getCurso().getIdCurso());
+                    map.put("titulo", p.getCurso().getTitulo());
+                    map.put("imgCurso", p.getCurso().getImgCurso());
+                    map.put("categoria", p.getCurso().getCategoria() != null ? p.getCurso().getCategoria().getCatNombre() : "");
+                    map.put("progreso", 0);
+                    map.put("status", "En Progreso");
+                    return map;
+                }).collect(Collectors.toList());
     }
 }
