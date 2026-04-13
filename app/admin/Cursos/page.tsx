@@ -6,7 +6,7 @@ import {
   Plus, Search, MoreVertical, BookOpen, LayoutGrid,
   Edit, Trash, ChevronLeft, ChevronRight, FileText,
   GripVertical, Paperclip, MessageSquare, PlusCircle, Trash2,
-  Video, Link as LinkIcon, File, ArrowLeft
+  Video, Link as LinkIcon, File, ArrowLeft,X
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -1134,17 +1134,17 @@ export default function CoursesPage() {
 
           <div className="mx-auto py-0">
             <div className=" border-none shadow-2xl bg-card overflow-hidden">
-              <div className="bg-slate-900 p-5 text-white relative overflow-hidden">
+              <div className="bg-slate-900 p-4 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-10 h-20 bg-primary/20 rounded-full -mr-10 -mt-10 blur-3xl opacity-50" />
                 <div className="absolute bottom-0 left-0 w-20 h-20 bg-emerald-500/10 rounded-full -ml-10 -mb-10 blur-2xl opacity-30" />
                 
-                <div className="relative z-10 flex items-center gap-6">
-                  <div className="h-20 w-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
+                <div className="relative z-6 flex items-center gap-6">
+                  <div className="h-15 w-15 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
                     <BookOpen className="h-10 w-10 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black tracking-tight">{isEditing ? "Edición Maestra" : "Nueva Publicación"}</h3>
-                    <p className="text-slate-400 font-medium text-lg mt-1">
+                    <h4 className="text-2xl font-black tracking-tight">{isEditing ? "Edición Maestra" : "Nueva Publicación"}</h4>
+                    <p className="text-slate-400 font-medium text-md mt-1">
                       {isEditing ? `Modificando: ${formData.titulo}` : "Crea una experiencia educativa de alto impacto"}
                     </p>
                   </div>
@@ -1288,7 +1288,7 @@ export default function CoursesPage() {
                         </div>
                       </div>
                       
-                      <div className="relative group h-48 rounded-[32px] overflow-hidden border-4 border-background bg-muted/30 flex items-center justify-center">
+                      <div className="relative group h-48 rounded-[32px] overflow-hidden border-4 border-background bg-muted/30 flex items-center justify-center shadow-xl shadow-muted">
                         {formData.imgCurso ? (
                           <img 
                             src={getImageUrl(formData.imgCurso)} 
@@ -1296,7 +1296,7 @@ export default function CoursesPage() {
                           />
                         ) : (
                           <div className="flex flex-col items-center gap-2 text-muted-foreground/30">
-                             <BookOpen className="h-12 w-12 opacity-20" />
+                             <BookOpen className="h-12 w-12 opacity-100" />
                              <p className="text-[10px] font-black uppercase tracking-[0.2em]">Vista previa</p>
                           </div>
                         )}
@@ -1316,11 +1316,11 @@ export default function CoursesPage() {
                       className="h-16 rounded-2xl font-bold px-10 border-2 hover:bg-muted/50"
                       onClick={() => { resetForm(); setActiveTab("listado"); }}
                     >
-                      Descartar
+                     <X className="h-5 w-5" /> Cancelar 
                     </Button>
                     <Button 
                       type="submit" 
-                      className="h-16 rounded-2xl font-bold px-10 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 text-lg group shadow-xl shadow-primary/10"
+                      className="h-16 rounded-2xl font-bold px-10 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 text-lg group shadow-xl"
                     >
                       {isEditing ? "Guardar Cambios" : "Publicar Ahora"}
                       <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

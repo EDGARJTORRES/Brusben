@@ -41,7 +41,7 @@ export default function LoginPage() {
 
             {/* Title Column */}
             <div className="flex flex-col">
-              <span className="text-2xl font-bold tracking-tight text-white">Brusben</span>
+              <span className="text-2xl font-bold tracking-tight text-white">Brusben E.I.R.L</span>
               <p className="text-white/60 text-sm">Aula Virtual</p>
             </div>
           </div>
