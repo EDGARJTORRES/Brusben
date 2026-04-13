@@ -34,6 +34,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 
@@ -86,6 +92,12 @@ export default function CoursesPage() {
   const [isEditingForo, setIsEditingForo] = useState(false)
   const [currentForoId, setCurrentForoId] = useState<number | null>(null)
   const [contentTab, setContentTab] = useState("curricula")
+
+  // --- APORTES STATE ---
+  const [aportes, setAportes] = useState<any[]>([])
+  const [isAportesOpen, setIsAportesOpen] = useState(false)
+  const [activeForoId, setActiveForoId] = useState<number | null>(null)
+  const [newAporte, setNewAporte] = useState("")
 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 9
@@ -393,6 +405,58 @@ export default function CoursesPage() {
     } catch { toast.error("Error al eliminar") }
   }
 
+  const openAportes = async (foro: any) => {
+    setActiveForoId(foro.idForo)
+    setIsAportesOpen(true)
+    fetchAportes(foro.idForo)
+  }
+
+  const fetchAportes = async (idForo: number) => {
+    try {
+      const res = await fetch(`http://localhost:8081/api/cursos-contenido/foros/${idForo}/aportes`)
+      if (res.ok) {
+         setAportes(await res.json())
+      } else {
+         setAportes([])
+      }
+    } catch {
+      setAportes([])
+    }
+  }
+
+  const handleAddAporte = async () => {
+    if(!newAporte.trim() || !activeForoId) return
+    try {
+      // Usaremos idUsuario 1 por defecto al simular que somos el admin
+      const res = await fetch(`http://localhost:8081/api/cursos-contenido/foros/${activeForoId}/aportes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensaje: newAporte, usuario: { idUsuario: 1 } })
+      })
+      if(res.ok) {
+        setNewAporte("")
+        fetchAportes(activeForoId)
+        toast.success("Aporte publicado")
+      } else {
+        toast.error("Error al publicar")
+      }
+    } catch {
+      toast.error("Error de conexión")
+    }
+  }
+  
+  const handleDeleteAporte = async (idAporte: number) => {
+     try {
+        const res = await fetch(`http://localhost:8081/api/cursos-contenido/aportes/${idAporte}`, { method: "DELETE" })
+        if(res.ok && activeForoId) {
+           fetchAportes(activeForoId)
+           toast.success("Aporte eliminado")
+        }
+     } catch {
+        toast.error("Error al eliminar")
+     }
+  }
+
   if (viewMode === "content" && selectedCourseContent) {
     return (
       <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
@@ -619,7 +683,7 @@ export default function CoursesPage() {
 
                     <div className="grid gap-6">
                        {contentForos.map((foro: any) => (
-                         <Card key={foro.idForo} className="border-border/40 shadow-sm rounded-[32px] p-8 bg-card hover:shadow-xl transition-all group border hover:border-primary/20">
+                         <Card key={foro.idForo} className="border-border/40  rounded-[32px] p-8 bg-card  transition-all group border ">
                             <div className="flex justify-between items-start mb-4">
                                <div className="space-y-1">
                                   <h4 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{foro.titulo}</h4>
@@ -656,11 +720,16 @@ export default function CoursesPage() {
                                </div>
                             </div>
                             <p className="text-sm text-muted-foreground leading-relaxed mb-6">{foro.descripcion}</p>
-                            <div className="flex items-center gap-4 pt-6 border-t border-border/40">
-                               <div className="flex -space-x-2">
-                                  {[1,2,3].map(i => <div key={i} className="h-7 w-7 rounded-full border-2 border-background bg-muted text-[8px] flex items-center justify-center font-bold">U</div>)}
+                            <div className="flex items-center justify-between pt-6 border-t border-border/40">
+                               <div className="flex items-center gap-4">
+                                 <div className="flex -space-x-2">
+                                    {[1,2,3].map(i => <div key={i} className="h-7 w-7 rounded-full border-2 border-background bg-muted text-[8px] flex items-center justify-center font-bold">U</div>)}
+                                 </div>
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estudiantes activos</span>
                                </div>
-                               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Más de 20 estudiantes conversando</span>
+                               <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 bg-card hover:bg-primary/10 hover:text-primary transition-colors text-xs" onClick={() => openAportes(foro)}>
+                                  Ver Aportes
+                               </Button>
                             </div>
                          </Card>
                        ))}
@@ -729,6 +798,64 @@ export default function CoursesPage() {
            </TabsContent>
 
         </Tabs>
+
+        {/* Modal de Aportes */}
+        <Dialog open={isAportesOpen} onOpenChange={setIsAportesOpen}>
+          <DialogContent className="sm:max-w-xl bg-card rounded-[32px] p-6 shadow-2xl border border-border/40">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black text-foreground">Aportes del Foro</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 my-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+               {aportes.length === 0 ? (
+                 <div className="text-center py-10 opacity-50">
+                    <MessageSquare className="h-10 w-10 mx-auto mb-2" />
+                    <p className="text-sm font-bold">No hay aportes todavía</p>
+                 </div>
+               ) : (
+                 aportes.map((aporte: any) => (
+                   <div key={aporte.idAporte} className="flex gap-4 p-4 rounded-2xl bg-muted/30 border border-border/50 group/aporte">
+                      <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
+                         {aporte.usuario?.nombre ? aporte.usuario.nombre.charAt(0) : "U"}
+                      </div>
+                      <div className="flex-1">
+                         <div className="flex justify-between items-start">
+                            <div>
+                               <p className="font-bold text-sm text-foreground">{aporte.usuario?.nombre || "Usuario Desconocido"}</p>
+                               <p className="text-[10px] font-semibold text-muted-foreground uppercase">{new Date(aporte.fechaAporte).toLocaleDateString()}</p>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6 text-rose-400 opacity-0 group-hover/aporte:opacity-100 transition-opacity rounded-md"
+                              onClick={() => handleDeleteAporte(aporte.idAporte)}
+                            >
+                               <Trash2 className="h-3 w-3" />
+                            </Button>
+                         </div>
+                         <p className="mt-2 text-sm text-foreground/80 leading-relaxed font-medium">
+                            {aporte.mensaje}
+                         </p>
+                      </div>
+                   </div>
+                 ))
+               )}
+            </div>
+            <div className="flex gap-3 pt-4 border-t border-border/50 mt-2">
+               <Input 
+                 placeholder="Escribe un aporte como administrador..."
+                 className="flex-1 h-12 rounded-2xl bg-muted/40 font-medium"
+                 value={newAporte}
+                 onChange={(e) => setNewAporte(e.target.value)}
+                 onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddAporte()
+                 }}
+               />
+               <Button className="h-12 w-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shrink-0" onClick={handleAddAporte}>
+                  <PlusCircle className="h-5 w-5" />
+               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   }
@@ -1016,7 +1143,7 @@ export default function CoursesPage() {
                     <BookOpen className="h-10 w-10 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black tracking-tight">{isEditing ? "Edición Maestra" : "Nueva Publicación"}</h2>
+                    <h3 className="text-2xl font-black tracking-tight">{isEditing ? "Edición Maestra" : "Nueva Publicación"}</h3>
                     <p className="text-slate-400 font-medium text-lg mt-1">
                       {isEditing ? `Modificando: ${formData.titulo}` : "Crea una experiencia educativa de alto impacto"}
                     </p>

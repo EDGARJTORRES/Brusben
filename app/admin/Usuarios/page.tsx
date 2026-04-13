@@ -76,6 +76,7 @@ interface Usuario {
   activo: boolean
   idRol: number
   nombreRol?: string
+  nmrCelular?: string
 }
 
 const ROLES = [
@@ -99,6 +100,7 @@ export default function UsuariosPage() {
     password: "",
     activo: true,
     idRol: 3,
+    nmrCelular: "",
   })
 
   useEffect(() => {
@@ -181,6 +183,7 @@ export default function UsuariosPage() {
       password: "",
       activo: true,
       idRol: 3,
+      nmrCelular: "",
     })
     setEditingUser(null)
   }
@@ -475,18 +478,32 @@ export default function UsuariosPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                  <Fingerprint className="h-3 w-3 text-primary" /> DNI
-                </label>
-                <Input 
-                  placeholder="12345678" 
-                  className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                  maxLength={8}
-                  value={formData.dni}
-                  onChange={(e) => setFormData({...formData, dni: e.target.value})}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                    <Fingerprint className="h-3 w-3 text-primary" /> DNI
+                  </label>
+                  <Input 
+                    placeholder="12345678" 
+                    className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                    maxLength={8}
+                    value={formData.dni}
+                    onChange={(e) => setFormData({...formData, dni: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                    <Fingerprint className="h-3 w-3 text-primary" /> Celular
+                  </label>
+                  <Input 
+                    placeholder="Ej. +51 987654321" 
+                    className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                    value={formData.nmrCelular || ""}
+                    onChange={(e) => setFormData({...formData, nmrCelular: e.target.value})}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

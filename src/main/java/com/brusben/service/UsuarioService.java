@@ -87,6 +87,7 @@ public class UsuarioService {
         dto.setNombres(usuario.getNombres());
         dto.setEmail(usuario.getEmail());
         dto.setActivo(usuario.getActivo());
+        dto.setNmrCelular(usuario.getNmrCelular());
         if (usuario.getRol() != null) {
             dto.setIdRol(usuario.getRol().getIdRol());
             dto.setNombreRol(usuario.getRol().getNombreRol());
@@ -99,6 +100,7 @@ public class UsuarioService {
         usuario.setNombres(dto.getNombres());
         usuario.setEmail(dto.getEmail());
         usuario.setActivo(dto.getActivo());
+        usuario.setNmrCelular(dto.getNmrCelular());
         if (dto.getIdRol() != null) {
             Rol rol = rolRepository.findById(dto.getIdRol())
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado"));

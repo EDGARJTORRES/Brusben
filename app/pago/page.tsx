@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -27,6 +28,8 @@ export default function PagoPage() {
   const [cvv, setCvv] = useState("")
   const [name, setName] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const router = useRouter()
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "")
@@ -59,7 +62,11 @@ export default function PagoPage() {
     // Simulate payment processing
     setTimeout(() => {
       setIsProcessing(false)
-      // Handle success
+      setSuccess(true)
+      // Redirigir después de 2 segundos
+      setTimeout(() => {
+        router.push("/mis-clases/cursos")
+      }, 3000)
     }, 2000)
   }
 
@@ -269,6 +276,28 @@ export default function PagoPage() {
           </div>
         </div>
       </main>
+
+      {/* Success Modal */}
+      {success && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <Card className="w-full max-w-sm rounded-[40px] p-10 text-center border-0 shadow-2xl scale-in-center overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500" />
+              <div className="h-24 w-24 bg-emerald-50 rounded-[32px] flex items-center justify-center mx-auto mb-8 ring-8 ring-emerald-50/50">
+                 <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+              </div>
+              <h3 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">¡Pago Exitoso!</h3>
+              <p className="text-slate-500 font-medium leading-relaxed mb-10">
+                Tu inscripción ha sido procesada correctamente. Ahora puedes acceder al curso.
+              </p>
+              <div className="flex flex-col gap-3">
+                <Button className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold shadow-lg shadow-emerald-500/20" onClick={() => router.push("/mis-clases/cursos")}>
+                  Ir a Mis Cursos
+                </Button>
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Redirigiendo automáticamente...</p>
+              </div>
+           </Card>
+        </div>
+      )}
     </div>
   )
 }

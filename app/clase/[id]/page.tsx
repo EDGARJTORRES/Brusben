@@ -12,8 +12,10 @@ import {
   MessageSquare,
   Clock,
   ChevronRight,
+  PlusCircle,
 } from "lucide-react"
 
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Accordion,
@@ -76,7 +78,7 @@ const materials = [
   { id: 3, name: "Checklist Estrategia de Contenidos.pdf", size: "320 KB" },
 ]
 
-const forumPosts = [
+const initialForumPosts = [
   {
     id: 1,
     author: "María García",
@@ -97,6 +99,23 @@ const forumPosts = [
 
 export default function ClasePage() {
   const [currentLesson, setCurrentLesson] = useState(7)
+  const [posts, setPosts] = useState(initialForumPosts)
+  const [newPost, setNewPost] = useState("")
+
+  const handleAddPost = () => {
+    if(!newPost.trim()) return
+    const newAporte = {
+      id: Date.now(),
+      author: "Tú (Estudiante)", // Simulate student name
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=You",
+      message: newPost,
+      time: "justo ahora",
+      replies: 0,
+    }
+    setPosts([newAporte, ...posts])
+    setNewPost("")
+  }
+
   const totalLessons = courseModules.reduce((acc, m) => acc + m.lessons.length, 0)
   const completedLessons = courseModules.reduce(
     (acc, m) => acc + m.lessons.filter((l) => l.completed).length,
@@ -244,14 +263,14 @@ export default function ClasePage() {
                     </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {forumPosts.map((post) => (
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {posts.map((post) => (
                         <div
                           key={post.id}
-                          className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                          className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors group/post"
                         >
                           <div className="flex items-start gap-3">
-                            <Avatar className="h-9 w-9">
+                            <Avatar className="h-10 w-10 border border-primary/20 shrink-0">
                               <AvatarImage src={post.avatar} />
                               <AvatarFallback>
                                 {post.author.split(" ").map((n) => n[0]).join("")}
@@ -259,22 +278,43 @@ export default function ClasePage() {
                             </Avatar>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="text-sm font-medium text-foreground">
+                                <span className="text-sm font-bold text-foreground">
                                   {post.author}
                                 </span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-[10px] uppercase font-semibold text-muted-foreground">
                                   {post.time}
                                 </span>
                               </div>
-                              <p className="text-sm text-muted-foreground">{post.message}</p>
-                              <Button variant="link" className="h-auto p-0 mt-2 text-primary">
-                                {post.replies} respuestas
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
+                              <p className="text-sm text-foreground/80 font-medium leading-relaxed">{post.message}</p>
+                              <div className="flex items-center gap-4 mt-3">
+                                <Button variant="ghost" className="h-6 px-2 text-xs font-bold text-primary hover:bg-primary/10 rounded-md">
+                                  Responder
+                                </Button>
+                                {post.replies > 0 && (
+                                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                                    <MessageSquare className="h-3 w-3" /> {post.replies} respuestas
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
                       ))}
+                    </div>
+                    
+                    <div className="flex gap-3 pt-4 mt-2 border-t border-border/50">
+                       <Input 
+                         placeholder="Escribe tu aporte o consulta sobre la clase..."
+                         className="flex-1 h-12 rounded-2xl bg-muted/40 font-medium focus:ring-primary focus-visible:ring-primary border-border"
+                         value={newPost}
+                         onChange={(e) => setNewPost(e.target.value)}
+                         onKeyDown={(e) => {
+                            if (e.key === "Enter") handleAddPost()
+                         }}
+                       />
+                       <Button className="h-12 px-6 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-bold" onClick={handleAddPost}>
+                          Aportar
+                       </Button>
                     </div>
                   </CardContent>
                 </Card>

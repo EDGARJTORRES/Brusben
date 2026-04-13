@@ -12,4 +12,5 @@ public class UsuarioDTO {
     private Boolean activo;
     private Integer idRol;
     private String nombreRol;
+    private String nmrCelular;
 }
