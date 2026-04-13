@@ -1,187 +1,327 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { 
-  Search, 
-  BookOpen, 
-  Clock,
-  Star,
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
+import {
+  BookOpen,
+  Search,
+  GraduationCap,
   Users,
-  ShoppingCart,
-  ChevronRight,
-  Filter,
-  ArrowRight
+  Star,
+  DollarSign,
+  UserCheck,
+  Filter
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
 
-const availableCourses = [
-  {
-    id: "CAT-001",
-    title: "Excel Avanzado para Finanzas",
-    description: "Domina macros, tablas dinámicas y modelos financieros complejos.",
-    category: "Finanzas",
-    price: 120,
-    duration: "40 horas",
-    students: "+1,500",
-    rating: 4.8,
-    image: "https://images.unsplash.com/photo-1543286386-713bcd549118?q=80&w=400&h=250&auto=format&fit=crop",
-  },
-  {
-    id: "CAT-002",
-    title: "Full Stack Web Development",
-    description: "Aprende React, Node.js, y bases de datos desde cero a profesional.",
-    category: "Tecnología",
-    price: 250,
-    duration: "120 horas",
-    students: "+3,200",
-    rating: 4.9,
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=400&h=250&auto=format&fit=crop",
-  },
-  {
-    id: "CAT-003",
-    title: "Diseño UX/UI Premium",
-    description: "Crea experiencias digitales centradas en el usuario con Figma.",
-    category: "Diseño",
-    price: 180,
-    duration: "60 horas",
-    students: "+800",
-    rating: 4.7,
-    image: "https://images.unsplash.com/photo-1586717791821-3f44a563eb4c?q=80&w=400&h=250&auto=format&fit=crop",
-  },
-  {
-    id: "CAT-004",
-    title: "Ciberseguridad Empresarial",
-    description: "Protege activos digitales y gestiona riesgos de seguridad.",
-    category: "Seguridad",
-    price: 200,
-    duration: "45 horas",
-    students: "+600",
-    rating: 4.6,
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=400&h=250&auto=format&fit=crop",
-  },
-]
+interface Curso {
+  idCurso: number
+  titulo: string
+  imgCurso: string
+  descripcion: string
+  estCurso: any
+  idDocente: number
+  docenteNombre: string
+  catNombre: string
+  catColor: string
+  precioCurso: number
+}
 
-export default function CatalogPage() {
-  const router = useRouter()
+export default function EstudiantesPage() {
+  const [courses, setCourses] = useState<Curso[]>([])
+  const [categorias, setCategorias] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [categoriaFilter, setCategoriaFilter] = useState("all")
+  const [selectedCourse, setSelectedCourse] = useState<Curso | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
-  const filteredCourses = availableCourses.filter(c => 
-    c.title.toLowerCase().includes(search.toLowerCase()) ||
-    c.category.toLowerCase().includes(search.toLowerCase())
-  )
+  useEffect(() => {
+    fetchCourses()
+    fetchCategorias()
+  }, [])
 
-  const handleBuy = (courseId: string) => {
-    // Redirigir a la página de pago con el ID del curso
-    router.push(`/pago?courseId=${courseId}`)
+  const fetchCourses = async () => {
+    setIsLoading(true)
+    try {
+      const res = await fetch("http://localhost:8081/api/cursos")
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      // Solo cursos activos
+      setCourses(data.filter((c: Curso) => c.estCurso === "A" || c.estCurso === true))
+    } catch {
+      toast.error("Error al cargar el catálogo de cursos")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
+  const fetchCategorias = async () => {
+    try {
+      const res = await fetch("http://localhost:8081/api/categorias")
+      const data = await res.json()
+      setCategorias(data.filter((c: any) => c.catEstado === "A" || c.catEstado === true))
+    } catch {
+      console.error("Error fetching categorias")
+    }
+  }
+
+  const getImageUrl = (img?: string) => {
+    if (!img || img === "") return "/images/course-finance.jpg"
+    if (img.startsWith("http") || img.startsWith("data:")) return img
+    let cleanPath = img.replace(/^public\//, "").replace(/^\/public\//, "")
+    const fileName = cleanPath.replace(/^\//, "").replace(/^cursos\//, "")
+    return `/cursos/${fileName}`
+  }
+
+  const handleInscribir = (course: Curso) => {
+    toast.success(`Solicitud de inscripción enviada para: ${course.titulo}`)
+    setIsDetailOpen(false)
+  }
+
+  const filteredCourses = courses.filter(c =>
+    (c.titulo || "").toLowerCase().includes(search.toLowerCase()) &&
+    (categoriaFilter === "all" || c.catNombre === categoriaFilter)
+  )
+
+  const totalCursos = courses.length
+  const totalCategorias = [...new Set(courses.map(c => c.catNombre))].length
+  const precioPromedio = courses.length > 0
+    ? (courses.reduce((acc, c) => acc + Number(c.precioCurso || 0), 0) / courses.length)
+    : 0
+
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between items-start">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+      {/* HEADER */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
-          <Badge className="bg-primary/10 text-primary border-0 font-bold px-3 mb-2">CATÁLOGO 2026</Badge>
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">Explorar Cursos</h1>
-          <p className="text-muted-foreground font-medium">Invierte en tu futuro con nuestras certificaciones de alto impacto.</p>
-        </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-80 group">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-            <Input 
-              placeholder="¿Qué quieres aprender hoy?..." 
-              className="pl-12 h-12 w-full bg-white border-slate-200 focus-visible:ring-1 focus-visible:ring-primary transition-all rounded-xl shadow-sm text-sm"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl flex-shrink-0">
-            <Filter className="h-5 w-5 text-slate-500" />
-          </Button>
+          <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
+            <GraduationCap className="h-8 w-8 text-primary" />
+            Catálogo de Cursos
+          </h1>
+          <p className="text-muted-foreground font-medium text-sm">
+            Explora todos los cursos disponibles e inscribe estudiantes.
+          </p>
         </div>
       </div>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 pb-20">
-        {filteredCourses.map((course) => (
-          <Card key={course.id} className="overflow-hidden border-0 shadow-sm hover:shadow-2xl hover:translate-y-[-4px] transition-all duration-300 group rounded-[32px] bg-white ring-1 ring-slate-100 flex flex-col">
-            <div className="relative h-60 overflow-hidden">
-              <img 
-                src={course.image} 
-                alt={course.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute top-4 right-4">
-                <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-sm">
-                  <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                  <span className="text-xs font-bold text-slate-800">{course.rating}</span>
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <Card className="border-0 shadow-sm bg-primary/10 p-5 rounded-2xl relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 bg-primary/10 h-20 w-20 rounded-full group-hover:scale-150 transition-transform duration-500" />
+          <p className="text-primary text-xs font-bold uppercase tracking-widest mb-1">Cursos Disponibles</p>
+          <p className="text-3xl font-black text-primary">{totalCursos}</p>
+        </Card>
+        <Card className="border-0 shadow-sm bg-emerald-500/10 p-5 rounded-2xl relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 bg-emerald-500/10 h-20 w-20 rounded-full group-hover:scale-150 transition-transform duration-500" />
+          <p className="text-emerald-700 text-xs font-bold uppercase tracking-widest mb-1">Categorías</p>
+          <p className="text-3xl font-black text-emerald-700">{totalCategorias}</p>
+        </Card>
+        <Card className="border-0 shadow-sm bg-amber-500/10 p-5 rounded-2xl relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 bg-amber-500/10 h-20 w-20 rounded-full group-hover:scale-150 transition-transform duration-500" />
+          <p className="text-amber-700 text-xs font-bold uppercase tracking-widest mb-1">Precio Promedio</p>
+          <p className="text-3xl font-black text-amber-700">S/ {precioPromedio.toFixed(2)}</p>
+        </Card>
+      </div>
+
+      {/* FILTROS */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Input
+            placeholder="Buscar cursos por nombre..."
+            className="pl-10 h-11 rounded-xl bg-background border-border/50 font-medium text-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="h-11 rounded-xl border border-border/50 px-4 bg-background text-sm font-medium text-foreground"
+          value={categoriaFilter}
+          onChange={(e) => setCategoriaFilter(e.target.value)}
+        >
+          <option value="all">Todas las categorías</option>
+          {categorias.map(cat => (
+            <option key={cat.catId} value={cat.catNombre}>{cat.catNombre}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* GRID DE CURSOS */}
+      {isLoading ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} className="h-72 rounded-3xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      ) : filteredCourses.length === 0 ? (
+        <div className="py-28 text-center opacity-30">
+          <BookOpen className="h-14 w-14 mx-auto mb-3" />
+          <p className="font-bold text-lg">No hay cursos disponibles</p>
+          <p className="text-sm mt-1">Intenta cambiar los filtros de búsqueda</p>
+        </div>
+      ) : (
+        <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 pb-10">
+          {filteredCourses.map((course) => (
+            <Card
+              key={course.idCurso}
+              className="p-0 border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group rounded-3xl bg-card ring-1 ring-slate-100 dark:ring-slate-800 h-full flex flex-col justify-between cursor-pointer"
+              onClick={() => { setSelectedCourse(course); setIsDetailOpen(true) }}
+            >
+              {/* Imagen */}
+              <div className="relative h-40 overflow-hidden rounded-t-3xl bg-slate-100">
+                <img
+                  src={getImageUrl(course.imgCurso)}
+                  alt={course.titulo}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                {/* Badge Categoría con color dinámico */}
+                <div className="absolute top-3 left-3">
+                  <Badge
+                    style={{ backgroundColor: course.catColor || "#6366f1" }}
+                    className="text-white text-[10px] font-bold border-0 px-3 py-1 shadow-md"
+                  >
+                    {course.catNombre || "General"}
+                  </Badge>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                 <Badge className="bg-white/20 backdrop-blur-md text-white border-0 font-bold text-[10px] mb-2">
-                   {course.category.toUpperCase()}
-                 </Badge>
-              </div>
-            </div>
 
-            <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-xl font-black tracking-tight text-slate-900 group-hover:text-primary transition-colors">
-                {course.title}
-              </CardTitle>
-              <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-2 mt-2">
-                {course.description}
-              </p>
-            </CardHeader>
+              {/* Info */}
+              <CardHeader className="py-3 px-5 pb-0">
+                <CardTitle className="text-base font-bold line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                  {course.titulo || "Sin título"}
+                </CardTitle>
+                <CardDescription className="line-clamp-2 text-sm min-h-[40px] mt-1">
+                  {course.descripcion || "Sin descripción"}
+                </CardDescription>
+              </CardHeader>
 
-            <CardContent className="px-8 flex-1">
-              <div className="flex items-center gap-6 py-4 border-y border-slate-50">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-600">{course.duration}</span>
+              {/* Docente */}
+              <CardContent className="px-5 py-3">
+                <div className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-muted/30 rounded-xl">
+                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-primary">
+                      {course.docenteNombre?.substring(0, 1) || "D"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Docente</p>
+                    <p className="text-xs font-bold text-foreground">{course.docenteNombre || "No asignado"}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                   <Users className="h-4 w-4 text-slate-400" />
-                   <span className="text-xs font-bold text-slate-600">{course.students}</span>
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
 
-            <CardFooter className="p-8 pt-4">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Inversión</span>
-                  <span className="text-2xl font-black text-slate-900 leading-none">S/ {course.price}</span>
+              {/* Footer: precio + botón */}
+              <CardFooter
+                className="px-5 pb-5 pt-0 flex justify-between items-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div>
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Precio</p>
+                  <p className="text-xl font-black text-foreground">
+                    S/ {Number(course.precioCurso || 0).toFixed(2)}
+                  </p>
                 </div>
-                <Button 
-                  className="rounded-2xl h-14 px-8 font-black bg-primary text-white hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all gap-2 group/btn"
-                  onClick={() => handleBuy(course.id)}
+                <Button
+                  className="rounded-2xl h-10 px-5 font-black bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 text-sm gap-2"
+                  onClick={(e) => { e.stopPropagation(); handleInscribir(course) }}
                 >
+                  <UserCheck className="h-4 w-4" />
                   Inscribirse
-                  <ArrowRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform" />
                 </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
 
-        {filteredCourses.length === 0 && (
-          <div className="col-span-full py-20 text-center">
-             <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="h-8 w-8 text-slate-300" />
-             </div>
-             <h3 className="text-xl font-bold text-slate-800">No se encontraron cursos</h3>
-             <p className="text-slate-500 mt-1">Prueba con otras palabras clave o categorías.</p>
-          </div>
-        )}
-      </div>
+      {/* MODAL DETALLE DE CURSO */}
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="sm:max-w-[560px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+          {selectedCourse && (
+            <>
+              {/* Imagen cabecera */}
+              <div className="relative h-48 overflow-hidden rounded-t-3xl">
+                <img
+                  src={getImageUrl(selectedCourse.imgCurso)}
+                  alt={selectedCourse.titulo}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-4 left-5 right-5">
+                  <Badge
+                    style={{ backgroundColor: selectedCourse.catColor || "#6366f1" }}
+                    className="text-white text-[10px] font-bold border-0 mb-2 shadow"
+                  >
+                    {selectedCourse.catNombre || "General"}
+                  </Badge>
+                  <h2 className="text-xl font-black text-white leading-snug">
+                    {selectedCourse.titulo}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Descripción */}
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Descripción</p>
+                  <p className="text-sm text-foreground leading-relaxed font-medium">
+                    {selectedCourse.descripcion || "Sin descripción disponible."}
+                  </p>
+                </div>
+
+                {/* Datos adicionales */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-muted/30 rounded-2xl p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Docente</p>
+                    <p className="text-sm font-bold text-foreground">{selectedCourse.docenteNombre || "No asignado"}</p>
+                  </div>
+                  <div className="bg-muted/30 rounded-2xl p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Categoría</p>
+                    <p className="text-sm font-bold" style={{ color: selectedCourse.catColor || "#6366f1" }}>
+                      {selectedCourse.catNombre || "General"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Precio y Acción */}
+                <div className="flex items-center justify-between bg-slate-50 dark:bg-muted/40 rounded-2xl px-5 py-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Inversión</p>
+                    <p className="text-3xl font-black text-foreground">S/ {Number(selectedCourse.precioCurso || 0).toFixed(2)}</p>
+                  </div>
+                  <Button
+                    className="rounded-2xl h-12 px-7 font-black bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 text-base gap-2"
+                    onClick={() => handleInscribir(selectedCourse)}
+                  >
+                    <UserCheck className="h-5 w-5" />
+                    Inscribirse Ahora
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

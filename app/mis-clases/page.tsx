@@ -82,13 +82,13 @@ export default function StudentDashboard() {
         </div>
         
         {/* Date Badge */}
-        <div className="flex items-center gap-4 bg-white p-3 px-5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+        <div className="flex items-center gap-4 bg-card p-3 px-5 rounded-2xl border border-border shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
             <TrendingUp className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ESTADO ACTUAL</span>
-            <span className="text-sm font-bold text-slate-900">Alumno Regular</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">FECHA DE HOY</span>
+            <span className="text-sm font-bold text-foreground">{new Date().toLocaleDateString()}</span>
           </div>
         </div>
       </div>
