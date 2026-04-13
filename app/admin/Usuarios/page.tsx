@@ -16,7 +16,8 @@ import {
   User as UserIcon,
   Fingerprint,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Smartphone
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -276,6 +277,7 @@ export default function UsuariosPage() {
                 <TableHead className="font-bold py-4">Usuario</TableHead>
                 <TableHead className="font-bold">DNI</TableHead>
                 <TableHead className="font-bold">Rol</TableHead>
+                <TableHead className="font-bold">Celular</TableHead>
                 <TableHead className="font-bold">Estado</TableHead>
                 <TableHead className="text-right font-bold pr-8">Acciones</TableHead>
               </TableRow>
@@ -321,6 +323,11 @@ export default function UsuariosPage() {
                       )}>
                         {user.nombreRol}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-mono text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground border border-border/50 flex items-center gap-1 w-fit">
+                        <Smartphone className="h-3 w-3" /> {user.nmrCelular}
+                      </span>
                     </TableCell>
                     <TableCell>
                       {user.activo ? (
