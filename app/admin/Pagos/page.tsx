@@ -40,6 +40,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Table,
   TableBody,
   TableCell,
@@ -129,6 +135,26 @@ export default function PagosPage() {
   // 2. Agrega una función helper para el reset del form:
   const resetForm = () => {
     setFormData({ idUsuario: "", idCurso: "", monto: "", metodoPago: "TRANSFERENCIA", nroOperacion: "" })
+  }
+
+  // Marcar como completado/pagado un registro PENDIENTE
+  const handleActualizarEstado = async (idPago: number, nuevoEstado: string) => {
+    try {
+      const res = await fetch(`http://localhost:8081/api/pagos/${idPago}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nuevoEstado })
+      })
+
+      if (res.ok) {
+        toast.success(`Pago #${idPago} marcado como ${nuevoEstado}`)
+        await fetchData()
+      } else {
+        toast.error("Error al actualizar el estado del pago.")
+      }
+    } catch {
+      toast.error("Error de conexión al marcar como pagado.")
+    }
   }
 
   const handleExportPDF = async () => {
@@ -580,9 +606,39 @@ export default function PagosPage() {
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">{p.method}</span>
                 </TableCell>
                 <TableCell className="px-6 py-4 text-right">
-                  <Button variant="ghost" size="icon" className="h-10 w-10 border border-transparent hover:border-border hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-all">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 border border-transparent hover:border-border hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-all group">
+                        <MoreVertical className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl font-medium shadow-xl">
+                      {p.status === "PENDIENTE" && (
+                        <DropdownMenuItem 
+                          onClick={() => handleActualizarEstado(p.idPago, "COMPLETADO")}
+                          className="text-emerald-600 font-bold cursor-pointer transition-colors focus:bg-emerald-50 focus:text-emerald-700 py-2.5"
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Marcar como Pagado
+                        </DropdownMenuItem>
+                      )}
+                      {p.status === "PENDIENTE" && (
+                         <DropdownMenuItem 
+                          onClick={() => handleActualizarEstado(p.idPago, "ANULADO")}
+                          className="text-rose-600 font-bold cursor-pointer transition-colors focus:bg-rose-50 focus:text-rose-700 py-2.5"
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Rechazar / Anular
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {p.status !== "PENDIENTE" && (
+                        <div className="px-3 py-2 text-xs text-muted-foreground italic text-center w-36">
+                          No hay acciones disponibles
+                        </div>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

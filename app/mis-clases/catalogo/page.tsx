@@ -10,7 +10,10 @@ import {
   Star,
   DollarSign,
   UserCheck,
-  Filter
+  Filter,
+  CheckCircle2,        // NUEVO
+  Clock,               // NUEVO
+  Send                 // NUEVO
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -30,7 +33,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
+
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth-context"
 
 interface Curso {
   idCurso: number
@@ -54,6 +60,12 @@ export default function EstudiantesPage() {
   const [selectedCourse, setSelectedCourse] = useState<Curso | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
 
+  // NUEVO: estado para el modal de éxito
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
+  const [enrolledCourse, setEnrolledCourse] = useState<Curso | null>(null)
+
+  const { user } = useAuth()
+
   useEffect(() => {
     fetchCourses()
     fetchCategorias()
@@ -65,7 +77,6 @@ export default function EstudiantesPage() {
       const res = await fetch("http://localhost:8081/api/cursos")
       if (!res.ok) throw new Error()
       const data = await res.json()
-      // Solo cursos activos
       setCourses(data.filter((c: Curso) => c.estCurso === "A" || c.estCurso === true))
     } catch {
       toast.error("Error al cargar el catálogo de cursos")
@@ -92,9 +103,40 @@ export default function EstudiantesPage() {
     return `/cursos/${fileName}`
   }
 
-  const handleInscribir = (course: Curso) => {
-    toast.success(`Solicitud de inscripción enviada para: ${course.titulo}`)
-    setIsDetailOpen(false)
+  const handleInscribir = async (course: Curso) => {
+    if (!user) {
+      toast.error("Debes iniciar sesión para inscribirte.")
+      return
+    }
+
+    const payload = {
+      idUsuario: user.id.toString(),
+      idCurso: course.idCurso.toString(),
+      monto: course.precioCurso,
+      metodoPago: "TRANSFERENCIA",
+      nroOperacion: "",
+      estado: "PENDIENTE"
+    }
+
+    try {
+      const res = await fetch("http://localhost:8081/api/pagos/registrar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+
+      if (res.ok) {
+        // NUEVO: cerrar el detalle y abrir el modal de éxito
+        setIsDetailOpen(false)
+        setEnrolledCourse(course)
+        setIsSuccessOpen(true)
+      } else {
+        const error = await res.json()
+        toast.error(error.error || "Error al registrar la solicitud de inscripción.")
+      }
+    } catch {
+      toast.error("Error de conexión al enviar inscripción.")
+    }
   }
 
   const filteredCourses = courses.filter(c =>
@@ -111,7 +153,7 @@ export default function EstudiantesPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-      {/* HEADER */}
+      {/* HEADER — sin cambios */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
@@ -124,7 +166,7 @@ export default function EstudiantesPage() {
         </div>
       </div>
 
-      {/* STATS */}
+      {/* STATS — sin cambios */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <Card className="border-0 shadow-sm bg-primary/10 p-5 rounded-2xl relative overflow-hidden group">
           <div className="absolute -right-4 -bottom-4 bg-primary/10 h-20 w-20 rounded-full group-hover:scale-150 transition-transform duration-500" />
@@ -143,7 +185,7 @@ export default function EstudiantesPage() {
         </Card>
       </div>
 
-      {/* FILTROS */}
+      {/* FILTROS — sin cambios */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -166,7 +208,7 @@ export default function EstudiantesPage() {
         </select>
       </div>
 
-      {/* GRID DE CURSOS */}
+      {/* GRID — sin cambios */}
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
           {[1,2,3,4,5,6].map(i => (
@@ -187,14 +229,12 @@ export default function EstudiantesPage() {
               className="p-0 border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group rounded-3xl bg-card ring-1 ring-slate-100 dark:ring-slate-800 h-full flex flex-col justify-between cursor-pointer"
               onClick={() => { setSelectedCourse(course); setIsDetailOpen(true) }}
             >
-              {/* Imagen */}
               <div className="relative h-40 overflow-hidden rounded-t-3xl bg-slate-100">
                 <img
                   src={getImageUrl(course.imgCurso)}
                   alt={course.titulo}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                {/* Badge Categoría con color dinámico */}
                 <div className="absolute top-3 left-3">
                   <Badge
                     style={{ backgroundColor: course.catColor || "#6366f1" }}
@@ -204,8 +244,6 @@ export default function EstudiantesPage() {
                   </Badge>
                 </div>
               </div>
-
-              {/* Info */}
               <CardHeader className="py-3 px-5 pb-0">
                 <CardTitle className="text-base font-bold line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                   {course.titulo || "Sin título"}
@@ -214,8 +252,6 @@ export default function EstudiantesPage() {
                   {course.descripcion || "Sin descripción"}
                 </CardDescription>
               </CardHeader>
-
-              {/* Docente */}
               <CardContent className="px-5 py-3">
                 <div className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-muted/30 rounded-xl">
                   <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -229,8 +265,6 @@ export default function EstudiantesPage() {
                   </div>
                 </div>
               </CardContent>
-
-              {/* Footer: precio + botón */}
               <CardFooter
                 className="px-5 pb-5 pt-0 flex justify-between items-center"
                 onClick={(e) => e.stopPropagation()}
@@ -254,12 +288,14 @@ export default function EstudiantesPage() {
         </div>
       )}
 
-      {/* MODAL DETALLE DE CURSO */}
+      {/* MODAL DETALLE — sin cambios */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="sm:max-w-[560px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+          <VisuallyHidden.Root>
+            <DialogTitle>{selectedCourse?.titulo || "Detalle del curso"}</DialogTitle>
+          </VisuallyHidden.Root>
           {selectedCourse && (
             <>
-              {/* Imagen cabecera */}
               <div className="relative h-48 overflow-hidden rounded-t-3xl">
                 <img
                   src={getImageUrl(selectedCourse.imgCurso)}
@@ -279,17 +315,13 @@ export default function EstudiantesPage() {
                   </h2>
                 </div>
               </div>
-
               <div className="p-6 space-y-5">
-                {/* Descripción */}
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Descripción</p>
                   <p className="text-sm text-foreground leading-relaxed font-medium">
                     {selectedCourse.descripcion || "Sin descripción disponible."}
                   </p>
                 </div>
-
-                {/* Datos adicionales */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-muted/30 rounded-2xl p-4">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Docente</p>
@@ -302,8 +334,6 @@ export default function EstudiantesPage() {
                     </p>
                   </div>
                 </div>
-
-                {/* Precio y Acción */}
                 <div className="flex items-center justify-between bg-slate-50 dark:bg-muted/40 rounded-2xl px-5 py-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Inversión</p>
@@ -322,6 +352,78 @@ export default function EstudiantesPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ✅ NUEVO: MODAL DE CONFIRMACIÓN DE ÉXITO */}
+      <Dialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+          {enrolledCourse && (
+            <div className="flex flex-col items-center text-center p-8 gap-5">
+              
+              {/* Ícono animado */}
+              <div className="relative">
+                <div className="h-20 w-20 rounded-full bg-emerald-500/10 flex items-center justify-center animate-in zoom-in duration-500">
+                  <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+                </div>
+                {/* Anillo pulsante */}
+                <div className="absolute inset-0 rounded-full border-2 border-emerald-500/30 animate-ping" />
+              </div>
+
+              {/* Título */}
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-foreground">¡Solicitud Enviada!</h2>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Tu inscripción fue registrada exitosamente
+                </p>
+              </div>
+
+              {/* Info del curso */}
+              <div className="w-full bg-muted/40 rounded-2xl p-4 text-left space-y-3">
+                <div className="flex items-start gap-3">
+                  <div
+                    className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                    style={{ backgroundColor: (enrolledCourse.catColor || "#6366f1") + "20" }}
+                  >
+                    <BookOpen className="h-4 w-4" style={{ color: enrolledCourse.catColor || "#6366f1" }} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Curso</p>
+                    <p className="text-sm font-bold text-foreground leading-snug">{enrolledCourse.titulo}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <DollarSign className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Monto a pagar</p>
+                    <p className="text-sm font-bold text-foreground">S/ {Number(enrolledCourse.precioCurso || 0).toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Aviso de estado pendiente */}
+              <div className="w-full flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-left">
+                <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-black text-amber-700 uppercase tracking-wider mb-0.5">Pago Pendiente</p>
+                  <p className="text-xs text-amber-700/80 font-medium leading-relaxed">
+                    El administrador revisará tu solicitud y habilitará tu acceso una vez confirmado el pago.
+                  </p>
+                </div>
+              </div>
+
+              {/* Botón cerrar */}
+              <Button
+                className="w-full h-12 rounded-2xl font-black bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                onClick={() => setIsSuccessOpen(false)}
+              >
+                Entendido
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }

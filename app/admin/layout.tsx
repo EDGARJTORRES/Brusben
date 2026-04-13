@@ -128,6 +128,12 @@ const menuGroups: MenuItem[] = [
   },
   {
     type: "single",
+    icon: ClipboardList,
+    label:"Bitacora",
+    href:"/admin/Bitacora"
+  },
+  {
+    type: "single",
     icon: HelpCircle,
     label:"Ayuda",
     href:"/admin/Ayuda"
