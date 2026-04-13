@@ -169,7 +169,7 @@ export function LoginForm() {
                 placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12 bg-secondary/50"
+                className="pl-10 h-12 bg-secondary/50 dark:border-foreground"
                 required
               />
             </div>
@@ -214,7 +214,7 @@ export function LoginForm() {
               placeholder="000000"
               value={recoveryToken}
               onChange={(e) => setRecoveryToken(e.target.value)}
-              className="h-12 bg-secondary/50 font-mono text-center text-lg tracking-widest"
+              className="h-12 bg-secondary/50 font-mono text-center text-lg tracking-widest dark:border-foreground"
               maxLength={6}
               required
             />
@@ -230,7 +230,7 @@ export function LoginForm() {
                 placeholder="••••••••"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="pl-10 h-12 bg-secondary/50"
+                className="pl-10 h-12 bg-secondary/50 dark:border-foreground"
                 required
               />
             </div>
@@ -255,7 +255,7 @@ export function LoginForm() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="text-center lg:text-left">
-        <h2 className="text-3xl font-bold text-foreground">Iniciar Sesión</h2>
+        <h2 className="text-3xl font-bold text-foreground dark:text-primary-2">Iniciar Sesión</h2>
         <p className="mt-2 text-muted-foreground">Ingresa tus credenciales para acceder a tu cuenta</p>
       </div>
 
@@ -289,7 +289,7 @@ export function LoginForm() {
                 setEmail(e.target.value)
                 if (error) setError(null)
               }}
-              className="pl-10 h-12 bg-secondary/50 border-border focus:border-primary focus:ring-primary"
+              className="pl-10 h-12 bg-secondary/50 border-border focus:border-primary focus:ring-primary dark:border-foreground"
             />
           </div>
         </div>
@@ -309,7 +309,7 @@ export function LoginForm() {
                 setPassword(e.target.value)
                 if (error) setError(null)
               }}
-              className="pl-10 pr-10 h-12 bg-secondary/50 border-border focus:border-primary focus:ring-primary"
+              className="pl-10 pr-10 h-12 bg-secondary/50 border-border focus:border-primary focus:ring-primary dark:border-foreground"
             />
             <button
               type="button"

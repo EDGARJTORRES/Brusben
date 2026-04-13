@@ -30,6 +30,9 @@ public class Usuario {
     @Column(name = "activo", nullable = false)
     private Boolean activo;
 
+    @Column(name = "nmr_celular")
+    private String nmrCelular;
+
     public Integer getIdUsuario() {
         return idUsuario;
     }
@@ -84,5 +87,13 @@ public class Usuario {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public String getNmrCelular() {
+        return nmrCelular;
+    }
+
+    public void setNmrCelular(String nmrCelular) {
+        this.nmrCelular = nmrCelular;
     }
 }

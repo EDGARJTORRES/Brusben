@@ -48,6 +48,7 @@ import { useAuth } from "@/lib/auth-context"
 const menuItems = [
   { icon: Home, label: "Inicio", href: "/mis-clases" },
   { icon: BookOpen, label: "Cursos", href: "/mis-clases/cursos" },
+  { icon: Search, label: "Catálogo", href: "/mis-clases/catalogo" },
   { icon: Users, label: "Compañeros", href: "/mis-clases/estudiantes" },
   { icon: PaymentIcon, label: "Mis Pagos", href: "/mis-clases/pagos" },
   { icon: Calendar, label: "Calendario", href: "/mis-clases/calendario" },

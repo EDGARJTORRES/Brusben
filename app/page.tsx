@@ -81,16 +81,16 @@ export default function LoginPage() {
           </div>
 
           <p className="text-xs text-white/40 font-medium font-mono uppercase tracking-[0.2em]">
-            © 2026 Brusben. Digital Education Platform.
+            © 2026 Brusben. Digital Education Platform. 
           </p>
         </div>
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative overflow-hidden dark:bg-secondary">
         {/* Subtle background decoration */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -mr-48 -mt-48" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-48 -mb-48" />
+        <div className="absolute top-0 right-0  -mr-48 -mt-48" />
+        <div className="absolute bottom-0 left-0  rounded-full  -ml-48 -mb-48" />
 
         <div className="w-full max-w-md space-y-8 relative z-10">
           {/* Mobile Logo */}
@@ -104,7 +104,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="absolute top-0 right-0 lg:-top-16">
+          <div className="absolute top-0 right-0 lg:-top-2">
             <ThemeToggle />
           </div>
 

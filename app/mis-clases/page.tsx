@@ -122,7 +122,7 @@ export default function StudentDashboard() {
         <Card className="lg:col-span-8 border-0 shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="px-8 py-6 border-b border-slate-50 flex flex-row items-center justify-between">
             <CardTitle className="text-xl font-extrabold tracking-tight text-foreground">Mis Clases en Progreso</CardTitle>
-            <Button variant="ghost" className="text-primary font-bold gap-2 hover:bg-primary/5">
+            <Button variant="ghost" className="text-primary font-bold gap-2 hover:bg-primary/5" onClick={() => router.push("/mis-clases/cursos")}>
               Ir a mis cursos <ChevronRight className="h-4 w-4" />
             </Button>
           </CardHeader>

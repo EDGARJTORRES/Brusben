@@ -89,7 +89,6 @@ const menuGroups: MenuItem[] = [
     children: [
       { icon: BookOpen, label: "Cursos", href: "/admin/Cursos" },
       { icon: GraduationCap, label: "Control Academico", href: "/admin/ControlAcademico" },
-      { icon: ClipboardList, label: "Matrículas", href: "/admin/Matriculas" },
     ],
   },
   {
@@ -269,7 +268,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
           )}
         >
           <div className="relative flex-shrink-0">
-            <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center ring-2 ring-primary/10">
+            <div className="h-12 w-12 rounded-2xl bg-primary dark:bg-primary flex items-center justify-center ring-2 ring-primary/10">
               <GraduationCap className="h-7 w-7 text-white" />
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm" />
