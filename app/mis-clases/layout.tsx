@@ -12,6 +12,7 @@ import {
   Bell,
   Search,
   ChevronLeft,
+  ChevronDown,
   User,
   Calendar,
   HelpCircle,
@@ -34,6 +35,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -127,25 +135,40 @@ export default function StudentLayout({
                 </div>
               </Button>
               <div className="h-8 w-[1px] bg-slate-100 mx-2" />
-              <Button variant="ghost" className="hidden sm:flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-slate-100 transition-all" onClick={() => router.push("/mis-clases/Perfil")}>
-                <div className="h-8 w-8 rounded-full ring-2 ring-white shadow-sm overflow-hidden border border-slate-100 bg-primary text-white flex items-center justify-center flex-shrink-0 font-bold text-xs">
-                  {user?.nombre ? getInitials(user.nombre) : "E"}
-                </div>
-                <div className="flex flex-col items-start leading-none">
-                  <span className="text-sm font-bold text-slate-900">{user?.nombre || "Estudiante"}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{user?.rol || "Estudiante"}</span>
-                </div>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Cerrar Sesión"
-                onClick={handleLogout}
-                className="h-10 w-10 rounded-xl hover:bg-rose-50 hover:text-rose-600 text-slate-600 transition-all"
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="sr-only">Cerrar Sesión</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex h-10 items-center gap-2 sm:gap-3 px-2 rounded-xl hover:bg-slate-100 transition-all group"
+                  >
+                    <div className="h-8 w-8 rounded-full ring-2 ring-background shadow-sm overflow-hidden border border-border flex-shrink-0 bg-primary text-white flex items-center justify-center font-bold text-sm">
+                      {user?.nombre ? getInitials(user.nombre) : "E"}
+                    </div>
+                    <div className="hidden sm:flex flex-col items-start leading-none">
+                      <span className="text-sm font-bold text-foreground">{user?.nombre || "Estudiante"}</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{user?.rol || "Estudiante"}</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px] p-2 rounded-xl shadow-xl border-border">
+                  <DropdownMenuItem
+                    onClick={() => router.push("/mis-clases/Perfil")}
+                    className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted gap-2"
+                  >
+                    <User className="h-4 w-4 text-primary" />
+                    Ver Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1 bg-border" />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="rounded-lg h-10 px-3 cursor-pointer font-bold text-rose-600 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-500/10 gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Cerrar Sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
@@ -173,7 +196,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
   }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white z-[100]">
+    <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white z-30">
       {/* Header with border-bottom */}
       <SidebarHeader className="h-20 flex px-4 relative border-b border-slate-100/60 overflow-visible">
         <div className={cn("flex items-center gap-3 transition-all", isCollapsed ? "justify-center w-full" : "w-full justify-start")}>
@@ -185,7 +208,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
           </div>
           {!isCollapsed && (
             <div className="flex flex-col justify-center min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
-              <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">Brusben E.I.R.L</span>
+              <span  className="text-xl font-bold tracking-tight text-sidebar-foreground leading-none">Brusben E.I.R.L</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-primary mt-1 leading-none">Mis Clases</span>
             </div>
           )}
@@ -195,7 +218,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
         <button 
           onClick={toggleSidebar}
           className={cn(
-            "absolute -right-3.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all z-[110] ring-4 ring-white border border-primary/20",
+            "absolute -right-3.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all z-40 ring-4 ring-white border border-primary/20",
             isCollapsed && "rotate-180"
           )}
         >
@@ -203,7 +226,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
         </button>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6">
+      <SidebarContent className="px-3 py-6 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
         <SidebarMenu className="gap-2">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label} className="flex justify-center">
@@ -211,7 +234,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
                 asChild
                 isActive={pathname === item.href}
                 className={cn(
-                  "h-12 px-4 rounded-2xl transition-all duration-200 font-bold",
+                  "h-12 px-4 rounded-2xl transition-all duration-200 font-bold group/item",
                   isCollapsed ? "w-14 h-14 p-0 justify-center items-center" : "w-full",
                   pathname === item.href 
                     ? "bg-primary text-white hover:bg-primary/90" 
@@ -226,8 +249,8 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
               >
                 <Link href={item.href} className={cn("flex items-center gap-4", isCollapsed ? "justify-center gap-0" : "")}>
                   <item.icon className={cn(
-                    "h-7 w-7 flex-shrink-0 transition-transform",
-                    pathname === item.href ? "text-white" : "text-slate-400 group-hover:text-primary"
+                    "h-7 w-7 flex-shrink-0 transition-colors",
+                    pathname === item.href ? "text-white" : "text-slate-400 group-hover/item:text-primary"
                   )} />
                   {!isCollapsed && <span className="text-base transition-opacity duration-300 whitespace-nowrap">{item.label}</span>}
                 </Link>
@@ -236,49 +259,18 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
           ))}
         </SidebarMenu>
       </SidebarContent>
-
-      {/* Footer with border-top */}
-      <SidebarFooter className="p-4 border-t border-border">
-        <div className="flex flex-col gap-4">
-          {/* User Info Section */}
-          <div
-            className={cn(
-              "flex items-center gap-3 transition-all p-2 rounded-lg bg-sidebar-accent/30",
-              isCollapsed ? "justify-center" : ""
-            )}
-          >
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-black flex-shrink-0 text-sm">
-              {user?.nombre ? getInitials(user.nombre) : "U"}
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col justify-center min-w-0 animate-in fade-in duration-300">
-                <span className="text-sm font-bold text-sidebar-foreground leading-none truncate">
-                  {user?.nombre || "Usuario"}
-                </span>
-                <span className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-tight leading-none">
-                  {user?.rol || "Sin rol"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "")}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onLogout}
-              className={cn(
-                "h-10 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all flex items-center gap-3 font-medium",
-                isCollapsed ? "w-10 justify-center px-0" : "w-full justify-start px-3"
-              )}
-              title={isCollapsed ? "Cerrar Sesión" : ""}
-            >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
-              {!isCollapsed && <span>Cerrar Sesión</span>}
-            </Button>
-          </div>
-        </div>
+      
+      {/* Botón de logout en mobile para Sidebar */}
+      <SidebarFooter className="p-4 border-t border-slate-100 md:hidden">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onLogout}
+          className="w-full justify-start px-3 h-10 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center gap-3 font-medium"
+        >
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          <span>Cerrar Sesión</span>
+        </Button>
       </SidebarFooter>
     </Sidebar>
   )

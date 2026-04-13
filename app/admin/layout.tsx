@@ -39,6 +39,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -209,31 +216,42 @@ export default function AdminLayout({
                 </div>
               </Button>
               <div className="h-8 w-[1px] bg-border mx-2" />
-              <Button
-                variant="ghost"
-                onClick={() => router.push("/admin/Perfil")}
-                className="flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-muted transition-all"
-              >
-                <div className="h-8 w-8 rounded-full ring-2 ring-background shadow-sm overflow-hidden border border-border flex-shrink-0 bg-primary text-white flex items-center justify-center font-bold text-sm">
-                  {user?.nombre ? getInitials(user.nombre) : "U"}
-                </div>
-                <div className="hidden sm:flex flex-col items-start leading-none">
-                  <span className="text-sm font-bold text-foreground">{user?.nombre || "Usuario"}</span>
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
-                    {user?.rol || "Sin rol"}
-                  </span>
-                </div>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Cerrar Sesión"
-                onClick={handleLogout}
-                className="h-10 w-10 rounded-xl hover:bg-rose-50 hover:text-rose-600 text-muted-foreground transition-all dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="sr-only">Cerrar Sesión</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-muted transition-all group"
+                  >
+                    <div className="h-8 w-8 rounded-full ring-2 ring-background shadow-sm overflow-hidden border border-border flex-shrink-0 bg-primary text-white flex items-center justify-center font-bold text-sm">
+                      {user?.nombre ? getInitials(user.nombre) : "U"}
+                    </div>
+                    <div className="hidden sm:flex flex-col items-start leading-none">
+                      <span className="text-sm font-bold text-foreground">{user?.nombre || "Usuario"}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
+                        {user?.rol || "Sin rol"}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px] p-2 rounded-xl shadow-xl border-border">
+                  <DropdownMenuItem
+                    onClick={() => router.push("/admin/Perfil")}
+                    className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted gap-2"
+                  >
+                    <User className="h-4 w-4 text-primary" />
+                    Ver Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1 bg-border" />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="rounded-lg h-10 px-3 cursor-pointer font-bold text-rose-600 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-500/10 gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Cerrar Sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
@@ -358,26 +376,17 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border">
-        <div className="flex flex-col gap-4">
-
-          {/* Action Buttons */}
-          <div className={cn("flex flex-col gap-2", isCollapsed ? "items-center" : "")}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onLogout}
-              className={cn(
-                "h-10 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all flex items-center gap-3 font-medium",
-                isCollapsed ? "w-10 justify-center px-0" : "w-full justify-start px-3"
-              )}
-              title={isCollapsed ? "Cerrar Sesión" : ""}
-            >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
-              {!isCollapsed && <span>Cerrar Sesión</span>}
-            </Button>
-          </div>
-        </div>
+      {/* Botón de logout en mobile para Sidebar */}
+      <SidebarFooter className="p-4 border-t border-slate-100 md:hidden">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onLogout}
+          className="w-full justify-start px-3 h-10 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all flex items-center gap-3 font-medium"
+        >
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          <span>Cerrar Sesión</span>
+        </Button>
       </SidebarFooter>
     </Sidebar>
   )

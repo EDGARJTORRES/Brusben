@@ -535,7 +535,7 @@ export default function UsuariosPage() {
                   <Input 
                     type="password"
                     placeholder="••••••••"
-                    className="h-12 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                    className="h-9 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required={!editingUser}
@@ -549,7 +549,7 @@ export default function UsuariosPage() {
                     value={formData.idRol.toString()} 
                     onValueChange={(v) => setFormData({...formData, idRol: parseInt(v)})}
                   >
-                    <SelectTrigger className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold">
+                    <SelectTrigger className="w-full h-12 rounded-xl bg-muted/40 border-0 px-4 focus:ring-primary font-bold">
                       <SelectValue placeholder="Rol" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-border/50 shadow-2xl">

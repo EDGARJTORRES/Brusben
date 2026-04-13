@@ -131,7 +131,166 @@ export default function PagosPage() {
     setFormData({ idUsuario: "", idCurso: "", monto: "", metodoPago: "TRANSFERENCIA", nroOperacion: "" })
   }
 
+  const handleExportPDF = async () => {
+    if (payments.length === 0) {
+      toast.info("No hay datos para exportar")
+      return
+    }
 
+    // Importación del bundle para el explorador web en vez del bundle de node (que falla en SSR)
+    // @ts-ignore
+    const jspdfModule = await import("jspdf/dist/jspdf.umd.min.js")
+    const jsPDF = jspdfModule.jsPDF
+
+    // @ts-ignore
+    const autoTableModule = await import("jspdf-autotable")
+    const autoTable = autoTableModule.default
+
+    // --- CÁLCULOS PARA EL REPORTE ---
+    const totalC = payments.reduce((acc, p) => {
+      const validAmount = typeof p.amount === 'string' ? parseFloat(p.amount.replace(/[^\d.-]/g, "")) : 0
+      return acc + (isNaN(validAmount) ? 0 : validAmount)
+    }, 0)
+
+    const totalCompletados = payments.filter(p => p.status === "COMPLETADO").length
+    const totalPendientes = payments.filter(p => p.status === "PENDIENTE").length
+
+    // Crear documento en HORIZONTAL (landscape)
+    const doc = new jsPDF("landscape")
+    
+    // Carga de la imagen para el PDF
+    const imgData = await new Promise<string>((resolve) => {
+      // Intentamos cargar el logo original, como es oscuro/claro lo ponemos
+      const img = new window.Image();
+      img.src = '/images/logo_brusben_light.png';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = () => resolve(''); // Continuar si falla
+    });
+
+    // --- CABECERA (Header sin fondo completo) ---
+    
+    // Logo renderizado directamente
+    if (imgData) {
+      doc.addImage(imgData, 'PNG', 14, 10, 30, 15); 
+    }
+    
+    // Título Principal
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    // Si hay imagen la desplazamos, sino va junto al borde
+    doc.text("REPORTE FINANCIERO", imgData ? 50 : 14, 16);
+    
+    // Subtítulo e Información
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139); // slate-500
+    const dateStr = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    doc.text(`Brusben E.I.R.L - Sistema de Aula Virtual`, imgData ? 50 : 14, 21);
+    doc.text(`Generado el: ${dateStr}`, imgData ? 50 : 14, 25);
+
+    // --- BLOQUE DE RESUMEN (Derecha) ---
+    // En apaisado el ancho de hoja A4 es ~297mm
+    const blockX = 220; 
+    // Tarjeta Total Recaudado
+    doc.setFillColor(248, 250, 252); // bg-slate-50
+    doc.setDrawColor(226, 232, 240); // border-slate-200
+    doc.setLineWidth(0.3);
+    doc.roundedRect(blockX, 10, 63, 18, 2, 2, 'FD');
+    
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(148, 163, 184); // slate-400
+    doc.text("TOTAL RECAUDADO", blockX + 4, 15);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(15, 118, 110); // teal-700
+    doc.text(`S/ ${totalC.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`, blockX + 4, 21);
+
+    // Metadatos Adicionales
+    doc.setFontSize(6);
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.text(`${totalCompletados} Completos • ${totalPendientes} Pendientes • ${payments.length} Pagos`, blockX + 4, 25);
+
+    // --- LÍNEA DIVISORIA ---
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(14, 30, 283, 30); // Hasta 283 para llenar a lo ancho
+
+    // --- TABLA DE DATOS ---
+    autoTable(doc, {
+      startY: 33,
+      head: [["ID", "ESTUDIANTE", "CURSO", "MONTO", "ESTADO", "MÉTODO"]],
+      body: payments.map(p => [
+        `#${p.idPago}`,
+        p.student || '-',
+        p.course || '-',
+        p.amount || '-',
+        p.status || '-',
+        p.method || '-'
+      ]),
+      theme: 'plain',
+      headStyles: {
+        fillColor: [52,73,94],
+        textColor: 255, // blanco
+        fontStyle: 'bold',
+        halign: 'left',
+        fontSize: 8
+      },
+      bodyStyles: {
+        textColor: [50, 50, 50],
+        halign: 'left',
+        valign: 'middle',
+        fontSize: 9
+      },
+      alternateRowStyles: {
+        fillColor: [252, 253, 254] // very subtle slate
+      },
+      styles: {
+        font: 'helvetica',
+        cellPadding: 6,
+        lineWidth: 0.1,
+        lineColor: [226, 232, 240] // slate-200
+      },
+      columnStyles: {
+        0: { halign: 'left', fontStyle: 'bold', textColor: [100, 116, 139] },
+        3: { halign: 'right', fontStyle: 'bold', textColor: [15, 118, 110] }, // teal-700 p/ monto
+        4: { fontStyle: 'bold' } // Estado
+      },
+      // --- PIE DE PÁGINA (Footer) ---
+      didDrawPage: function (data: any) {
+        const pageSize = doc.internal.pageSize;
+        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+        
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // slate-400
+        
+        // Número de página
+        const pageStr = "Página " + doc.internal.getNumberOfPages();
+        doc.text(pageStr, data.settings.margin.left, pageHeight - 12);
+        
+        // Logo en Footer (debido a que la cabecera es blanca, el logo light se pondrá abajo en un cuadro oscuro si deseas, o solo texto)
+        const textFooter = "Documento Oficial • Brusben E.I.R.L - Propiedad Exclusiva";
+        const textWidth = doc.getTextWidth(textFooter);
+        doc.text(textFooter, pageSize.width - data.settings.margin.left - textWidth, pageHeight - 12);
+        
+        // Línea superior del footer
+        doc.setDrawColor(241, 245, 249); // borde slate-100
+        doc.setLineWidth(1);
+        doc.line(data.settings.margin.left, pageHeight - 18, pageSize.width - data.settings.margin.left, pageHeight - 18);
+      }
+    })
+
+    doc.save(`Reporte_Financiero_${new Date().toISOString().split('T')[0]}.pdf`)
+    toast.success("PDF exportado exitosamente")
+  }
 
   // --- Cálculos Dinámicos ---
   const totalRecaudado = payments.reduce((acc, p) => {
@@ -165,9 +324,9 @@ export default function PagosPage() {
           <p className="text-muted-foreground mt-1 font-medium text-sm">Gestiona y monitorea todos los ingresos financieros de la plataforma.</p>
         </div>
         <div className="flex gap-4">
-           <Button variant="outline" className="rounded-xl h-11 px-6 font-bold border-border gap-2">
+           <Button variant="outline" className="rounded-xl h-11 px-6 font-bold border-border gap-2 hover:bg-muted/50" onClick={handleExportPDF}>
              <Download className="h-4 w-4 text-muted-foreground" />
-             Exportar
+             Exportar a PDF
            </Button>
            
            <Button 
@@ -251,7 +410,7 @@ export default function PagosPage() {
                       value={c.idCurso.toString()} 
                       className="font-medium"
                     >
-                      {c.titulo} - S/ {c.precioCurso}
+                      {c.titulo}
                     </SelectItem>
                   ))}
                 </SelectContent>
