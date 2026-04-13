@@ -929,7 +929,7 @@ export default function CoursesPage() {
                 className="p-0 border-0 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group rounded-3xl bg-card ring-1 ring-slate-100"
               >
                 {/* Imagen */}
-                <div className="relative h-36 overflow-hidden rounded-t-3xl bg-slate-100">
+                <div className="relative h-30 overflow-hidden rounded-t-3xl bg-slate-100">
                   <img
                     src={getImageUrl(course.imgCurso)}
                     alt={course.titulo}
@@ -1006,7 +1006,7 @@ export default function CoursesPage() {
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem 
                               onSelect={(e) => e.preventDefault()}
-                              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                              className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer border border-border"
                             >
                               <Trash className="h-4 w-4" />
                               Eliminar Curso
@@ -1047,7 +1047,7 @@ export default function CoursesPage() {
                     </Badge>
                   </div>
 
-                  <CardTitle className="text-lg font-bold line-clamp-1">
+                  <CardTitle className="text-lg font-bold line-clamp-2">
                     {course.titulo || "Sin título"}
                   </CardTitle>
 

@@ -53,6 +53,9 @@ export default function PagosPage() {
   const [courses, setCourses] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
   
   const [formData, setFormData] = useState({
     idUsuario: "",
@@ -96,7 +99,7 @@ export default function PagosPage() {
 
   const handleRegisterPayment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if(!formData.idUsuario || !formData.idCurso || !formData.monto) {
+    if (!formData.idUsuario || !formData.idCurso || !formData.monto) {
       toast.warning("Por favor completa los campos obligatorios")
       return
     }
@@ -107,12 +110,13 @@ export default function PagosPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
       })
-      
-      if(res.ok) {
+
+      if (res.ok) {
         toast.success("¡Pago registrado e inscripción realizada!")
+        // Primero cerrar y limpiar, luego recargar
         setIsModalOpen(false)
         setFormData({ idUsuario: "", idCurso: "", monto: "", metodoPago: "TRANSFERENCIA", nroOperacion: "" })
-        fetchData()
+        await fetchData()  // <-- await para asegurar que recarga
       } else {
         const error = await res.json()
         toast.error(error.error || "Error al procesar el pago")
@@ -121,6 +125,13 @@ export default function PagosPage() {
       toast.error("Error de conexión con el servidor")
     }
   }
+
+  // 2. Agrega una función helper para el reset del form:
+  const resetForm = () => {
+    setFormData({ idUsuario: "", idCurso: "", monto: "", metodoPago: "TRANSFERENCIA", nroOperacion: "" })
+  }
+
+
 
   // --- Cálculos Dinámicos ---
   const totalRecaudado = payments.reduce((acc, p) => {
@@ -138,6 +149,11 @@ export default function PagosPage() {
   const matriculasMes = payments.length // Simplificado: Total histórico por ahora
   const nuevosAbonos = payments.length > 0 ? 1 : 0 // Placeholder: Podría ser los de hoy
 
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentPayments = payments.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(payments.length / itemsPerPage)
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -154,102 +170,161 @@ export default function PagosPage() {
              Exportar
            </Button>
            
-           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-             <DialogTrigger asChild>
-               <Button className="rounded-xl h-11 bg-primary hover:bg-primary/90 gap-2 font-black text-primary-foreground shadow-lg shadow-primary/20 transition-all">
-                 <Plus className="h-5 w-5" />
-                 Registrar Pago
-               </Button>
-             </DialogTrigger>
-             <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
-               <div className="p-6 border-b border-border">
-                 <DialogTitle className="text-2xl font-black text-foreground">Nueva Inscripción</DialogTitle>
-                 <p className="text-sm text-muted-foreground font-medium mt-1">Registra el abono del estudiante para habilitar su acceso al curso.</p>
-               </div>
-               
-               <form onSubmit={handleRegisterPayment} className="p-6 space-y-6">
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Seleccionar Estudiante</label>
-                   <Select onValueChange={(val) => setFormData({...formData, idUsuario: val})} value={formData.idUsuario}>
-                     <SelectTrigger className="h-12 rounded-xl bg-muted/40 border-0 focus:ring-primary font-bold">
-                       <SelectValue placeholder="Busca al alumno..." />
-                     </SelectTrigger>
-                     <SelectContent className="rounded-xl">
-                       {students.map(s => (
-                         <SelectItem key={s.idUsuario} value={s.idUsuario.toString()} className="font-medium">
-                           {s.nombres}
-                         </SelectItem>
-                       ))}
-                     </SelectContent>
-                   </Select>
-                 </div>
-
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Seleccionar Curso</label>
-                   <Select onValueChange={(val) => {
-                     const curso = courses.find(c => c.idCurso.toString() === val)
-                     setFormData({...formData, idCurso: val, monto: curso?.precioCurso?.toString() || ""})
-                   }} value={formData.idCurso}>
-                     <SelectTrigger className="h-12 rounded-xl bg-muted/40 border-0 focus:ring-primary font-bold">
-                       <SelectValue placeholder="Elige el curso..." />
-                     </SelectTrigger>
-                     <SelectContent className="rounded-xl">
-                       {courses.map(c => (
-                         <SelectItem key={c.idCurso} value={c.idCurso.toString()} className="font-medium">
-                           {c.titulo} - S/ {c.precioCurso}
-                         </SelectItem>
-                       ))}
-                     </SelectContent>
-                   </Select>
-                 </div>
-
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Monto Pagado</label>
-                     <div className="relative">
-                       <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">S/</span>
-                       <Input 
-                         type="number"
-                         className="h-12 rounded-xl bg-muted/40 border-0 pl-10 focus:ring-primary font-black text-lg" 
-                         value={formData.monto}
-                         onChange={(e) => setFormData({...formData, monto: e.target.value})}
-                       />
-                     </div>
-                   </div>
-                   <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Método</label>
-                     <Select onValueChange={(val) => setFormData({...formData, metodoPago: val})} value={formData.metodoPago}>
-                       <SelectTrigger className="h-12 rounded-xl bg-muted/40 border-0 focus:ring-primary font-bold">
-                         <SelectValue />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="TRANSFERENCIA">Transferencia</SelectItem>
-                         <SelectItem value="EFECTIVO">Efectivo</SelectItem>
-                         <SelectItem value="VISA">VISA / Mastercard</SelectItem>
-                         <SelectItem value="YAPE/PLIN">Yape / Plin</SelectItem>
-                       </SelectContent>
-                     </Select>
-                   </div>
-                 </div>
-
-                 <div className="space-y-2">
-                   <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Nro. de Operación (Opcional)</label>
-                   <Input 
-                     placeholder="Ej: 9283401"
-                     className="h-12 rounded-xl bg-muted/40 border-0 focus:ring-primary font-mono"
-                     value={formData.nroOperacion}
-                     onChange={(e) => setFormData({...formData, nroOperacion: e.target.value})}
-                   />
-                 </div>
-
-                 <Button type="submit" className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-lg font-black shadow-xl shadow-primary/20">
-                   Confirmar e Inscribir
-                 </Button>
-               </form>
-             </DialogContent>
-           </Dialog>
+           <Button 
+             className="rounded-xl h-11 bg-primary hover:bg-primary/90 gap-2 font-black text-primary-foreground shadow-lg shadow-primary/20 transition-all"
+             onClick={() => setIsModalOpen(true)}
+           >
+             <Plus className="h-5 w-5" />
+             Registrar Pago
+           </Button>
         </div>
       </div>
+
+      {/* Modal de Registro */}
+      <Dialog open={isModalOpen} 
+        onOpenChange={(open) => {
+          setIsModalOpen(open)
+          if (!open) resetForm()  // <-- limpia el form al cerrar de CUALQUIER forma
+        }}>
+        <DialogContent className="bg-card sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+          
+          <div className="p-6 border-b border-border">
+            <DialogTitle className="text-2xl font-black text-foreground">
+              Nueva Inscripción
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground font-medium mt-1">
+              Registra el abono del estudiante para habilitar su acceso al curso.
+            </p>
+          </div>
+          
+          <form onSubmit={handleRegisterPayment} className="p-6 space-y-6">
+            
+            {/* Estudiante */}
+            <div className="space-y-2 w-full">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                Seleccionar Estudiante
+              </label>
+              <Select 
+                onValueChange={(val) => setFormData({...formData, idUsuario: val})} 
+                value={formData.idUsuario}
+              >
+                <SelectTrigger className="w-full h-12 rounded-xl bg-muted/40 border-0 px-4 focus:ring-primary font-bold">
+                  <SelectValue placeholder="Busca al alumno..." />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {students.map(s => (
+                    <SelectItem 
+                      key={s.idUsuario} 
+                      value={s.idUsuario.toString()} 
+                      className="font-medium"
+                    >
+                      {s.nombres}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Curso */}
+            <div className="space-y-2 w-full">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                Seleccionar Curso
+              </label>
+              <Select 
+                onValueChange={(val) => {
+                  const curso = courses.find(c => c.idCurso.toString() === val)
+                  setFormData({
+                    ...formData, 
+                    idCurso: val, 
+                    monto: curso?.precioCurso?.toString() || ""
+                  })
+                }} 
+                value={formData.idCurso}
+              >
+                <SelectTrigger className="w-full h-12 rounded-xl bg-muted/40 border-0 px-4 focus:ring-primary font-bold">
+                  <SelectValue placeholder="Elige el curso..." />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {courses.map(c => (
+                    <SelectItem 
+                      key={c.idCurso} 
+                      value={c.idCurso.toString()} 
+                      className="font-medium"
+                    >
+                      {c.titulo} - S/ {c.precioCurso}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Monto + Método */}
+            <div className="grid grid-cols-2 gap-4">
+              
+              {/* Monto */}
+              <div className="space-y-2 w-full">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                  Monto Pagado
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">
+                  </span>
+                  <Input 
+                    type="number"
+                    className="w-full h-9 rounded-xl bg-muted/40 border-0 pl-10 px-4 focus:ring-primary font-black text-lg left-6" 
+                    value={formData.monto}
+                    onChange={(e) => setFormData({...formData, monto: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              {/* Método */}
+              <div className="space-y-2 w-full">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                  Método
+                </label>
+                <Select 
+                  onValueChange={(val) => setFormData({...formData, metodoPago: val})} 
+                  value={formData.metodoPago}
+                >
+                  <SelectTrigger className="w-full h-12 rounded-xl bg-muted/40 border-0 px-4 focus:ring-primary font-bold">
+                    <SelectValue placeholder="Método" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="TRANSFERENCIA">Transferencia</SelectItem>
+                    <SelectItem value="EFECTIVO">Efectivo</SelectItem>
+                    <SelectItem value="VISA">VISA / Mastercard</SelectItem>
+                    <SelectItem value="YAPE/PLIN">Yape / Plin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+            </div>
+
+            {/* Nro Operación */}
+            <div className="space-y-2 w-full">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                Nro. de Operación (Opcional)
+              </label>
+              <Input 
+                placeholder="Ej: 9283401"
+                className="w-full h-12 rounded-xl bg-muted/40 border-0 px-4 focus:ring-primary font-mono"
+                value={formData.nroOperacion}
+                onChange={(e) => setFormData({...formData, nroOperacion: e.target.value})}
+              />
+            </div>
+
+            {/* Botón */}
+            <Button 
+              type="submit" 
+              className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-lg font-black shadow-xl shadow-primary/20"
+            >
+              Confirmar e Inscribir
+            </Button>
+
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
          {[
@@ -315,7 +390,7 @@ export default function PagosPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : payments.map((p: any) => (
+            ) : currentPayments.map((p: any) => (
               <TableRow key={p.idPago} className="border-b border-border hover:bg-muted/70 transition-colors group">
                 <TableCell className="px-6 py-4">
                   <span className="font-mono text-sm font-bold text-muted-foreground">#{p.idPago}</span>
@@ -358,13 +433,43 @@ export default function PagosPage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border/40 bg-muted/10">
            <p className="text-xs text-muted-foreground font-medium">
              Mostrando {" "}
-             <span className="font-bold text-foreground">{payments.length}</span> de {" "}
+             <span className="font-bold text-foreground">{payments.length === 0 ? 0 : indexOfFirstItem + 1}</span> a {" "}
+             <span className="font-bold text-foreground">{Math.min(indexOfLastItem, payments.length)}</span> de {" "}
              <span className="font-bold text-foreground">{payments.length}</span> pagos
            </p>
-           <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-9 rounded-xl border-border/50 font-bold px-4">Anterior</Button>
-              <Button variant="outline" size="sm" className="h-9 rounded-xl border-border/50 font-bold px-4 bg-background shadow-sm ring-1 ring-primary/5 text-primary transition-none">1</Button>
-              <Button variant="outline" size="sm" className="h-9 rounded-xl border-border/50 font-bold px-4 hover:bg-background">Siguiente</Button>
+           <div className="flex gap-2 flex-wrap justify-center">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-9 rounded-xl border-border/50 font-bold px-4"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <Button 
+                  key={i + 1}
+                  variant="outline" 
+                  size="sm" 
+                  className={cn(
+                    "h-9 rounded-xl border-border/50 font-bold px-4",
+                    currentPage === i + 1 ? "bg-background shadow-sm ring-1 ring-primary/5 text-primary transition-none" : "hover:bg-background"
+                  )}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-9 rounded-xl border-border/50 font-bold px-4 hover:bg-background"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages || totalPages === 0}
+              >
+                Siguiente
+              </Button>
            </div>
         </div>
       </div>
