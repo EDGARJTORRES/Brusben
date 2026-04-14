@@ -18,12 +18,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final TotpService totpService;
 
-    public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PasswordResetTokenRepository passwordResetTokenRepository) {
+    public AuthService(UsuarioRepository usuarioRepository,
+                    PasswordEncoder passwordEncoder,
+                    JwtService jwtService,
+                    PasswordResetTokenRepository passwordResetTokenRepository,
+                    TotpService totpService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.totpService = totpService;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -36,6 +42,24 @@ public class AuthService {
 
         if (!usuario.getActivo()) {
             throw new RuntimeException("Usuario inactivo");
+        }
+
+        if (Boolean.TRUE.equals(usuario.getTotpActivo())) {
+            if (request.getTotpCode() == null || request.getTotpCode().isBlank()) {
+
+                return new LoginResponse(
+                    "2FA_REQUIRED",
+                    usuario.getIdUsuario(),
+                    usuario.getNombres(),
+                    usuario.getEmail(),
+                    usuario.getRol().getIdRol(),
+                    usuario.getRol().getNombreRol()
+                );
+            }
+
+            if (!totpService.verifyCode(usuario.getTotpSecret(), request.getTotpCode())) {
+                throw new RuntimeException("Código de autenticación inválido");
+            }
         }
 
         String token = jwtService.generateToken(usuario.getEmail(), usuario.getRol().getNombreRol());
@@ -91,4 +115,15 @@ public class AuthService {
         // Eliminar el token usado
         passwordResetTokenRepository.delete(resetToken);
     }
+    @Transactional
+    public void disableTotp(Integer userId) {
+        Usuario usuario = usuarioRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setTotpActivo(false);
+        usuario.setTotpSecret(null);
+
+        usuarioRepository.save(usuario);
+    }
+
 }

@@ -8,6 +8,7 @@ interface User {
   nombre: string
   rol: string
   avatar?: string
+  totpActivo?: boolean
 }
 
 interface AuthContextType {
@@ -36,6 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           nombre: parsedUser.nombre || "",
           rol: parsedUser.rol || "",
           avatar: parsedUser.avatar || undefined,
+          totpActivo: parsedUser.totpActivo ?? false,
         })
       } catch (error) {
         console.error("Error al parsear usuario guardado:", error)

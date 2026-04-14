@@ -53,4 +53,9 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+    @PostMapping("/disable-2fa")
+    public ResponseEntity<?> disable2FA(@RequestParam Integer userId) {
+        authService.disableTotp(userId);
+        return ResponseEntity.ok("2FA desactivado");
+    }
 }

@@ -33,6 +33,12 @@ public class Usuario {
     @Column(name = "nmr_celular")
     private String nmrCelular;
 
+    @Column(name = "totp_secret")
+    private String totpSecret;
+
+    @Column(name = "totp_activo", nullable = false)
+    private Boolean totpActivo = false;
+
     public Integer getIdUsuario() {
         return idUsuario;
     }
@@ -95,5 +101,17 @@ public class Usuario {
 
     public void setNmrCelular(String nmrCelular) {
         this.nmrCelular = nmrCelular;
+    }
+    public String getTotpSecret() { 
+        return totpSecret; 
+    }
+    public void setTotpSecret(String totpSecret) { 
+        this.totpSecret = totpSecret; 
+    }
+    public Boolean getTotpActivo() { 
+        return totpActivo; 
+    }
+    public void setTotpActivo(Boolean totpActivo) { 
+        this.totpActivo = totpActivo; 
     }
 }
