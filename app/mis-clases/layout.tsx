@@ -156,7 +156,7 @@ export default function StudentLayout({
                     onClick={() => router.push("/mis-clases/Perfil")}
                     className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted gap-2"
                   >
-                    <User className="h-4 w-4 text-primary" />
+                    <User className="h-4 w-4" />
                     Ver Perfil
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="my-1 bg-border" />

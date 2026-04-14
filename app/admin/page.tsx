@@ -165,8 +165,8 @@ export default function AdminDashboard() {
                 <p className="text-slate-400 text-sm font-medium">Administra los puntos clave de la academia.</p>
               </div>
               <div className="grid gap-4 mt-10">
-                <Button  className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 shadow-lg" >
-                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-slate-100 transition-colors" onClick={() => router.push("/admin/Pagos")}>
+                <Button  className="h-16 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all duration-300 gap-4 justify-start px-6 group border border-white/10 shadow-lg" onClick={() => router.push("/admin/Pagos")}>
+                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-slate-100 transition-colors">
                     <DollarSign className="h-5 w-5" />
                   </div>
                   <span className="font-bold text-lg">Ver Pagos</span>

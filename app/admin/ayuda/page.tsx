@@ -6,6 +6,7 @@ import {
   MessageSquare, Mail, ChevronRight, ExternalLink,
   BookOpen, Settings, ShieldCheck, Zap
 } from "lucide-react"
+import { FaWhatsapp } from "react-icons/fa"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -213,6 +214,14 @@ export default function AyudaPage() {
                     soporte@brusben.com
                  </a>
                </Button>
+              <Button className="w-full justify-start gap-4 h-12 rounded-xl bg-white/5 hover:bg-white/10 border-none text-white font-bold transition-all" asChild>
+                <a href="https://wa.me/51981902522" target="_blank">
+                  <div className="h-8 w-8 rounded-lg bg-green-500 flex items-center justify-center">
+                    <FaWhatsapp className="h-4 w-4 text-white" />
+                  </div>
+                  +51 981 902 522
+                </a>
+              </Button>
                <p className="text-[10px] text-center text-slate-500 font-bold uppercase tracking-widest mt-4">
                  Horario: Lun - Vie | 9:00 AM - 6:00 PM
                </p>

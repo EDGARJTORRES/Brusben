@@ -245,7 +245,7 @@ export default function AdminLayout({
                     onClick={() => router.push("/admin/Perfil")}
                     className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted gap-2"
                   >
-                    <User className="h-4 w-4 text-primary" />
+                    <User className="h-4 w-4" />
                     Ver Perfil
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="my-1 bg-border" />
