@@ -62,6 +62,18 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Doble Autenticación -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.samstevens.totp</groupId>
+            <artifactId>totp</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+
         <!-- JJWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
