@@ -616,17 +616,31 @@ export default function PagosPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl font-medium shadow-xl">
+
+                      {/* PENDIENTE */}
                       {p.status === "PENDIENTE" && (
-                        <DropdownMenuItem 
-                          onClick={() => handleActualizarEstado(p.idPago, "PAGADO")}
-                          className="text-emerald-600 font-bold cursor-pointer transition-colors focus:bg-emerald-50 focus:text-emerald-700 py-2.5"
-                        >
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Marcar como Pagado
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem 
+                            onClick={() => handleActualizarEstado(p.idPago, "PAGADO")}
+                            className="text-emerald-600 font-bold cursor-pointer transition-colors focus:bg-emerald-50 focus:text-emerald-700 py-2.5"
+                          >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Marcar como Pagado
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem 
+                            onClick={() => handleActualizarEstado(p.idPago, "ANULADO")}
+                            className="text-rose-600 font-bold cursor-pointer transition-colors focus:bg-rose-50 focus:text-rose-700 py-2.5"
+                          >
+                            <X className="mr-2 h-4 w-4" />
+                            Rechazar / Anular
+                          </DropdownMenuItem>
+                        </>
                       )}
-                      {p.status === "PENDIENTE" && (
-                         <DropdownMenuItem 
+
+                      {/* PAGADO */}
+                      {p.status === "PAGADO" && (
+                        <DropdownMenuItem 
                           onClick={() => handleActualizarEstado(p.idPago, "ANULADO")}
                           className="text-rose-600 font-bold cursor-pointer transition-colors focus:bg-rose-50 focus:text-rose-700 py-2.5"
                         >
@@ -634,12 +648,14 @@ export default function PagosPage() {
                           Rechazar / Anular
                         </DropdownMenuItem>
                       )}
-                      
-                      {p.status !== "PENDIENTE" && (
+
+                      {/* ANULADO */}
+                      {p.status === "ANULADO" && (
                         <div className="px-3 py-2 text-xs text-muted-foreground italic text-center w-36">
                           No hay acciones disponibles
                         </div>
                       )}
+
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
