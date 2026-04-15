@@ -57,7 +57,7 @@ public class PagoController {
             Double monto = Double.valueOf(payload.get("monto").toString());
             String metodo = (String) payload.get("metodoPago");
             String operacion = payload.get("nroOperacion") != null ? payload.get("nroOperacion").toString() : null;
-            String estado = payload.get("estado") != null ? payload.get("estado").toString() : "COMPLETADO";
+            String estado = payload.get("estado") != null ? payload.get("estado").toString() : "PAGADO";
 
             Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             Curso curso = cursoRepository.findById(idCurso).orElseThrow(() -> new RuntimeException("Curso no encontrado"));
@@ -112,7 +112,7 @@ public class PagoController {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         // Ahora usa la tabla pagos en vez de matriculas
         return pagoRepository.findAll().stream()
-                .filter(p -> p.getUsuario().getIdUsuario().equals(idUsuario) && "COMPLETADO".equals(p.getEstado()))
+                .filter(p -> p.getUsuario().getIdUsuario().equals(idUsuario) && "PAGADO".equals(p.getEstado()))
                 .map(p -> {
                     Map<String, Object> map = new java.util.HashMap<>();
                     map.put("idPago", p.getIdPago());

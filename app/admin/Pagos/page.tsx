@@ -86,7 +86,6 @@ export default function PagosPage() {
       setPayments(await payRes.json())
       
       const allUsers = await stuRes.json()
-      // Filtrar por rol Estudiante Y que estén ACTIVOS
       const onlyStudents = allUsers.filter((u: any) => {
         const rol = (u.nombreRol || "").toLowerCase()
         return rol === "estudiante" && u.activo === true
@@ -94,7 +93,6 @@ export default function PagosPage() {
       setStudents(onlyStudents)
       
       const allCourses = await curRes.json()
-      // Filtrar solo cursos ACTIVOS ('A')
       setCourses(allCourses.filter((c: any) => c.estCurso === "A"))
     } catch (e) {
       toast.error("Error al conectar con la base de datos")
@@ -119,10 +117,9 @@ export default function PagosPage() {
 
       if (res.ok) {
         toast.success("¡Pago registrado e inscripción realizada!")
-        // Primero cerrar y limpiar, luego recargar
         setIsModalOpen(false)
         setFormData({ idUsuario: "", idCurso: "", monto: "", metodoPago: "TRANSFERENCIA", nroOperacion: "" })
-        await fetchData()  // <-- await para asegurar que recarga
+        await fetchData()
       } else {
         const error = await res.json()
         toast.error(error.error || "Error al procesar el pago")
@@ -137,7 +134,7 @@ export default function PagosPage() {
     setFormData({ idUsuario: "", idCurso: "", monto: "", metodoPago: "TRANSFERENCIA", nroOperacion: "" })
   }
 
-  // Marcar como completado/pagado un registro PENDIENTE
+  // Marcar como pagado un registro PENDIENTE
   const handleActualizarEstado = async (idPago: number, nuevoEstado: string) => {
     try {
       const res = await fetch(`http://localhost:8081/api/pagos/${idPago}`, {
@@ -178,7 +175,7 @@ export default function PagosPage() {
       return acc + (isNaN(validAmount) ? 0 : validAmount)
     }, 0)
 
-    const totalCompletados = payments.filter(p => p.status === "COMPLETADO").length
+    const totalPagados = payments.filter(p => p.status === "PAGADO").length
     const totalPendientes = payments.filter(p => p.status === "PENDIENTE").length
 
     // Crear documento en HORIZONTAL (landscape)
@@ -243,7 +240,7 @@ export default function PagosPage() {
     // Metadatos Adicionales
     doc.setFontSize(6);
     doc.setTextColor(100, 116, 139); // slate-500
-    doc.text(`${totalCompletados} Completos • ${totalPendientes} Pendientes • ${payments.length} Pagos`, blockX + 4, 25);
+    doc.text(`${totalPagados} Pagados • ${totalPendientes} Pendientes • ${payments.length} Pagos`, blockX + 4, 25);
 
     // --- LÍNEA DIVISORIA ---
     doc.setDrawColor(226, 232, 240);
@@ -319,7 +316,9 @@ export default function PagosPage() {
   }
 
   // --- Cálculos Dinámicos ---
-  const totalRecaudado = payments.reduce((acc, p) => {
+  const totalRecaudado = payments
+    .filter(p => p.status === "PAGADO")
+    .reduce((acc, p) => {
     const validAmount = typeof p.amount === 'string' ? parseFloat(p.amount.replace(/[^\d.-]/g, "")) : 0
     return acc + (isNaN(validAmount) ? 0 : validAmount)
   }, 0)
@@ -331,8 +330,12 @@ export default function PagosPage() {
       return acc + (isNaN(validAmount) ? 0 : validAmount)
     }, 0)
 
-  const matriculasMes = payments.length // Simplificado: Total histórico por ahora
-  const nuevosAbonos = payments.length > 0 ? 1 : 0 // Placeholder: Podría ser los de hoy
+  const matriculasMes = payments
+    .filter(p => p.status === "PAGADO")
+    .length
+  const nuevosAbonos = payments
+    .filter(p => p.status === "PENDIENTE")
+    .length
 
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -583,7 +586,7 @@ export default function PagosPage() {
                 <TableCell className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-black text-foreground leading-none">{p.student}</span>
-                      <span className="text-xs font-bold text-primary mt-1 opacity-70 leading-none">{p.course}</span>
+                      <span className="text-xs font-bold text-chart-1 mt-1 leading-none">{p.course}</span>
                     </div>
                 </TableCell>
                 <TableCell className="px-6 py-4">
@@ -592,7 +595,7 @@ export default function PagosPage() {
                 <TableCell className="px-6 py-4">
                   <Badge className={cn(
                     "text-[10px] font-black rounded-full px-4 py-1 border-0 shadow-sm",
-                    p.status === "COMPLETADO" && "bg-emerald-500/10 text-emerald-600",
+                    p.status === "PAGADO" && "bg-emerald-500/10 text-emerald-600",
                     p.status === "PENDIENTE" && "bg-amber-500/10 text-amber-600",
                     p.status === "ANULADO" && "bg-rose-500/10 text-rose-600",
                   )}>
@@ -615,7 +618,7 @@ export default function PagosPage() {
                     <DropdownMenuContent align="end" className="rounded-xl font-medium shadow-xl">
                       {p.status === "PENDIENTE" && (
                         <DropdownMenuItem 
-                          onClick={() => handleActualizarEstado(p.idPago, "COMPLETADO")}
+                          onClick={() => handleActualizarEstado(p.idPago, "PAGADO")}
                           className="text-emerald-600 font-bold cursor-pointer transition-colors focus:bg-emerald-50 focus:text-emerald-700 py-2.5"
                         >
                           <CheckCircle2 className="mr-2 h-4 w-4" />
