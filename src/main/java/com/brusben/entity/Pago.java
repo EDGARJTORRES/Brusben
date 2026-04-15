@@ -34,7 +34,7 @@ public class Pago {
     private String nroOperacion;
 
     @Column(name = "estado")
-    private String estado = "COMPLETADO";
+    private String estado = "PAGADO";
 
     public Pago() {}
 

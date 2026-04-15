@@ -157,7 +157,6 @@ export function LoginForm() {
             Abre Google Authenticator e ingresa el código de 6 dígitos.
           </p>
         </div>
-        
         <form onSubmit={handleTotpSubmit} className="space-y-6">
           {error && (
             <Alert variant="destructive">
