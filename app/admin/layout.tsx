@@ -21,6 +21,8 @@ import {
   HelpCircle,
   ClipboardList,
   Wrench,
+  DollarSign,
+  UserCog,
 } from "lucide-react"
 
 import {
@@ -81,13 +83,10 @@ const menuGroups: MenuItem[] = [
     href: "/admin",
   },
   {
-    type: "group",
+    type: "single",
     icon: User,
-    label: "Gestión de Personas",
-    children: [
-      { icon: User, label: "Usuarios", href: "/admin/Usuarios" },
-      { icon: Users, label: "Estudiantes", href: "/admin/Estudiantes" },
-    ],
+    label: "Gestión de Usuarios",
+    href: "/admin/Usuarios",
   },
   {
     type: "group",
@@ -99,12 +98,10 @@ const menuGroups: MenuItem[] = [
     ],
   },
   {
-    type: "group",
+    type: "single",
     icon: PaymentIcon,
     label: "Finanzas",
-    children: [
-      { icon: PaymentIcon, label: "Pagos", href: "/admin/Pagos" },
-    ],
+    href: "/admin/Pagos",
   },
   {
     type: "group",
