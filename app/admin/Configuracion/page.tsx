@@ -44,10 +44,10 @@ export default function ConfiguracionPage() {
         </div>
       </div>
 
-      <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-12 lg:grid-cols-1 lg:items-start">
 
         {/* ================= PERFIL ================= */}
-        <div className="space-y-8">
+        <div className="space-y-10">
 
           {/* ================= SEGURIDAD ================= */}
 
@@ -82,7 +82,6 @@ export default function ConfiguracionPage() {
                 <TotpSetup
                   idUsuario={user.id}
                   totpActivo={user.totpActivo ?? false}
-                  onUpdate={() => window.location.reload()}
                 />
               )}
             </div>
@@ -90,7 +89,7 @@ export default function ConfiguracionPage() {
         </div>
 
         {/* ================= RESTO (SIN CAMBIOS) ================= */}
-        <div className="space-y-8">
+        <div className="space-y-10">
 
           <div className="flex items-center gap-4 text-orange-600 bg-orange-50 p-4 rounded-3xl border border-orange-100">
             <div className="h-12 w-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white">
@@ -105,28 +104,29 @@ export default function ConfiguracionPage() {
               </p>
             </div>
           </div>
-
-          <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-8">
-            <div className="space-y-4">
-              <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
-                Color Primario Institucional
-              </Label>
-              <div className="flex items-center gap-4">
-                {["bg-blue-600", "bg-rose-600", "bg-emerald-600", "bg-orange-600", "bg-purple-600"].map((color) => (
-                  <div key={color} className={`${color} h-10 w-10 rounded-full cursor-pointer`} />
-                ))}
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
+            <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-8">
+              <div className="space-y-4">
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                  Color Primario Institucional
+                </Label>
+                <div className="flex items-center gap-4">
+                  {["bg-blue-600", "bg-rose-600", "bg-emerald-600", "bg-orange-600", "bg-purple-600"].map((color) => (
+                    <div key={color} className={`${color} h-10 w-10 rounded-full cursor-pointer`} />
+                  ))}
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-4">
-            <p className="text-sm text-slate-400 font-medium">
-              Última copia de seguridad: <span className="font-bold text-slate-900">Hoy, 09:12 AM</span>
-            </p>
-            <Button className="w-full h-14 rounded-2xl bg-primary font-bold hover:bg-primary/90">
-              Descargar Backup Completo
-            </Button>
-          </Card>
+            <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-4">
+              <p className="text-sm text-slate-400 font-medium">
+                Última copia de seguridad: <span className="font-bold text-slate-900">Hoy, 09:12 AM</span>
+              </p>
+              <Button className="w-full h-14 rounded-2xl bg-primary font-bold hover:bg-primary/90">
+                Descargar Backup Completo
+              </Button>
+            </Card>
+          </div>
 
         </div>
       </div>
