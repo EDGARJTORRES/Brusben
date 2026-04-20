@@ -3,6 +3,7 @@
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth-context"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "sonner"
 import React, { useEffect, useState } from "react"
 
 export function ClientProvider({
@@ -26,6 +27,7 @@ export function ClientProvider({
       >
         {children}
       </ThemeProvider>
+      <Toaster position="top-right" richColors closeButton />
       <Analytics />
     </AuthProvider>
   )

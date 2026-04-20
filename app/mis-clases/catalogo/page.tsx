@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
+import "material-symbols/outlined.css";
 import {
   BookOpen,
   Search,

@@ -53,7 +53,8 @@ public class AuthService {
                     usuario.getNombres(),
                     usuario.getEmail(),
                     usuario.getRol().getIdRol(),
-                    usuario.getRol().getNombreRol()
+                    usuario.getRol().getNombreRol(),
+                    usuario.getTotpActivo()
                 );
             }
 
@@ -70,7 +71,8 @@ public class AuthService {
                 usuario.getNombres(),
                 usuario.getEmail(),
                 usuario.getRol().getIdRol(),
-                usuario.getRol().getNombreRol()
+                usuario.getRol().getNombreRol(),
+                usuario.getTotpActivo()
         );
     }
 

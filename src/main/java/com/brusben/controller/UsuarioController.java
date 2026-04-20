@@ -35,13 +35,21 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioDTO> createUser(@RequestBody UsuarioDTO dto) {
-        return ResponseEntity.ok(usuarioService.createUser(dto));
+    public ResponseEntity<?> createUser(@RequestBody UsuarioDTO dto) {
+        try {
+            return ResponseEntity.ok(usuarioService.createUser(dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioDTO> updateUser(@PathVariable Integer id, @RequestBody UsuarioDTO dto) {
-        return ResponseEntity.ok(usuarioService.updateUser(id, dto));
+    public ResponseEntity<?> updateUser(@PathVariable Integer id, @RequestBody UsuarioDTO dto) {
+        try {
+            return ResponseEntity.ok(usuarioService.updateUser(id, dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/change-password")

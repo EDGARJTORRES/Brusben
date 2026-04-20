@@ -7,6 +7,7 @@ import {
   BookOpen, CreditCard, User, ShieldCheck, Zap,
   GraduationCap, Calendar, Download
 } from "lucide-react"
+import "material-symbols/outlined.css";
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {

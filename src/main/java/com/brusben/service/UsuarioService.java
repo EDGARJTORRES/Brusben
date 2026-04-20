@@ -43,9 +43,14 @@ public class UsuarioService {
     }
 
     public UsuarioDTO createUser(UsuarioDTO dto) {
+        if (usuarioRepository.existsByDni(dto.getDni())) {
+            throw new RuntimeException("El DNI '" + dto.getDni() + "' ya se encuentra registrado");
+        }
         Usuario usuario = new Usuario();
         mapDtoToEntity(dto, usuario);
-        usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        }
         Usuario savedUser = usuarioRepository.save(usuario);
         return convertToDTO(savedUser);
     }
@@ -53,6 +58,14 @@ public class UsuarioService {
     public UsuarioDTO updateUser(Integer id, UsuarioDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        // Verificar si el DNI ya está siendo usado por otro usuario
+        usuarioRepository.findByDni(dto.getDni()).ifPresent(existingUser -> {
+            if (!existingUser.getIdUsuario().equals(id)) {
+                throw new RuntimeException("El DNI '" + dto.getDni() + "' ya está registrado por otro usuario");
+            }
+        });
+
         mapDtoToEntity(dto, usuario);
         if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
             usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));

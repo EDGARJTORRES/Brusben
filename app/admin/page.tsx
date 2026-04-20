@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/lib/auth-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import "material-symbols/outlined.css";
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import Highcharts from "highcharts"
