@@ -20,9 +20,11 @@ import {
   Tag,
   HelpCircle,
   ClipboardList,
+  Settings2,
   Wrench,
   DollarSign,
   UserCog,
+  ListChecks,
 } from "lucide-react"
 
 import {
@@ -37,6 +39,7 @@ import {
   SidebarTrigger,
   SidebarInset,
   useSidebar,
+
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -58,6 +61,7 @@ import {
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/lib/auth-context"
+import "material-symbols/outlined.css";
 
 type SingleMenuItem = {
   type: "single"
@@ -83,25 +87,15 @@ const menuGroups: MenuItem[] = [
     href: "/admin",
   },
   {
-    type: "single",
-    icon: User,
-    label: "Gestión de Usuarios",
-    href: "/admin/Usuarios",
-  },
-  {
     type: "group",
-    icon: GraduationCap,
-    label: "Académico",
+    icon: Settings2,
+    label: "Procesos",
     children: [
-      { icon: BookOpen, label: "Cursos", href: "/admin/Cursos" },
+      { icon: BookOpen, label: "Gestión de Cursos", href: "/admin/Cursos" },
       { icon: GraduationCap, label: "Control Academico", href: "/admin/ControlAcademico" },
+      { icon: PaymentIcon, label: "Pagos de Alumnos", href: "/admin/Pagos" },
+      { icon: ListChecks,label:"Matriculas",href:"/admin/Matriculas"}
     ],
-  },
-  {
-    type: "single",
-    icon: PaymentIcon,
-    label: "Finanzas",
-    href: "/admin/Pagos",
   },
   {
     type: "group",
@@ -109,6 +103,7 @@ const menuGroups: MenuItem[] = [
     label: "Mantenimientos",
     children: [
        { icon: Tag, label: "Categorías", href: "/admin/Categorias" },
+       { icon: UserCog, label: "Usuarios", href: "/admin/Usuarios" },
     ],
   },
   {

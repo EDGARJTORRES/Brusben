@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import "material-symbols/outlined.css";
 import {
   Table,
   TableBody,
@@ -93,6 +94,7 @@ export default function UsuariosPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<Usuario | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [filterRole, setFilterRole] = useState("all")
   const ITEMS_PER_PAGE = 10
   const [formData, setFormData] = useState<Usuario>({
     dni: "",
@@ -142,11 +144,17 @@ export default function UsuariosPage() {
         fetchUsers()
         resetForm()
       } else {
-        toast.error("Error al guardar usuario")
+        const errorData = await res.json().catch(() => ({}))
+        toast.error(errorData.message || "Error al guardar usuario")
       }
     } catch (error) {
       toast.error("Error de conexión")
     }
+  }
+
+  const handleRoleChange = (value: string) => {
+    setFilterRole(value)
+    setCurrentPage(1)
   }
 
   const toggleStatus = async (user: Usuario) => {
@@ -198,11 +206,17 @@ export default function UsuariosPage() {
     setIsDialogOpen(true)
   }
 
-  const filteredUsers = users.filter(u => 
-    u.nombres.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase()) ||
-    u.dni.includes(search)
-  )
+  const filteredUsers = users.filter(u => {
+    const matchesSearch =
+      u.nombres.toLowerCase().includes(search.toLowerCase()) ||
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
+      u.dni.includes(search)
+
+    const matchesRole =
+      filterRole === "all" || u.idRol.toString() === filterRole
+
+    return matchesSearch && matchesRole
+  })
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))
   const paginatedUsers = filteredUsers.slice(
@@ -243,7 +257,7 @@ export default function UsuariosPage() {
                 <div>
                   <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{role.label}: </p>
                   <p className="text-3xl font-black mt-1">
-                    {users.filter(u => u.idRol === role.id).length}
+                    {users.filter(u => u.idRol === role.id && u.activo === true).length}
                   </p>
                 </div>
                 <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center", role.color)}>
@@ -255,19 +269,46 @@ export default function UsuariosPage() {
         ))}
       </div>
 
-      <div className="rounded-2xl shadow-xl bg-card backdrop-blur-sm overflow-hidden border border-border/30">
+      <div className="rounded-2xl  bg-card backdrop-blur-sm overflow-hidden border border-border/30">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50 bg-muted/20 px-6 py-4">
-          <h2 className="text-lg font-bold text-foreground">Listado de Usuarios</h2>
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar por nombre, email o DNI..." 
-              className="pl-10 h-10 rounded-xl bg-background border-border/50 focus:ring-primary/20"
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 bg-muted/20 px-6 py-4">
+          {/* DERECHA: título */}
+          <h2 className="text-lg font-black text-foreground text-right md:text-left flex items-center gap-2">
+            Listado de Usuarios
+          </h2>
+          {/* IZQUIERDA: filtros */}
+          <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+
+            {/* Select */}
+            <Select value={filterRole} onValueChange={handleRoleChange}>
+              <SelectTrigger className="w-full md:w-56 bg-background rounded-xl">
+                <SelectValue placeholder="Filtrar por rol" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="all">Todos los roles</SelectItem>
+                {ROLES.map((role) => (
+                  <SelectItem key={role.id} value={role.id.toString()}>
+                    {role.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Search */}
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre, email o DNI..."
+                className="pl-10 h-10 rounded-xl bg-background border-border/50 focus:ring-primary/20"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
+
           </div>
+
+
         </div>
         {/* Tabla */}
         <div className="p-0">
@@ -459,86 +500,57 @@ export default function UsuariosPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent 
           onOpenAutoFocus={(e) => e.preventDefault()}
-          className="sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl"
+          className="sm:max-w-[900px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl"
         >
           <form onSubmit={handleSubmit} className="bg-card">
-            <div className="bg-gradient-to-r from-primary to-indigo-600 py-4 px-8 text-white relative overflow-hidden">
+            <div className=" bg-card py-4 px-8 text-foreground relative overflow-hidden border-b border-border/50">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-              <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-3 relative z-10">
+              <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-3 relative z-10 text-foreground">
                 {editingUser ? <Edit2 className="h-6 w-6" /> : <UserPlus className="h-6 w-6" />}
                 {editingUser ? "Editar Usuario" : "Nuevo Usuario"}
               </DialogTitle>
             </div>
-
+            
             
             <div className="p-8 space-y-5 pt-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                  <UserIcon className="h-3 w-3 text-primary" /> Nombre Completo
-                </label>
-                <Input 
-                  placeholder="Ej. Luis Alejandro Flores García" 
-                  className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                  value={formData.nombres}
-                  onChange={(e) => setFormData({...formData, nombres: e.target.value})}
-                  required
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Fingerprint className="h-3 w-3 text-primary" /> DNI
+                    <UserIcon className="h-3 w-3 text-primary" /> Nombre Completo
                   </label>
                   <Input 
-                    placeholder="12345678" 
+                    placeholder="Ej. Luis Alejandro Flores García" 
                     className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                    maxLength={8}
-                    value={formData.dni}
-                    onChange={(e) => setFormData({...formData, dni: e.target.value})}
+                    value={formData.nombres}
+                    onChange={(e) => setFormData({...formData, nombres: e.target.value})}
                     required
                   />
                 </div>
-                
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                      <Fingerprint className="h-3 w-3 text-primary" /> DNI
+                    </label>
+                    <Input 
+                      placeholder="12345678" 
+                      className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                      maxLength={8}
+                      value={formData.dni}
+                      onChange={(e) => setFormData({...formData, dni: e.target.value})}
+                      required
+                    />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
                     <Fingerprint className="h-3 w-3 text-primary" /> Celular
                   </label>
                   <Input 
-                    placeholder="Ej. +51 987654321" 
-                    className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                    placeholder="Ej. 987654321" 
+                    maxLength={9}
+                    className="h-9 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
                     value={formData.nmrCelular || ""}
                     onChange={(e) => setFormData({...formData, nmrCelular: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                  <Mail className="h-3 w-3 text-primary" /> Correo Electrónico
-                </label>
-                <Input 
-                  type="email"
-                  placeholder="usuario@brusben.com" 
-                  className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold transition-all focus-visible:bg-background"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Shield className="h-3 w-3 text-primary" /> Contraseña
-                  </label>
-                  <Input 
-                    type="password"
-                    placeholder="••••••••"
-                    className="h-9 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    required={!editingUser}
                   />
                 </div>
                 <div className="space-y-2">
@@ -562,7 +574,33 @@ export default function UsuariosPage() {
                   </Select>
                 </div>
               </div>
-
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                    <Mail className="h-3 w-3 text-primary" /> Correo Electrónico
+                  </label>
+                  <Input 
+                    type="email"
+                    placeholder="usuario@brusben.com" 
+                    className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold transition-all focus-visible:bg-background"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                    <Shield className="h-3 w-3 text-primary" /> Contraseña
+                  </label>
+                  <Input 
+                    type="password"
+                    placeholder="••••••••"
+                    className="h-12 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  />
+                </div>
+              </div>
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-400/5 border border-emerald-400/10 transition-all select-none">
                 <input 
                   type="checkbox" 

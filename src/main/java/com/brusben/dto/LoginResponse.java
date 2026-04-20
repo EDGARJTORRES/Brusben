@@ -8,17 +8,19 @@ public class LoginResponse {
     private String email;
     private Integer rolId;
     private String nombreRol;
+    private Boolean totpActivo;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(String token, Integer idUsuario, String nombre, String email, Integer rolId, String nombreRol) {
+    public LoginResponse(String token, Integer idUsuario, String nombre, String email, Integer rolId, String nombreRol, Boolean totpActivo) {
         this.token = token;
         this.idUsuario = idUsuario;
         this.nombre = nombre;
         this.email = email;
         this.rolId = rolId;
         this.nombreRol = nombreRol;
+        this.totpActivo = totpActivo;
     }
 
     public String getToken() {
@@ -65,7 +67,16 @@ public class LoginResponse {
         return nombreRol;
     }
 
+
     public void setNombreRol(String nombreRol) {
         this.nombreRol = nombreRol;
+    }
+
+    public Boolean getTotpActivo() {
+        return totpActivo;
+    }
+
+    public void setTotpActivo(Boolean totpActivo) {
+        this.totpActivo = totpActivo;
     }
 }

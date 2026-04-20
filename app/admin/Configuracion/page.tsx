@@ -18,6 +18,7 @@ import {
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import "material-symbols/outlined.css";
 import { Label } from "@/components/ui/label"
 
 import { TotpSetup } from "@/components/TotpSetup"
@@ -32,10 +33,12 @@ export default function ConfiguracionPage() {
       
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
+
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+            <Settings className="h-8 w-8 text-primary" />
             Configuración
           </h1>
-          <p className="text-slate-500 font-medium">
+          <p className="text-muted-foreground font-medium">
             Personaliza el entorno y controla la seguridad de la academia.
           </p>
         </div>
@@ -67,7 +70,7 @@ export default function ConfiguracionPage() {
             {/* 🔥 2FA REAL (SIN CAMBIAR DISEÑO) */}
             <div className="space-y-4 border-b border-slate-50 pb-6">
               <div>
-                <h4 className="text-base font-bold text-slate-900">
+                <h4 className="text-base font-bold text-bg-card">
                   Autenticación de dos pasos
                 </h4>
                 <p className="text-sm text-slate-400 font-medium">
@@ -109,7 +112,7 @@ export default function ConfiguracionPage() {
                 Color Primario Institucional
               </Label>
               <div className="flex items-center gap-4">
-                {["bg-blue-600", "bg-rose-600", "bg-emerald-600", "bg-slate-900", "bg-indigo-600"].map((color) => (
+                {["bg-blue-600", "bg-rose-600", "bg-emerald-600", "bg-orange-600", "bg-purple-600"].map((color) => (
                   <div key={color} className={`${color} h-10 w-10 rounded-full cursor-pointer`} />
                 ))}
               </div>

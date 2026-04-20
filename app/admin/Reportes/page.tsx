@@ -5,11 +5,7 @@ import {
   DollarSign,
   Users,
   BookOpen,
-  Calendar,
-  ArrowUpRight,
-  ArrowDownRight,
   CheckCircle2,
-  Clock,
   LayoutDashboard,
   PieChart,
   BarChart4,
@@ -19,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import "material-symbols/outlined.css";
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 

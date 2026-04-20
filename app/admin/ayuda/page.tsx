@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 import { Input } from "@/components/ui/input"
+import "material-symbols/outlined.css";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -80,18 +81,18 @@ export default function AyudaPage() {
   return (
     <div className="space-y-10 pb-20">
       {/* HERO SECTION */}
-      <div className="relative overflow-hidden rounded-[40px] bg-primary p-12 text-white shadow-2xl ring-1 ring-primary/20">
+      <div className="relative overflow-hidden rounded-[40px]  p-12 text-black dark:text-white ">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-black/10 blur-3xl" />
         
         <div className="relative z-10 flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
-          <Badge className="bg-white/20 text-white hover:bg-white/30 border-none px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-sm">
+          <Badge className="bg-white/20 hover:bg-white/30 border-none px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-sm text-black dark:text-white ">
             Centro de Ayuda Brusben
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-black dark:text-white ">
             ¿Cómo podemos ayudarte hoy?
           </h1>
-          <p className="text-lg text-white/80 font-medium">
+          <p className="text-lg  font-medium text-black dark:text-white ">
             Encuentra tutoriales, guías y respuestas a todas tus dudas sobre el panel administrativo.
           </p>
         </div>
@@ -134,9 +135,9 @@ export default function AyudaPage() {
               <AccordionItem 
                 key={idx} 
                 value={`item-${idx}`} 
-                className="border-none bg-white rounded-3xl px-6 shadow-sm ring-1 ring-slate-100 data-[state=open]:ring-primary/20 transition-all"
+                className="border-none bg-card rounded-3xl px-6 shadow-sm ring-1 ring-slate-100 data-[state=open]:ring-primary/20 transition-all"
               >
-                <AccordionTrigger className="hover:no-underline py-5 font-bold text-left text-slate-700 data-[state=open]:text-primary">
+                <AccordionTrigger className="hover:no-underline py-5 font-bold text-left text-dark data-[state=open]:text-primary " >
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="pb-6 text-slate-500 leading-relaxed font-medium">
@@ -146,7 +147,7 @@ export default function AyudaPage() {
             ))}
           </Accordion>
 
-          <div className="bg-slate-50 rounded-[32px] p-8 border border-dashed border-slate-200">
+          <div className="bg-card rounded-[32px] p-8 border border-dashed border-slate-200">
             <div className="flex flex-col md:flex-row items-center gap-6">
               <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
                 <ShieldCheck className="h-8 w-8 text-emerald-500" />

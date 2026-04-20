@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import "material-symbols/outlined.css";
 import {
   User,
   Mail,

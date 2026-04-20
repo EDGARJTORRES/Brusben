@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
+import "material-symbols/outlined.css";
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
@@ -219,7 +220,7 @@ export default function CategoriasPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-            <Tag className="h-8 w-8 text-primary" />
+             
             Gestión de Categorías
           </h1>
           <p className="text-muted-foreground font-medium">

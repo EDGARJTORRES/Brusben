@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import "material-symbols/outlined.css";
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
