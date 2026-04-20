@@ -426,9 +426,9 @@ export default function CategoriasPage() {
       )}
 
       <Dialog open={showModal} onOpenChange={(open) => { if(!open) handleCloseModal() }}>
-        <DialogContent className="sm:max-w-md rounded-2xl p-0 gap-0 border-0 shadow-xl overflow-hidden focus:outline-none">
-          <DialogHeader className="flex flex-row items-center justify-between border-b p-6 bg-gradient-to-r from-primary to-blue-600 py-4 px-8 text-white relative overflow-hidden">
-            <DialogTitle className="text-xl">
+        <DialogContent className="sm:max-w-md rounded-2xl p-0 gap-0 border-0 shadow-xl overflow-hidden focus:outline-none bg-card">
+          <DialogHeader className="flex flex-row items-center justify-between border-b p-6  py-4 px-8 text-white relative overflow-hidden ">
+            <DialogTitle className="text-xl text-foreground">
               {editingId ? "Editar Categoría" : "Nueva Categoría"}
             </DialogTitle>
           </DialogHeader>
