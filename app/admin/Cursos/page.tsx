@@ -1140,12 +1140,12 @@ export default function CoursesPage() {
                 <div className="absolute bottom-0 left-0 w-20 h-20 bg-emerald-500/10 rounded-full -ml-10 -mb-10 blur-2xl opacity-30" />
                 
                 <div className="relative z-6 flex items-center gap-6">
-                  <div className="h-15 w-15 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
-                    <BookOpen className="h-10 w-10 text-primary" />
+                  <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
+                    <BookOpen className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <h4 className="text-2xl font-black tracking-tight">{isEditing ? "Edición Maestra" : "Nueva Publicación"}</h4>
-                    <p className="text-slate-400 font-medium text-md mt-1">
+                    <h4 className="text-1xl font-black tracking-tight">{isEditing ? "Edición Maestra" : "Nueva Publicación"}</h4>
+                    <p className="text-slate-300 font-medium text-md">
                       {isEditing ? `Modificando: ${formData.titulo}` : "Crea una experiencia educativa de alto impacto"}
                     </p>
                   </div>
@@ -1156,7 +1156,7 @@ export default function CoursesPage() {
                 <form onSubmit={handleSubmit} className="space-y-12">
                   
                   {/* SECCIÓN 1: GENERAL */}
-                  <div className="space-y-6">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
                       <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
                         <FileText className="h-4 w-4 text-primary" />
@@ -1171,7 +1171,7 @@ export default function CoursesPage() {
                            <Input 
                             name="titulo" 
                             placeholder="Ej. Arquitectura Frontend Pro" 
-                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-semibold px-4"
+                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-semibold px-4 mt-4"
                             value={formData.titulo}
                             onChange={handleChange}
                             required
@@ -1187,7 +1187,7 @@ export default function CoursesPage() {
                             type="number" 
                             step="0.01" 
                             placeholder="0.00" 
-                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-bold px-4 text-lg"
+                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-bold px-4 text-lg mt-4"
                             value={formData.precioCurso}
                             onChange={handleChange}
                             required
@@ -1201,7 +1201,7 @@ export default function CoursesPage() {
                       <textarea 
                         name="descripcion" 
                         placeholder="Define los objetivos, temario y beneficios..." 
-                        className="w-full h-32 p-5 rounded-2xl bg-muted/40 border-0 focus:ring-2 ring-primary/20 outline-none resize-none transition-all focus:bg-background font-medium leading-relaxed shadow-inner text-foreground"
+                        className="w-full h-32 p-5 rounded-2xl bg-muted/40 border-0 focus:ring-2 ring-primary/20 outline-none resize-none transition-all focus:bg-background font-medium leading-relaxed shadow-inner text-foreground mt-4"
                         value={formData.descripcion}
                         onChange={handleChange}
                         required
@@ -1210,7 +1210,7 @@ export default function CoursesPage() {
                   </div>
 
                   {/* SECCIÓN 2: ACADÉMICO */}
-                  <div className="space-y-6">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
                       <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
                         <LayoutGrid className="h-4 w-4 text-amber-500" />
@@ -1220,10 +1220,10 @@ export default function CoursesPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1">Categoría Académica</label>
+                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1 mb-4">Categoría Académica</label>
                         <select
                           name="catId"
-                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors"
+                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors mt-4"
                           value={formData.catId || ""}
                           onChange={handleChange}
                           required
@@ -1239,10 +1239,10 @@ export default function CoursesPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1">Especialista / Docente</label>
+                        <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1 mb-4">Especialista / Docente</label>
                         <select
                           name="idDocente"
-                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors"
+                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors mt-4"
                           value={formData.idDocente || ""}
                           onChange={handleChange}
                           required
@@ -1260,7 +1260,7 @@ export default function CoursesPage() {
                   </div>
 
                   {/* SECCIÓN 3: MULTIMEDIA */}
-                  <div className="space-y-6">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
                       <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                         <LayoutGrid className="h-4 w-4 text-emerald-500" />
@@ -1310,18 +1310,18 @@ export default function CoursesPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <Button 
                       type="button" 
                       variant="outline"
-                      className="h-16 rounded-2xl font-bold px-10 border-2 hover:bg-muted/50"
+                      className="h-14 rounded-2xl font-bold px-10 border-2 hover:bg-muted/50"
                       onClick={() => { resetForm(); setActiveTab("listado"); }}
                     >
                      <X className="h-5 w-5" /> Cancelar 
                     </Button>
                     <Button 
                       type="submit" 
-                      className="h-16 rounded-2xl font-bold px-10 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 text-lg group shadow-xl"
+                      className="h-14 rounded-2xl font-bold px-10 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 text-lg group shadow-xl"
                     >
                       {isEditing ? "Guardar Cambios" : "Publicar Ahora"}
                       <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
