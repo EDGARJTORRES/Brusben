@@ -517,7 +517,7 @@ export default function PagosPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
          {[
-           { title: "RECAUDACIÓN TOTAL", value: `S/ ${totalRecaudado.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`, icon: DollarSign, color: "text-blue-600", bg: "bg-blue-400/10" },
+           { title: "T. RECAUDACIÓN ", value: `S/ ${totalRecaudado.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`, icon: DollarSign, color: "text-blue-600", bg: "bg-blue-400/10" },
            { title: "PENDIENTES", value: `S/ ${totalPendientes.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`, icon: Clock, color: "text-amber-600", bg: "bg-amber-400/10" },
            { title: "MATRÍCULAS MES", value: matriculasMes.toString(), icon: GraduationCap, color: "text-rose-600", bg: "bg-rose-400/10" },
            { title: "NUEVOS ABONOS", value: payments.length > 0 ? "RECIENTE" : "0", icon: Plus, color: "text-emerald-600", bg: "bg-emerald-400/10" },
