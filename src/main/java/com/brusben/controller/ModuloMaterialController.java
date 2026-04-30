@@ -105,6 +105,19 @@ public class ModuloMaterialController {
         }
     }
 
+    /** PUT — editar solo el título (y opcionalmente la URL) de un material existente */
+    @PutMapping("/materiales/{idMaterial}")
+    public ResponseEntity<?> updateMaterial(
+            @PathVariable Integer idMaterial,
+            @RequestBody MaterialDTO dto) {
+        try {
+            return ResponseEntity.ok(service.updateMaterial(idMaterial, dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/materiales/{idMaterial}")
     public ResponseEntity<?> deleteMaterial(@PathVariable Integer idMaterial) {
         try {

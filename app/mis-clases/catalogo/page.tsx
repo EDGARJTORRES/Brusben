@@ -55,6 +55,7 @@ interface Curso {
 export default function EstudiantesPage() {
   const [courses, setCourses] = useState<Curso[]>([])
   const [categorias, setCategorias] = useState<any[]>([])
+  const [cursosMatriculados, setCursosMatriculados] = useState<Set<number>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [categoriaFilter, setCategoriaFilter] = useState("all")
@@ -71,6 +72,11 @@ export default function EstudiantesPage() {
     fetchCourses()
     fetchCategorias()
   }, [])
+
+  // Cuando ya tenemos cursos y usuario, traemos los pagados
+  useEffect(() => {
+    if (user?.id) fetchCursosMatriculados(user.id)
+  }, [user])
 
   const fetchCourses = async () => {
     setIsLoading(true)
@@ -93,6 +99,19 @@ export default function EstudiantesPage() {
       setCategorias(data.filter((c: any) => c.catEstado === "A" || c.catEstado === true))
     } catch {
       console.error("Error fetching categorias")
+    }
+  }
+
+  const fetchCursosMatriculados = async (idUsuario: number) => {
+    try {
+      const res = await fetch(`http://localhost:8081/api/pagos/usuario/${idUsuario}`)
+      if (!res.ok) return
+      const data = await res.json()
+      // El endpoint devuelve objetos con idCurso
+      const ids = new Set<number>(data.map((p: any) => Number(p.idCurso)))
+      setCursosMatriculados(ids)
+    } catch {
+      // silencioso — si falla simplemente no filtra
     }
   }
 
@@ -131,6 +150,8 @@ export default function EstudiantesPage() {
         setIsDetailOpen(false)
         setEnrolledCourse(course)
         setIsSuccessOpen(true)
+        // Refrescar cursos matriculados para ocultar este curso del catálogo
+        if (user?.id) fetchCursosMatriculados(user.id)
       } else {
         const error = await res.json()
         toast.error(error.error || "Error al registrar la solicitud de inscripción.")
@@ -141,14 +162,18 @@ export default function EstudiantesPage() {
   }
 
   const filteredCourses = courses.filter(c =>
+    !cursosMatriculados.has(c.idCurso) &&
     (c.titulo || "").toLowerCase().includes(search.toLowerCase()) &&
     (categoriaFilter === "all" || c.catNombre === categoriaFilter)
   )
 
-  const totalCursos = courses.length
-  const totalCategorias = [...new Set(courses.map(c => c.catNombre))].length
-  const precioPromedio = courses.length > 0
-    ? (courses.reduce((acc, c) => acc + Number(c.precioCurso || 0), 0) / courses.length)
+  // Stats sobre cursos disponibles (sin los ya matriculados)
+  const cursosDisponibles = courses.filter(c => !cursosMatriculados.has(c.idCurso))
+
+  const totalCursos = cursosDisponibles.length
+  const totalCategorias = [...new Set(cursosDisponibles.map(c => c.catNombre))].length
+  const precioPromedio = cursosDisponibles.length > 0
+    ? (cursosDisponibles.reduce((acc, c) => acc + Number(c.precioCurso || 0), 0) / cursosDisponibles.length)
     : 0
 
   return (

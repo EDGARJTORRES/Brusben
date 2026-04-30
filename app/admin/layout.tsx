@@ -87,24 +87,40 @@ const menuGroups: MenuItem[] = [
     href: "/admin",
   },
   {
-    type: "group",
-    icon: Settings2,
-    label: "Procesos",
-    children: [
-      { icon: BookOpen, label: "Gestión de Cursos", href: "/admin/Cursos" },
-      { icon: GraduationCap, label: "Control Academico", href: "/admin/ControlAcademico" },
-      { icon: PaymentIcon, label: "Pagos de Alumnos", href: "/admin/Pagos" },
-      { icon: ListChecks,label:"Matriculas",href:"/admin/Matriculas"}
-    ],
+    type: "single",
+    icon: BookOpen,
+    label: "Gestión de Cursos",
+    href: "/admin/Cursos",
   },
   {
-    type: "group",
-    icon: Wrench,
-    label: "Mantenimientos",
-    children: [
-       { icon: Tag, label: "Categorías", href: "/admin/Categorias" },
-       { icon: UserCog, label: "Usuarios", href: "/admin/Usuarios" },
-    ],
+    type: "single",
+    icon: GraduationCap,
+    label: "Control Academico",
+    href: "/admin/ControlAcademico",
+  },
+  {
+    type: "single",
+    icon: PaymentIcon,
+    label: "Pagos de Alumnos",
+    href: "/admin/Pagos",
+  },
+  {
+    type: "single",
+    icon:  ListChecks,
+    label: "Matriculas",
+    href:"/admin/Matriculas",
+  },
+  {
+    type: "single",
+    icon: Tag,
+    label: "Categorías",
+    href: "/admin/Categorias",
+  },
+  {
+    type: "single",
+    icon: UserCog,
+    label: "Usuarios",
+     href: "/admin/Usuarios",
   },
   {
     type: "single",

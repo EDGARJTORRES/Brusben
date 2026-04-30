@@ -134,6 +134,23 @@ public class ModuloMaterialService {
         materialRepository.deleteById(idMaterial);
     }
 
+    /** Edita título y/o URL de un material existente (no reemplaza el archivo físico) */
+    public MaterialDTO updateMaterial(Integer idMaterial, MaterialDTO dto) {
+        Material material = materialRepository.findById(idMaterial)
+                .orElseThrow(() -> new RuntimeException("Material no encontrado"));
+
+        if (dto.getTitulo() != null && !dto.getTitulo().isBlank())
+            material.setTitulo(dto.getTitulo());
+        if (dto.getUrlMaterial() != null && !dto.getUrlMaterial().isBlank()) {
+            material.setUrlMaterial(dto.getUrlMaterial());
+            material.setUrlRecurso(dto.getUrlMaterial());
+        }
+        if (dto.getTipoMaterial() != null && !dto.getTipoMaterial().isBlank())
+            material.setTipoMaterial(dto.getTipoMaterial().toUpperCase());
+
+        return toMaterialDTO(materialRepository.save(material));
+    }
+
     // ─── CONVERSORES ────────────────────────────────────────────────────────
 
     private ModuloDTO toModuloDTO(Modulo m) {

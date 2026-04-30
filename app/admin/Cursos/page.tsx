@@ -345,27 +345,45 @@ export default function CoursesPage() {
      } catch { toast.error("Error al eliminar") }
   }
 
-  // ─── NUEVOS ESTADOS para el modal de material ───────────────────────────────
+  // ─── ESTADOS para el modal de material (crear + editar) ─────────────────────
   const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false)
   const [materialModuloId, setMaterialModuloId]         = useState<number | null>(null)
+  const [editingMaterialId, setEditingMaterialId]       = useState<number | null>(null)
   const [materialForm, setMaterialForm] = useState({
     titulo: "",
     tipoMaterial: "VIDEO",   // VIDEO | PDF | DOC | LINK
     urlMaterial: "",         // para LINK / YouTube
-    file: null as File | null
+    file: null as File | null,
+    videoMode: "file" as "file" | "link"
   })
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false)
 
-  // Abre el modal apuntando al módulo correcto
+  // Abre el modal en modo CREAR
   const openAddMaterial = (idModulo: number) => {
     setMaterialModuloId(idModulo)
-    setMaterialForm({ titulo: "", tipoMaterial: "VIDEO", urlMaterial: "", file: null })
+    setEditingMaterialId(null)
+    setMaterialForm({ titulo: "", tipoMaterial: "VIDEO", urlMaterial: "", file: null, videoMode: "file" })
     setIsMaterialDialogOpen(true)
   }
 
-  // Envía el material (archivo o URL)
+  // Abre el modal en modo EDITAR
+  const openEditMaterial = (mat: any) => {
+    setMaterialModuloId(mat.idModulo)
+    setEditingMaterialId(mat.idMaterial)
+    const isLink = mat.urlMaterial?.startsWith("http")
+    setMaterialForm({
+      titulo: mat.titulo ?? "",
+      tipoMaterial: mat.tipoMaterial ?? "VIDEO",
+      urlMaterial: mat.urlMaterial ?? "",
+      file: null,
+      videoMode: mat.tipoMaterial === "VIDEO" && isLink ? "link" : "file",
+    })
+    setIsMaterialDialogOpen(true)
+  }
+
+  // Envía el material (crear o editar)
   const submitMaterial = async () => {
-    if (!materialForm.titulo.trim() || !materialModuloId) {
+    if (!materialForm.titulo.trim()) {
       toast.warning("El título es obligatorio")
       return
     }
@@ -374,8 +392,23 @@ export default function CoursesPage() {
     try {
       let res: Response
 
-      if (materialForm.file) {
-        // ── Subida de archivo físico ──────────────────────────────────────
+      // ── MODO EDICIÓN: solo actualiza título / URL (sin reemplazar archivo) ──
+      if (editingMaterialId) {
+        res = await fetch(
+          `http://localhost:8081/api/cursos-materiales/materiales/${editingMaterialId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              titulo:       materialForm.titulo,
+              tipoMaterial: materialForm.tipoMaterial,
+              urlMaterial:  materialForm.urlMaterial || undefined,
+            }),
+          }
+        )
+      }
+      // ── MODO CREAR con archivo físico ────────────────────────────────────
+      else if (materialForm.file) {
         const fd = new FormData()
         fd.append("file",         materialForm.file)
         fd.append("titulo",       materialForm.titulo)
@@ -385,10 +418,12 @@ export default function CoursesPage() {
           `http://localhost:8081/api/cursos-materiales/modulos/${materialModuloId}/materiales/upload`,
           { method: "POST", body: fd }
         )
-      } else {
-        // ── URL externa (YouTube, link) ───────────────────────────────────
+      }
+      // ── MODO CREAR con URL externa ────────────────────────────────────────
+      else {
         if (!materialForm.urlMaterial.trim()) {
           toast.warning("Ingresa una URL o sube un archivo")
+          setIsUploadingMaterial(false)
           return
         }
         res = await fetch(
@@ -400,17 +435,17 @@ export default function CoursesPage() {
               titulo:       materialForm.titulo,
               tipoMaterial: materialForm.tipoMaterial,
               urlMaterial:  materialForm.urlMaterial,
-            })
+            }),
           }
         )
       }
 
-      if (res.ok) {
-        toast.success("Material añadido ✅")
+      if (res!.ok) {
+        toast.success(editingMaterialId ? "Material actualizado ✅" : "Material añadido ✅")
         setIsMaterialDialogOpen(false)
         openContentManager(selectedCourseContent!)
       } else {
-        const err = await res.json()
+        const err = await res!.json()
         toast.error(err.error || "Error al guardar")
       }
     } catch {
@@ -686,7 +721,8 @@ export default function CoursesPage() {
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg"
+                                              onClick={() => openEditMaterial(mat)}>
                                               <Pencil className="h-4 w-4" />
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg"  onClick={() => openMaterial(mat.urlMaterial)}>
@@ -930,10 +966,12 @@ export default function CoursesPage() {
           </DialogContent>
         </Dialog>
         {/* ── Modal Añadir Material ───────────────────────────────────────────── */}
-        <Dialog open={isMaterialDialogOpen} onOpenChange={setIsMaterialDialogOpen}>
+        <Dialog open={isMaterialDialogOpen} onOpenChange={(open) => { setIsMaterialDialogOpen(open); if (!open) setEditingMaterialId(null) }}>
           <DialogContent className="sm:max-w-lg rounded-[32px] p-8 border border-border/40 shadow-2xl bg-card">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black">Añadir Material</DialogTitle>
+              <DialogTitle className="text-2xl font-black">
+                {editingMaterialId ? "Editar Material" : "Añadir Material"}
+              </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-5 mt-4">
@@ -966,29 +1004,137 @@ export default function CoursesPage() {
                     <button
                       key={key}
                       type="button"
-                      onClick={() => setMaterialForm(p => ({ ...p, tipoMaterial: key, file: null, urlMaterial: "" }))}
+                      disabled={!!editingMaterialId}
+                      onClick={() => setMaterialForm(p => ({ ...p, tipoMaterial: key, file: null, urlMaterial: "", videoMode: "file" as "file" | "link" }))}
                       className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all text-xs font-bold
                         ${materialForm.tipoMaterial === key
                           ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
+                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}
+                        ${editingMaterialId ? "opacity-60 cursor-not-allowed" : ""}`}
                     >
                       {icon}
                       {label}
                     </button>
                   ))}
                 </div>
+                {editingMaterialId && (
+                  <p className="text-[10px] text-muted-foreground font-medium mt-1">
+                    El tipo no se puede cambiar al editar. Para cambiar el archivo, elimina y crea uno nuevo.
+                  </p>
+                )}
               </div>
 
               {/* Contenido según tipo */}
-              {(materialForm.tipoMaterial === "LINK" || materialForm.tipoMaterial === "VIDEO") && (
+              {materialForm.tipoMaterial === "VIDEO" && (
+                <div className="space-y-3">
+                  {/* Selector de modo */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "file" }))}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all text-xs font-bold
+                        ${(materialForm as any).videoMode !== "link"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
+                    >
+                      <Video className="h-4 w-4" /> Subir archivo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "link" }))}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all text-xs font-bold
+                        ${(materialForm as any).videoMode === "link"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
+                    >
+                      <LinkIcon className="h-4 w-4" /> Link externo
+                    </button>
+                  </div>
+
+                  {/* Subir archivo de video — solo en modo CREAR */}
+                  {(materialForm as any).videoMode !== "link" && !editingMaterialId && (
+                    <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all group bg-muted/20">
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/ogg,video/avi,video/mov,.mp4,.webm,.ogg,.avi,.mov"
+                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                        onChange={e => {
+                          const f = e.target.files?.[0] || null
+                          setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
+                        }}
+                      />
+                      {materialForm.file ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                            <Video className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-bold text-sm text-foreground truncate max-w-[200px]">
+                              {materialForm.file.name}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {(materialForm.file.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={e => { e.stopPropagation(); setMaterialForm(p => ({ ...p, file: null, urlMaterial: "" })) }}
+                            className="ml-auto text-rose-400 hover:text-rose-600"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto group-hover:bg-blue-500/10 transition-colors">
+                            <Video className="h-5 w-5 text-muted-foreground group-hover:text-blue-600" />
+                          </div>
+                          <p className="text-sm font-bold text-foreground">Arrastra o haz clic para subir</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            MP4, WEBM, OGG, AVI, MOV
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* En modo edición con archivo físico: solo muestra aviso */}
+                  {(materialForm as any).videoMode !== "link" && editingMaterialId && (
+                    <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
+                      <div className="h-9 w-9 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                        <Video className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground">Archivo de video guardado</p>
+                        <p className="text-[11px] text-muted-foreground">Solo puedes editar el título. Para cambiar el archivo, elimina y crea uno nuevo.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Link externo (YouTube, Vimeo, etc.) */}
+                  {(materialForm as any).videoMode === "link" && (
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                        URL de YouTube / Vimeo / otro
+                      </label>
+                      <Input
+                        placeholder="https://youtube.com/watch?v=..."
+                        className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
+                        value={materialForm.urlMaterial}
+                        onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {materialForm.tipoMaterial === "LINK" && (
                 <div className="space-y-2">
                   <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                    {materialForm.tipoMaterial === "VIDEO" ? "URL de YouTube / Video" : "URL del enlace"}
+                    URL del enlace
                   </label>
                   <Input
-                    placeholder={materialForm.tipoMaterial === "VIDEO"
-                      ? "https://youtube.com/watch?v=..."
-                      : "https://ejemplo.com/recurso"}
+                    placeholder="https://ejemplo.com/recurso"
                     className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
                     value={materialForm.urlMaterial}
                     onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
@@ -1066,9 +1212,9 @@ export default function CoursesPage() {
                 {isUploadingMaterial ? (
                   <span className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Subiendo...
+                    {editingMaterialId ? "Guardando..." : "Subiendo..."}
                   </span>
-                ) : "Guardar Material"}
+                ) : editingMaterialId ? "Guardar Cambios" : "Guardar Material"}
               </Button>
             </div>
           </DialogContent>
