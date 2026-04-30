@@ -4,6 +4,8 @@ import java.util.List;
 
 public class ModuloDTO {
     private Integer idModulo;
+    private Integer idCurso;
+    private String nombreModulo;
     private String nombre;
     private Integer orden;
     private List<MaterialDTO> materiales;
@@ -12,6 +14,12 @@ public class ModuloDTO {
 
     public Integer getIdModulo() { return idModulo; }
     public void setIdModulo(Integer idModulo) { this.idModulo = idModulo; }
+
+    public Integer getIdCurso() { return idCurso; }
+    public void setIdCurso(Integer idCurso) { this.idCurso = idCurso; }
+
+    public String getNombreModulo() { return nombreModulo; }
+    public void setNombreModulo(String nombreModulo) { this.nombreModulo = nombreModulo; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }

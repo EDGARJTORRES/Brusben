@@ -6,7 +6,7 @@ import {
   Plus, Search, MoreVertical, BookOpen, LayoutGrid,
   Edit, Trash, ChevronLeft, ChevronRight, FileText,
   GripVertical, Paperclip, MessageSquare, PlusCircle, Trash2,
-  Video, Link as LinkIcon, File, ArrowLeft,X
+  Video, Link as LinkIcon, File, ArrowLeft,X,Pencil
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -93,6 +93,7 @@ export default function CoursesPage() {
   const [isEditingForo, setIsEditingForo] = useState(false)
   const [currentForoId, setCurrentForoId] = useState<number | null>(null)
   const [contentTab, setContentTab] = useState("curricula")
+  const [openModuloId, setOpenModuloId] = useState<number | null>(null)
 
   // --- APORTES STATE ---
   const [aportes, setAportes] = useState<any[]>([])
@@ -144,10 +145,20 @@ export default function CoursesPage() {
       console.error("Error fetching categorias", e)
     }
   }
+  const toggleModulo = (id: number) => {
+    setOpenModuloId(prev => (prev === id ? null : id))
+  }
 
   const handleChange = (e: any) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
+  }
+  const openMaterial = (url: string) => {
+    if (url.startsWith("http")) {
+      window.open(url, "_blank")
+    } else {
+      window.open(`/${url}`, "_blank")
+    }
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -296,7 +307,7 @@ export default function CoursesPage() {
     setIsLoadingContent(true)
     try {
       const [modRes, foroRes] = await Promise.all([
-        fetch(`http://localhost:8081/api/cursos-contenido/${course.idCurso}/modulos`),
+        fetch(`http://localhost:8081/api/cursos-materiales/${course.idCurso}/modulos`),
         fetch(`http://localhost:8081/api/cursos-contenido/${course.idCurso}/foros`)
       ])
       setContentModules(await modRes.json())
@@ -311,7 +322,7 @@ export default function CoursesPage() {
   const addModule = async () => {
     if (!newModuleName.trim()) return
     try {
-      const res = await fetch(`http://localhost:8081/api/cursos-contenido/${selectedCourseContent?.idCurso}/modulos`, {
+      const res = await fetch(`http://localhost:8081/api/cursos-materiales/${selectedCourseContent?.idCurso}/modulos`, {
         method: "POST",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify({ nombre: newModuleName })
@@ -328,35 +339,90 @@ export default function CoursesPage() {
 
   const deleteModulo = async (id: number) => {
      try {
-       await fetch(`http://localhost:8081/api/cursos-contenido/modulos/${id}`, { method: "DELETE" })
+       await fetch(`http://localhost:8081/api/cursos-materiales/modulos/${id}`, { method: "DELETE" })
        openContentManager(selectedCourseContent!)
        toast.success("Módulo eliminado")
      } catch { toast.error("Error al eliminar") }
   }
 
-  const addMaterial = async (idModulo: number) => {
-    const titulo = prompt("Título del material:")
-    if (!titulo) return
-    const url = prompt("URL del material (o nombre de archivo):")
-    if (!url) return
-    const tipo = prompt("Tipo (VIDEO, PDF, LINK):", "VIDEO") || "VIDEO"
+  // ─── NUEVOS ESTADOS para el modal de material ───────────────────────────────
+  const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false)
+  const [materialModuloId, setMaterialModuloId]         = useState<number | null>(null)
+  const [materialForm, setMaterialForm] = useState({
+    titulo: "",
+    tipoMaterial: "VIDEO",   // VIDEO | PDF | DOC | LINK
+    urlMaterial: "",         // para LINK / YouTube
+    file: null as File | null
+  })
+  const [isUploadingMaterial, setIsUploadingMaterial] = useState(false)
 
+  // Abre el modal apuntando al módulo correcto
+  const openAddMaterial = (idModulo: number) => {
+    setMaterialModuloId(idModulo)
+    setMaterialForm({ titulo: "", tipoMaterial: "VIDEO", urlMaterial: "", file: null })
+    setIsMaterialDialogOpen(true)
+  }
+
+  // Envía el material (archivo o URL)
+  const submitMaterial = async () => {
+    if (!materialForm.titulo.trim() || !materialModuloId) {
+      toast.warning("El título es obligatorio")
+      return
+    }
+
+    setIsUploadingMaterial(true)
     try {
-      const res = await fetch(`http://localhost:8081/api/cursos-contenido/modulos/${idModulo}/materiales`, {
-        method: "POST",
-        headers: { "Content-Type" : "application/json" },
-        body: JSON.stringify({ titulo, urlMaterial: url, tipoMaterial: tipo })
-      })
-      if (res.ok) {
-        openContentManager(selectedCourseContent!)
-        toast.success("Material añadido")
+      let res: Response
+
+      if (materialForm.file) {
+        // ── Subida de archivo físico ──────────────────────────────────────
+        const fd = new FormData()
+        fd.append("file",         materialForm.file)
+        fd.append("titulo",       materialForm.titulo)
+        fd.append("tipoMaterial", materialForm.tipoMaterial)
+
+        res = await fetch(
+          `http://localhost:8081/api/cursos-materiales/modulos/${materialModuloId}/materiales/upload`,
+          { method: "POST", body: fd }
+        )
+      } else {
+        // ── URL externa (YouTube, link) ───────────────────────────────────
+        if (!materialForm.urlMaterial.trim()) {
+          toast.warning("Ingresa una URL o sube un archivo")
+          return
+        }
+        res = await fetch(
+          `http://localhost:8081/api/cursos-materiales/modulos/${materialModuloId}/materiales`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              titulo:       materialForm.titulo,
+              tipoMaterial: materialForm.tipoMaterial,
+              urlMaterial:  materialForm.urlMaterial,
+            })
+          }
+        )
       }
-    } catch { toast.error("Error al añadir") }
+
+      if (res.ok) {
+        toast.success("Material añadido ✅")
+        setIsMaterialDialogOpen(false)
+        openContentManager(selectedCourseContent!)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || "Error al guardar")
+      }
+    } catch {
+      toast.error("Error de conexión")
+    } finally {
+      setIsUploadingMaterial(false)
+    }
   }
 
   const deleteMaterial = async (id: number) => {
     try {
-      await fetch(`http://localhost:8081/api/cursos-contenido/materiales/${id}`, { method: "DELETE" })
+      await fetch(`http://localhost:8081/api/cursos-materiales/materiales/${id}`, { method: "DELETE" })
       openContentManager(selectedCourseContent!)
       toast.success("Material eliminado")
     } catch { toast.error("Error al eliminar") }
@@ -460,10 +526,10 @@ export default function CoursesPage() {
 
   if (viewMode === "content" && selectedCourseContent) {
     return (
-      <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+      <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
         
         {/* HEADER DE GESTIÓN */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900 px-4 py-3 rounded-2xl  text-white relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900 px-4 py-2 rounded-2xl  text-white relative overflow-hidden">
            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
            <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full -ml-24 -mb-24 blur-2xl opacity-30" />
            
@@ -471,7 +537,7 @@ export default function CoursesPage() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-14 w-14 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all border border-white/10"
+                className="h-12 w-12 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all border border-white/10"
                 onClick={() => { setViewMode("list"); setSelectedCourseContent(null); }}
               >
                 <ArrowLeft className="h-6 w-6" />
@@ -481,12 +547,12 @@ export default function CoursesPage() {
                    <Badge className="bg-primary text-white border-0 font-bold uppercase tracking-widest text-[10px] px-3">Gestión de Contenido</Badge>
                    <span className="text-slate-400 text-xs font-bold ring-1 ring-slate-700 px-2 py-0.5 rounded-full">ID: {selectedCourseContent.idCurso}</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight">{selectedCourseContent.titulo}</h2>
+                <h3 className="text-1xl md:text-2xl font-black tracking-tight">{selectedCourseContent.titulo}</h3>
               </div>
            </div>
 
            <div className="relative z-10 hidden lg:flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
-              <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+              <div className="h-11 w-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
                  <BookOpen className="h-6 w-6 text-white" />
               </div>
               <div className="pr-4">
@@ -497,7 +563,7 @@ export default function CoursesPage() {
         </div>
 
         <Tabs value={contentTab} onValueChange={setContentTab} className="w-full">
-           <div className="flex items-center justify-between mb-8">
+           <div className="flex items-center justify-between mb-4">
               <TabsList className="bg-card/50 p-1.5 rounded-2xl h-14 border border-border shadow-inner">
                 <TabsTrigger value="curricula" className="px-8 font-black data-[state=active]:bg-primary data-[state=active]:text-white rounded-xl transition-all">
                   Plan de Estudios
@@ -511,160 +577,166 @@ export default function CoursesPage() {
            <TabsContent value="curricula" className="space-y-10 mt-0 animate-in slide-in-from-bottom-4 duration-500">
               
               <div className="grid lg:grid-cols-12 gap-10">
-                 
-                 {/* Lado Izquierdo: Lista de Módulos (Scrollable) */}
-                 <div className="lg:col-span-8 space-y-6">
-                    <div className="flex items-center justify-between mb-2 pl-2">
-                       <h3 className="text-xl font-black text-foreground flex items-center gap-3">
-                          <LayoutGrid className="h-5 w-5 text-primary" />
-                          Módulos Estructurados
-                       </h3>
-                       <Badge variant="outline" className="font-bold">{contentModules.length} Secciones</Badge>
-                    </div>
-
-                    {isLoadingContent ? (
-                      <div className="grid gap-6">
-                         {[1,2].map(i => <div key={i} className="h-32 bg-card animate-pulse rounded-[32px] border" />)}
+                {/* Lado Derecho: Acciones y Sidebar */}
+                <div className="lg:col-span-4 space-y-8">
+                  <Card className="border-0 shadow-2xl rounded-[32px] overflow-hidden bg-slate-900 text-white p-8 relative">
+                      <div className="absolute top-0 right-0 p-6 opacity-10">
+                        <PlusCircle className="h-12 w-12" />
                       </div>
-                    ) : (
-                      <div className="grid gap-6">
-                        {contentModules.map((modulo: any) => (
-                           <Card key={modulo.idModulo} className="border-border/40 shadow-xl shadow-slate-200/50 rounded-[32px] overflow-hidden group hover:ring-2 ring-primary/20 transition-all">
-                              <div className="bg-card p-6 flex items-center justify-between border-b border-border/40">
-                                 <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors">
-                                       <GripVertical className="h-5 w-5" />
-                                    </div>
-                                    <h4 className="text-lg font-black text-foreground">{modulo.nombre}</h4>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-10 px-4 font-bold gap-2" onClick={() => addMaterial(modulo.idModulo)}>
-                                       <PlusCircle className="h-4 w-4" /> Clase
-                                    </Button>
+                      <h4 className="text-xl font-black mb-6 relative z-10 underline decoration-primary decoration-4 underline-offset-8">Nuevo Módulo</h4>
+                      <div className="space-y-4 relative z-10">
+                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nombre del Módulo</p>
+                        <Input 
+                          placeholder="Ej: Fundamentos Avanzados" 
+                          className="bg-white/10 border-white/10 text-white placeholder:text-slate-500 h-14 rounded-2xl focus:ring-primary"
+                          value={newModuleName}
+                          onChange={(e) => setNewModuleName(e.target.value)}
+                        />
+                        <Button className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 group" onClick={addModule}>
+                          Añadir Módulo
+                          <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      </div>
+                  </Card>
 
-                                    <AlertDialog>
-                                       <AlertDialogTrigger asChild>
-                                          <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl">
-                                             <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                       </AlertDialogTrigger>
-                                       <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
-                                          <AlertDialogHeader>
-                                             <AlertDialogTitle className="text-2xl font-black">Eliminar Módulo</AlertDialogTitle>
-                                             <AlertDialogDescription className="text-slate-500 font-medium">
-                                                ¿Seguro que deseas eliminar <b>"{modulo.nombre}"</b>? Se borrarán todos los materiales contenidos en él.
-                                             </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                             <AlertDialogCancel className="rounded-2xl font-bold">Cancelar</AlertDialogCancel>
-                                             <AlertDialogAction onClick={() => deleteModulo(modulo.idModulo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Eliminar Módulo</AlertDialogAction>
-                                          </AlertDialogFooter>
-                                       </AlertDialogContent>
-                                    </AlertDialog>
+                  <div className="bg-primary/5 rounded-[32px] p-8 border border-primary/10">
+                      <h4 className="font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-tight text-sm">
+                        <BookOpen className="h-4 w-4" /> Tips del Administrador
+                      </h4>
+                      <ul className="space-y-4">
+                        <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
+                            <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">1</div>
+                            Organiza por orden lógico para mejorar la experiencia del estudiante.
+                        </li>
+                        <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
+                            <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">2</div>
+                            Combina videos y lecturas (PDF) para un aprendizaje interactivo.
+                        </li>
+                      </ul>
+                  </div>
+                </div>
+                {/* Lado Izquierdo: Lista de Módulos (Scrollable) */}
+                <div className="lg:col-span-8 space-y-6">
+                  <div className="flex items-center justify-between mb-2 pl-2">
+                      <h3 className="text-xl font-black text-foreground flex items-center gap-3">
+                        <LayoutGrid className="h-5 w-5 text-primary" />
+                        Módulos Estructurados
+                      </h3>
+                      <Badge variant="outline" className="font-bold">{contentModules.length} Módulos</Badge>
+                  </div>
 
-                                 </div>
-                              </div>
+                  {isLoadingContent ? (
+                    <div className="grid gap-6">
+                        {[1,2].map(i => <div key={i} className="h-32 bg-card animate-pulse rounded-[32px] border" />)}
+                    </div>
+                  ) : (
+                    <div className="grid gap-6">
+                      {contentModules.map((modulo: any) => (
+                          <Card key={modulo.idModulo} className="border-border/40 shadow-xl   overflow-hidden group hover:ring-2 ring-primary/20 transition-all">
+                            <div 
+                                  className="bg-card px-4 pb-2 flex items-center justify-between border-b border-border/40 cursor-pointer"
+                                  onClick={() => toggleModulo(modulo.idModulo)}
+                                >
+                                <div className="flex items-center gap-4">
+                                  <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors">
+                                      <GripVertical className="h-5 w-5" />
+                                  </div>
+                                  <h4 className="text-lg font-black text-foreground">{modulo.nombre}</h4>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-10 px-4 font-bold gap-2" onClick={() => openAddMaterial(modulo.idModulo)}>
+                                      <PlusCircle className="h-4 w-4" /> Clase
+                                  </Button>
+
+                                  <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="text-2xl font-black">Eliminar Módulo</AlertDialogTitle>
+                                            <AlertDialogDescription className="text-slate-500 font-medium">
+                                              ¿Seguro que deseas eliminar <b>"{modulo.nombre}"</b>? Se borrarán todos los materiales contenidos en él.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="rounded-2xl font-bold">Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => deleteModulo(modulo.idModulo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Eliminar Módulo</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                  </AlertDialog>
+
+                                </div>
+                            </div>
+                            {openModuloId === modulo.idModulo && (
                               <CardContent className="p-6 bg-muted/10">
-                                 {modulo.materiales?.length > 0 ? (
-                                   <div className="grid gap-3">
-                                      {modulo.materiales.map((mat: any) => (
-                                        <div key={mat.idMaterial} className="flex items-center justify-between p-4 bg-background rounded-2xl group/mat border border-border/40 hover:shadow-md transition-all">
-                                           <div className="flex items-center gap-4">
-                                              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${mat.tipoMaterial === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
-                                                 {mat.tipoMaterial === 'VIDEO' ? <Video className="h-5 w-5" /> : <File className="h-5 w-5" />}
-                                              </div>
-                                              <div>
-                                                 <p className="font-bold text-sm text-foreground">{mat.titulo}</p>
-                                                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{mat.tipoMaterial}</p>
-                                              </div>
-                                           </div>
-                                           <div className="flex items-center gap-2">
-                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg" onClick={() => window.open(mat.urlMaterial, '_blank')}>
-                                                 <LinkIcon className="h-4 w-4" />
-                                              </Button>
-                                              
-                                              <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                   <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg group-hover/mat:opacity-100 transition-opacity">
-                                                      <Trash2 className="h-4 w-4" />
-                                                   </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent className="rounded-3xl">
-                                                   <AlertDialogHeader>
-                                                      <AlertDialogTitle className="font-black">Borrar Recurso</AlertDialogTitle>
-                                                      <AlertDialogDescription>¿Deseas quitar <b>{mat.titulo}</b> de este curso?</AlertDialogDescription>
-                                                   </AlertDialogHeader>
-                                                   <AlertDialogFooter>
-                                                      <AlertDialogCancel className="rounded-xl">Mejor no</AlertDialogCancel>
-                                                      <AlertDialogAction onClick={() => deleteMaterial(mat.idMaterial)} className="rounded-xl bg-destructive font-bold">Sí, borrar</AlertDialogAction>
-                                                   </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                              </AlertDialog>
+                                {modulo.materiales?.length > 0 ? (
+                                  <div className="grid gap-3">
+                                    {modulo.materiales.map((mat: any) => (
+                                      <div key={mat.idMaterial} className="flex items-center justify-between p-4 bg-background rounded-2xl group/mat border border-border/40  transition-all">
+                                          <div className="flex items-center gap-4">
+                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${mat.tipoMaterial === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
+                                                {mat.tipoMaterial === 'VIDEO' ? <Video className="h-5 w-5" /> : <File className="h-5 w-5" />}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm text-foreground">{mat.titulo}</p>
+                                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{mat.tipoMaterial}</p>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg">
+                                              <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg"  onClick={() => openMaterial(mat.urlMaterial)}>
+                                                <LinkIcon className="h-4 w-4" />
+                                            </Button>
+                                            
+                                            <AlertDialog>
+                                              <AlertDialogTrigger asChild>
+                                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg group-hover/mat:opacity-100 transition-opacity">
+                                                    <Trash2 className="h-4 w-4" />
+                                                  </Button>
+                                              </AlertDialogTrigger>
+                                              <AlertDialogContent className="rounded-3xl">
+                                                  <AlertDialogHeader>
+                                                    <AlertDialogTitle className="font-black">Borrar Recurso</AlertDialogTitle>
+                                                    <AlertDialogDescription>¿Deseas quitar <b>{mat.titulo}</b> de este curso?</AlertDialogDescription>
+                                                  </AlertDialogHeader>
+                                                  <AlertDialogFooter>
+                                                    <AlertDialogCancel className="rounded-xl">Mejor no</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => deleteMaterial(mat.idMaterial)} className="rounded-xl bg-destructive font-bold">Sí, borrar</AlertDialogAction>
+                                                  </AlertDialogFooter>
+                                              </AlertDialogContent>
+                                            </AlertDialog>
 
-                                           </div>
-                                        </div>
-                                      ))}
-                                   </div>
-                                 ) : (
-                                   <div className="text-center py-6 border-2 border-dashed border-border/50 rounded-2xl bg-background/50">
-                                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aún no hay materiales en este módulo</p>
-                                   </div>
-                                 )}
-                              </CardContent>
-                           </Card>
-                        ))}
+                                          </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-6 border-2 border-dashed border-border/50 rounded-2xl bg-background/50">
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aún no hay materiales en este módulo</p>
+                                  </div>
+                                )}
+                            </CardContent>
+                            )}
+                          </Card>
+                      ))}
 
-                        {contentModules.length === 0 && (
-                          <div className="bg-card rounded-[40px] p-20 text-center border-2 border-dashed border-border shadow-inner">
-                             <div className="h-24 w-24 bg-muted rounded-[32px] flex items-center justify-center mx-auto mb-6">
-                                <PlusCircle className="h-10 w-10 text-muted-foreground" />
-                             </div>
-                             <h4 className="text-xl font-bold text-foreground mb-2">Comienza tu currícula</h4>
-                             <p className="text-muted-foreground max-w-sm mx-auto">Añade tu primer módulo a la derecha para empezar a organizar el contenido del curso.</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                 </div>
-
-                 {/* Lado Derecho: Acciones y Sidebar */}
-                 <div className="lg:col-span-4 space-y-8">
-                    <Card className="border-0 shadow-2xl rounded-[32px] overflow-hidden bg-slate-900 text-white p-8 relative">
-                       <div className="absolute top-0 right-0 p-6 opacity-10">
-                          <PlusCircle className="h-12 w-12" />
-                       </div>
-                       <h4 className="text-xl font-black mb-6 relative z-10 underline decoration-primary decoration-4 underline-offset-8">Nuevo Módulo</h4>
-                       <div className="space-y-4 relative z-10">
-                          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nombre del Módulo</p>
-                          <Input 
-                            placeholder="Ej: Fundamentos Avanzados" 
-                            className="bg-white/10 border-white/10 text-white placeholder:text-slate-500 h-14 rounded-2xl focus:ring-primary"
-                            value={newModuleName}
-                            onChange={(e) => setNewModuleName(e.target.value)}
-                          />
-                          <Button className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 group" onClick={addModule}>
-                            Añadir Módulo
-                            <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                          </Button>
-                       </div>
-                    </Card>
-
-                    <div className="bg-primary/5 rounded-[32px] p-8 border border-primary/10">
-                       <h4 className="font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-tight text-sm">
-                          <BookOpen className="h-4 w-4" /> Tips del Administrador
-                       </h4>
-                       <ul className="space-y-4">
-                          <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
-                             <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">1</div>
-                             Organiza por orden lógico para mejorar la experiencia del estudiante.
-                          </li>
-                          <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
-                             <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">2</div>
-                             Combina videos y lecturas (PDF) para un aprendizaje interactivo.
-                          </li>
-                       </ul>
+                      {contentModules.length === 0 && (
+                        <div className="bg-card rounded-[40px] p-20 text-center border-2 border-dashed border-border shadow-inner">
+                            <div className="h-24 w-24 bg-muted rounded-[32px] flex items-center justify-center mx-auto mb-6">
+                              <PlusCircle className="h-10 w-10 text-muted-foreground" />
+                            </div>
+                            <h4 className="text-xl font-bold text-foreground mb-2">Comienza tu currícula</h4>
+                            <p className="text-muted-foreground max-w-sm mx-auto">Añade tu primer módulo a la derecha para empezar a organizar el contenido del curso.</p>
+                        </div>
+                      )}
                     </div>
-                 </div>
+                  )}
+                </div>
 
               </div>
 
@@ -854,6 +926,150 @@ export default function CoursesPage() {
                <Button className="h-12 w-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shrink-0" onClick={handleAddAporte}>
                   <PlusCircle className="h-5 w-5" />
                </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        {/* ── Modal Añadir Material ───────────────────────────────────────────── */}
+        <Dialog open={isMaterialDialogOpen} onOpenChange={setIsMaterialDialogOpen}>
+          <DialogContent className="sm:max-w-lg rounded-[32px] p-8 border border-border/40 shadow-2xl bg-card">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black">Añadir Material</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-5 mt-4">
+
+              {/* Título */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                  Título del recurso
+                </label>
+                <Input
+                  placeholder="Ej. Introducción a React Hooks"
+                  className="h-12 rounded-2xl bg-muted/30 border-0 font-bold"
+                  value={materialForm.titulo}
+                  onChange={e => setMaterialForm(p => ({ ...p, titulo: e.target.value }))}
+                />
+              </div>
+
+              {/* Tipo */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                  Tipo de material
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { key: "VIDEO", icon: <Video className="h-4 w-4" />,    label: "Video"    },
+                    { key: "PDF",   icon: <File  className="h-4 w-4" />,    label: "PDF"      },
+                    { key: "DOC",   icon: <FileText className="h-4 w-4" />, label: "Doc"      },
+                    { key: "LINK",  icon: <LinkIcon  className="h-4 w-4" />, label: "Link"   },
+                  ].map(({ key, icon, label }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setMaterialForm(p => ({ ...p, tipoMaterial: key, file: null, urlMaterial: "" }))}
+                      className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all text-xs font-bold
+                        ${materialForm.tipoMaterial === key
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
+                    >
+                      {icon}
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contenido según tipo */}
+              {(materialForm.tipoMaterial === "LINK" || materialForm.tipoMaterial === "VIDEO") && (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    {materialForm.tipoMaterial === "VIDEO" ? "URL de YouTube / Video" : "URL del enlace"}
+                  </label>
+                  <Input
+                    placeholder={materialForm.tipoMaterial === "VIDEO"
+                      ? "https://youtube.com/watch?v=..."
+                      : "https://ejemplo.com/recurso"}
+                    className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
+                    value={materialForm.urlMaterial}
+                    onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
+                  />
+                </div>
+              )}
+
+              {(materialForm.tipoMaterial === "PDF" || materialForm.tipoMaterial === "DOC") && (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Subir archivo ({materialForm.tipoMaterial})
+                  </label>
+                  <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all group bg-muted/20">
+                    <input
+                      type="file"
+                      accept={materialForm.tipoMaterial === "PDF" ? ".pdf" : ".doc,.docx,.ppt,.pptx,.xls,.xlsx"}
+                      className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                      onChange={e => {
+                        const f = e.target.files?.[0] || null
+                        setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
+                      }}
+                    />
+                    {materialForm.file ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <File className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-bold text-sm text-foreground truncate max-w-[220px]">
+                            {materialForm.file.name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {(materialForm.file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); setMaterialForm(p => ({ ...p, file: null, urlMaterial: "" })) }}
+                          className="ml-auto text-rose-400 hover:text-rose-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto group-hover:bg-primary/10 transition-colors">
+                          <Paperclip className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Arrastra o haz clic para subir</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          {materialForm.tipoMaterial === "PDF" ? "Solo archivos PDF" : "DOC, DOCX, PPT, XLS"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="flex-1 h-12 rounded-2xl font-bold border-2"
+                onClick={() => setIsMaterialDialogOpen(false)}
+                disabled={isUploadingMaterial}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1 h-12 rounded-2xl font-black shadow-lg"
+                onClick={submitMaterial}
+                disabled={isUploadingMaterial}
+              >
+                {isUploadingMaterial ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Subiendo...
+                  </span>
+                ) : "Guardar Material"}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
