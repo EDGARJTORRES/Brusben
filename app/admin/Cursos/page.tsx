@@ -11,7 +11,6 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import "material-symbols/outlined.css";
 import {
   Card, CardContent, CardDescription,
   CardFooter, CardHeader, CardTitle
@@ -441,7 +440,7 @@ export default function CoursesPage() {
       }
 
       if (res!.ok) {
-        toast.success(editingMaterialId ? "Material actualizado ✅" : "Material añadido ✅")
+        toast.success(editingMaterialId ? "Material actualizado" : "Material añadido")
         setIsMaterialDialogOpen(false)
         openContentManager(selectedCourseContent!)
       } else {
@@ -667,7 +666,7 @@ export default function CoursesPage() {
                   ) : (
                     <div className="grid gap-6">
                       {contentModules.map((modulo: any) => (
-                          <Card key={modulo.idModulo} className="border-border/40 shadow-xl   overflow-hidden group hover:ring-2 ring-primary/20 transition-all">
+                          <Card key={modulo.idModulo} className="border-border/40 shadow-xl   overflow-hidden group  transition-all">
                             <div 
                                   className="bg-card px-4 pb-2 flex items-center justify-between border-b border-border/40 cursor-pointer"
                                   onClick={() => toggleModulo(modulo.idModulo)}
@@ -905,7 +904,6 @@ export default function CoursesPage() {
 
               </div>
            </TabsContent>
-
         </Tabs>
 
         {/* Modal de Aportes */}
@@ -1228,10 +1226,10 @@ export default function CoursesPage() {
 
       {/* HEADER */}
       <div>
-        <h1 className="text-3xl font-black flex items-center gap-3">
-          <BookOpen className="h-8 w-8 text-primary"/>
+        <h4 className="text-2xl font-black flex items-center gap-3">
+          <BookOpen className="h-6 w-6 text-primary"/>
           Gestión de Cursos
-        </h1>
+        </h4>
         <p className="text-muted-foreground">
           Diseña, edita y publica cursos académicos
         </p>

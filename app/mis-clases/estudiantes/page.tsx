@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import "material-symbols/outlined.css";
 import { 
   Plus, 
   Search, 

@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
-import "material-symbols/outlined.css";
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
@@ -36,8 +35,6 @@ interface Categoria {
   catColor?: string
   catEstado: "A" | "I"
 }
-
-
 
 export default function CategoriasPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
@@ -217,12 +214,12 @@ export default function CategoriasPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-             
+          <h4 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+            <Tag className="h-6 w-6 text-primary" />
             Gestión de Categorías
-          </h1>
+          </h4>
           <p className="text-muted-foreground font-medium">
             Administra las categorías disponibles para los cursos
           </p>
@@ -238,7 +235,7 @@ export default function CategoriasPage() {
       </div>
 
       {/* Buscador y Controles Adicionales */}
-      <div className="flex flex-col md:flex-row gap-4 items-center mb-2">
+      <div className="flex flex-col md:flex-row items-center mb-4">
         <div className="relative w-full md:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/70" />
           <Input

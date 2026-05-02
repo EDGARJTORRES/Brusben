@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import "material-symbols/outlined.css";
 import {
   BookOpen,
   Search,
@@ -379,7 +378,7 @@ export default function EstudiantesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ✅ NUEVO: MODAL DE CONFIRMACIÓN DE ÉXITO */}
+      {/* NUEVO: MODAL DE CONFIRMACIÓN DE ÉXITO */}
       <Dialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
         <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
           {enrolledCourse && (

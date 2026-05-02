@@ -12,7 +12,6 @@ import {
   DollarSign,
   Users,
 } from "lucide-react"
-import "material-symbols/outlined.css";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useRouter } from "next/navigation"

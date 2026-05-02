@@ -20,9 +20,8 @@ import {
   Tag,
   HelpCircle,
   ClipboardList,
-  Settings2,
-  Wrench,
-  DollarSign,
+  TrendingUp,
+  TrendingDown,
   UserCog,
   ListChecks,
 } from "lucide-react"
@@ -61,7 +60,7 @@ import {
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/lib/auth-context"
-import "material-symbols/outlined.css";
+import { RouteGuard } from "@/lib/route-guard"
 
 type SingleMenuItem = {
   type: "single"
@@ -89,62 +88,68 @@ const menuGroups: MenuItem[] = [
   {
     type: "single",
     icon: BookOpen,
-    label: "Gestión de Cursos",
-    href: "/admin/Cursos",
+    label: "Cursos",
+    href: "/admin/cursos",
   },
   {
     type: "single",
     icon: GraduationCap,
     label: "Control Academico",
-    href: "/admin/ControlAcademico",
+    href: "/admin/controlacademico",
   },
   {
     type: "single",
-    icon: PaymentIcon,
-    label: "Pagos de Alumnos",
-    href: "/admin/Pagos",
+    icon: TrendingUp,
+    label: "Ingresos",
+    href: "/admin/ingresos",
   },
   {
     type: "single",
-    icon:  ListChecks,
+    icon: TrendingDown,
+    label: "Egresos",
+    href: "/admin/egresos",
+  },
+  {
+    type: "single",
+    icon: ListChecks,
     label: "Matriculas",
-    href:"/admin/Matriculas",
+    href: "/admin/matriculas",
   },
   {
     type: "single",
     icon: Tag,
     label: "Categorías",
-    href: "/admin/Categorias",
+    href: "/admin/categorias",
   },
   {
     type: "single",
     icon: UserCog,
     label: "Usuarios",
-     href: "/admin/Usuarios",
+    href: "/admin/usuarios",
   },
   {
     type: "single",
     icon: BarChart3,
     label: "Reportes",
-    href: "/admin/Reportes",
+    href: "/admin/reportes",
   },
   {
     type: "single",
     icon: Settings,
     label: "Configuración",
-    href: "/admin/Configuracion",
+    href: "/admin/configuracion",
   },
   {
     type: "single",
     icon: ClipboardList,
-    label:"Bitacora",
-    href:"/admin/Bitacora"
+    label: "Bitacora",
+    href: "/admin/bitacora",
   },
   {
     type: "single",
     icon: HelpCircle,
-    label:"Ayuda",
-    href:"/admin/Ayuda"
+    label: "Ayuda",
+    href: "/admin/ayuda",
   }
 ]
 
@@ -158,7 +163,6 @@ export default function AdminLayout({
   const router = useRouter()
   const { user, logout } = useAuth()
 
-  // Obtener iniciales del nombre para el avatar
   const getInitials = (nombre?: string) => {
     if (!nombre) return "U"
     const parts = nombre.split(" ")
@@ -171,7 +175,8 @@ export default function AdminLayout({
   }
 
   return (
-    <SidebarProvider style={{ "--sidebar-width-icon": "5rem" } as React.CSSProperties}>
+    <RouteGuard allowedRoles={["admin", "administrador"]}>
+      <SidebarProvider style={{ "--sidebar-width-icon": "5rem" } as React.CSSProperties}>
       <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
@@ -187,7 +192,7 @@ export default function AdminLayout({
                       href="/admin"
                       className="flex items-center gap-1.5 text-sm font-bold tracking-wider"
                     >
-                      <Home className="h-6 w-4" />
+                      <Home className="h-4 w-4" />
                       Home
                     </BreadcrumbLink>
                   </BreadcrumbItem>
@@ -250,7 +255,7 @@ export default function AdminLayout({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px] p-2 rounded-xl shadow-xl border-border">
                   <DropdownMenuItem
-                    onClick={() => router.push("/admin/Perfil")}
+                    onClick={() => router.push("/admin/perfil")}
                     className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted gap-2"
                   >
                     <User className="h-4 w-4" />
@@ -276,6 +281,7 @@ export default function AdminLayout({
         </main>
       </SidebarInset>
     </SidebarProvider>
+    </RouteGuard>
   )
 }
 
@@ -329,7 +335,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
         </button>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
+      <SidebarContent className="px-2 py-6 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
         <SidebarMenu className="gap-2">
           {menuGroups.map((item) => {
             if (item.type === "single") {
@@ -341,7 +347,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
                     asChild
                     isActive={isActive}
                     className={cn(
-                      "h-12 px-4 rounded-2xl transition-all duration-200 font-bold",
+                      "h-11 px-4 rounded-2xl transition-all duration-200 font-bold",
                       isCollapsed ? "w-14 h-14 p-0 justify-center items-center" : "w-full",
                       isActive
                         ? "bg-primary text-white hover:bg-primary/90"

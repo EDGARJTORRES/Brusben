@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import { RouteGuard } from "@/lib/route-guard"
 
 const menuItems = [
   { icon: Home, label: "Inicio", href: "/mis-clases" },
@@ -60,7 +61,7 @@ const menuItems = [
   { icon: Users, label: "Compañeros", href: "/mis-clases/estudiantes" },
   { icon: PaymentIcon, label: "Mis Pagos", href: "/mis-clases/pagos" },
   { icon: Calendar, label: "Calendario", href: "/mis-clases/calendario" },
-  { icon: HelpCircle, label: "Ayuda", href: "/mis-clases/Ayuda" },
+  { icon: HelpCircle, label: "Ayuda", href: "/mis-clases/ayuda" },
 ]
 
 export default function StudentLayout({
@@ -72,7 +73,6 @@ export default function StudentLayout({
   const router = useRouter()
   const { user, logout } = useAuth()
 
-  // Obtener iniciales del nombre para el avatar
   const getInitials = (nombre?: string) => {
     if (!nombre) return "E"
     const parts = nombre.split(" ")
@@ -85,7 +85,8 @@ export default function StudentLayout({
   }
 
   return (
-    <SidebarProvider style={{"--sidebar-width-icon": "5rem"} as React.CSSProperties}>
+    <RouteGuard allowedRoles={["estudiante"]}>
+      <SidebarProvider style={{"--sidebar-width-icon": "5rem"} as React.CSSProperties}>
       <StudentSidebar pathname={pathname} user={user} onLogout={handleLogout} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
@@ -153,7 +154,7 @@ export default function StudentLayout({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px] p-2 rounded-xl shadow-xl border-border">
                   <DropdownMenuItem
-                    onClick={() => router.push("/mis-clases/Perfil")}
+                    onClick={() => router.push("/mis-clases/perfil")}
                     className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted gap-2"
                   >
                     <User className="h-4 w-4" />
@@ -181,6 +182,7 @@ export default function StudentLayout({
         </main>
       </SidebarInset>
     </SidebarProvider>
+    </RouteGuard>
   )
 }
 

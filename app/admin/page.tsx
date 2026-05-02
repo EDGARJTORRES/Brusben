@@ -172,7 +172,89 @@ export default function AdminDashboard() {
       .slice(0, 5)
   }, [pagados])
 
-  const maxTopCount = topCursos[0]?.count ?? 1
+  // ── Gráfico Top Cursos ──────────────────────────────────────────────────────
+
+  const topCursosChartOptions = useMemo(() => {
+    const sorted = [...topCursos].reverse() // menor → mayor (Highcharts bar invierte el eje)
+    return {
+      chart: {
+        type: "bar",
+        backgroundColor: "transparent",
+        height: 260,
+        margin: [10, 20, 10, 10],
+      },
+      title: { text: "" },
+      credits: { enabled: false },
+      xAxis: {
+        categories: sorted.map((c) => c.name.toLowerCase()),
+        labels: {
+          style: { fontSize: "11px", color: "#94a3b8", fontWeight: "700", textTransform: "capitalize" },
+          formatter: function (this: any) {
+            const v: string = this.value
+            return v.length > 22 ? v.slice(0, 22) + "…" : v
+          },
+        },
+        lineColor: "transparent",
+        tickColor: "transparent",
+      },
+      yAxis: {
+        title: { text: "" },
+        labels: {
+          style: { fontSize: "10px", color: "#94a3b8" },
+          formatter: function (this: any) {
+            return `${this.value}`
+          },
+        },
+        gridLineColor: "#f1f5f9",
+        allowDecimals: false,
+      },
+      legend: { enabled: false },
+      tooltip: {
+        useHTML: true,
+        formatter: function (this: any): string {
+          const idx = this.point.index
+          const curso = sorted[idx]
+          return `
+            <div style="font-family:inherit;padding:4px 2px">
+              <div style="font-weight:900;font-size:12px;margin-bottom:4px;text-transform:capitalize">${curso.name.toLowerCase()}</div>
+              <div style="color:#636444;font-weight:700">${curso.count} matrícula${curso.count !== 1 ? "s" : ""}</div>
+              <div style="color:#10b981;font-weight:700">${formatCurrency(curso.monto)}</div>
+            </div>`
+        },
+        backgroundColor: "#fff",
+        borderColor: "#e2e8f0",
+        borderRadius: 12,
+        shadow: true,
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 6,
+          dataLabels: {
+            enabled: true,
+            formatter: function (this: any) {
+              return `${this.y} alum.`
+            },
+            style: { fontSize: "10px", fontWeight: "700", color: "#64748b", textOutline: "none" },
+          },
+          colorByPoint: true,
+          colors: [
+            "#818cf8",
+            "#6366f1",
+            "#4f46e5",
+            "#4338ca",
+            "#3730a3",
+          ],
+        },
+      },
+      series: [
+        {
+          type: "bar",
+          name: "Matrículas",
+          data: sorted.map((c) => c.count),
+        },
+      ],
+    }
+  }, [topCursos])
 
   // ── Gráfico ingresos por mes ────────────────────────────────────────────────
 
@@ -318,34 +400,12 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* ── ESTADO DE PAGOS ── */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Pagados", count: pagados.length, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-500/10" },
-          { label: "Pendientes", count: pendientes.length, icon: Clock, color: "text-amber-600", bg: "bg-amber-500/10" },
-          { label: "Anulados", count: anulados.length, icon: XCircle, color: "text-rose-600", bg: "bg-rose-500/10" },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="bg-card border border-border rounded-2xl px-5 py-4 flex items-center gap-4 shadow-sm"
-          >
-            <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", s.bg, s.color)}>
-              <s.icon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-black">{isLoading ? "—" : s.count}</p>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* ── MAIN GRID ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Gráfico ingresos */}
         <Card className="lg:col-span-8 border border-border shadow-sm rounded-2xl overflow-hidden">
-          <CardHeader className="px-6 pt-5 pb-3 border-b border-border/50">
+          <CardHeader className="px-5 py-2.5 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
@@ -413,63 +473,60 @@ export default function AdminDashboard() {
 
         {/* Top cursos */}
         <Card className="lg:col-span-5 border border-border shadow-sm rounded-2xl overflow-hidden">
-          <CardHeader className="px-6 pt-5 pb-3 border-b border-border/50">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-                <Layers className="h-5 w-5" />
+          <CardHeader className="px-5 py-2.5 border-b border-border/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                  <Layers className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-bold">Top Cursos</CardTitle>
+                  <p className="text-xs text-muted-foreground">Por número de matrículas pagadas</p>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-base font-bold">Top Cursos</CardTitle>
-                <p className="text-xs text-muted-foreground">Por número de matrículas pagadas</p>
-              </div>
+              <Badge className="bg-indigo-500/10 text-indigo-600 border-0 text-[10px] font-black rounded-full px-3">
+                TOP 5
+              </Badge>
             </div>
           </CardHeader>
-          <CardContent className="px-6 py-4 space-y-4">
+          <CardContent className="px-4 pt-3 pb-2">
             {isLoading ? (
-              [1, 2, 3].map((i) => (
-                <div key={i} className="h-10 bg-muted animate-pulse rounded-xl" />
-              ))
+              <div className="h-[260px] bg-muted animate-pulse rounded-xl" />
             ) : topCursos.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">Sin datos aún</p>
+              <div className="h-[260px] flex flex-col items-center justify-center text-muted-foreground gap-2">
+                <Layers className="h-10 w-10 opacity-20" />
+                <p className="text-sm font-bold">Sin datos de matrículas aún</p>
+              </div>
             ) : (
-              topCursos.map((c, i) => (
-                <div key={c.name} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-[11px] font-black text-muted-foreground w-5 flex-shrink-0">
-                        {i + 1}°
-                      </span>
-                      <span className="text-sm font-bold truncate capitalize">
-                        {c.name.toLowerCase()}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                      <span className="text-xs font-bold text-muted-foreground">
-                        {c.count} alum.
-                      </span>
-                      <span className="text-xs font-black text-emerald-600">
+              <>
+                <HighchartsReact highcharts={Highcharts} options={topCursosChartOptions} />
+                {/* Leyenda de montos debajo del gráfico */}
+                <div className="mt-1 space-y-1 px-2 pb-1">
+                  {[...topCursos].reverse().map((c, i) => (
+                    <div key={c.name} className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="h-2 w-2 rounded-full flex-shrink-0"
+                          style={{ background: ["#818cf8","#6366f1","#4f46e5","#4338ca","#3730a3"][i] }}
+                        />
+                        <span className="truncate font-semibold text-muted-foreground capitalize">
+                          {c.name.toLowerCase()}
+                        </span>
+                      </div>
+                      <span className="font-black text-emerald-600 flex-shrink-0 ml-2">
                         {formatCurrency(c.monto)}
                       </span>
                     </div>
-                  </div>
-                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${(c.count / maxTopCount) * 100}%`,
-                        background: `hsl(${220 + i * 25}, 80%, 60%)`,
-                      }}
-                    />
-                  </div>
+                  ))}
                 </div>
-              ))
+              </>
             )}
           </CardContent>
         </Card>
 
         {/* Actividad reciente */}
         <Card className="lg:col-span-7 border border-border shadow-sm rounded-2xl overflow-hidden">
-          <CardHeader className="px-6 pt-5 pb-3 border-b border-border/50">
+          <CardHeader className="px-5 py-2.5 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
@@ -558,15 +615,22 @@ function KpiCard({
 
   return (
     <Card className="border border-border shadow-sm rounded-2xl overflow-hidden">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between mb-3">
-          <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center", c.bg, c.text)}>
-            <Icon className="h-5 w-5" />
+      <CardContent className="px-4 py-2">
+        <div className="flex items-center justify-between gap-3">
+          <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0", c.bg, c.text)}>
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">
+              {title}
+            </p>
+            <p className="text-xl font-black text-foreground leading-none">{value}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 font-medium truncate">{sub}</p>
           </div>
           {trend !== "neutral" && (
             <div
               className={cn(
-                "flex items-center gap-1 text-[10px] font-bold rounded-full px-2 py-1",
+                "flex items-center gap-1 text-[10px] font-bold rounded-full px-2 py-1 flex-shrink-0",
                 trend === "up"
                   ? "bg-emerald-500/10 text-emerald-600"
                   : "bg-rose-500/10 text-rose-600"
@@ -580,11 +644,6 @@ function KpiCard({
             </div>
           )}
         </div>
-        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
-          {title}
-        </p>
-        <p className="text-2xl font-black text-foreground leading-none">{value}</p>
-        <p className="text-[11px] text-muted-foreground mt-1.5 font-medium">{sub}</p>
       </CardContent>
     </Card>
   )
@@ -616,3 +675,5 @@ function EmptyChart() {
     </div>
   )
 }
+
+

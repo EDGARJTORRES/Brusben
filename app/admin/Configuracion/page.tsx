@@ -18,7 +18,6 @@ import {
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import "material-symbols/outlined.css";
 import { Label } from "@/components/ui/label"
 
 import { TotpSetup } from "@/components/TotpSetup"

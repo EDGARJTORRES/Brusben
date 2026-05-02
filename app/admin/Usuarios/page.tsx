@@ -21,7 +21,6 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import "material-symbols/outlined.css";
 import {
   Table,
   TableBody,
@@ -234,10 +233,10 @@ export default function UsuariosPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
-            <Shield className="h-8 w-8 text-primary" />
+          <h4 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-3">
+            <Shield className="h-6 w-6 text-primary" />
             Gestión de Usuarios
-          </h1>
+          </h4>
           <p className="text-muted-foreground mt-1 font-medium"> Administra los accesos de administradores, docentes y estudiantes.</p>
         </div>
         <Button 

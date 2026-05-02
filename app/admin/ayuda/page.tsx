@@ -8,7 +8,6 @@ import {
 } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 import { Input } from "@/components/ui/input"
-import "material-symbols/outlined.css";
 import { Button } from "@/components/ui/button"
 import {
   Card,

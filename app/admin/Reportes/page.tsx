@@ -15,7 +15,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import "material-symbols/outlined.css";
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -65,10 +64,10 @@ export default function ReportsPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
-          <BarChart4 className="h-8 w-8 text-primary" />
+        <h4 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-3">
+          <BarChart4 className="h-6 w-6 text-primary" />
           Módulo de Reportes
-        </h1>
+        </h4>
         <p className="text-muted-foreground font-medium">Analiza el rendimiento académico y financiero en tiempo real.</p>
       </div>
 

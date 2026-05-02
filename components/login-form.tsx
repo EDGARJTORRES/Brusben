@@ -55,7 +55,7 @@ export function LoginForm() {
       nombre: data.nombre || "Usuario",
       rol: data.nombreRol || "Sin rol",
       avatar: data.avatar || undefined,
-      totpActivo: data.totpActivo ?? false, // ✅ AGREGAR ESTO
+      totpActivo: data.totpActivo ?? false, //  AGREGAR ESTO
     }
     sessionStorage.setItem("user", JSON.stringify(userData))
     if (data.token) localStorage.setItem("token", data.token)
