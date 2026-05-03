@@ -156,7 +156,7 @@ export default function MatriculaDetallePage() {
     <div className="space-y-8 animate-in fade-in duration-500">
 
       {/* BANNER DEL CURSO con botón de regreso integrado */}
-      <div className="relative h-52 rounded-3xl overflow-hidden bg-muted shadow-md">
+      <div className="relative h-45 rounded-3xl overflow-hidden bg-muted shadow-md">
         {imgUrl ? (
           <img src={imgUrl} alt={curso.titulo} className="w-full h-full object-cover" />
         ) : (

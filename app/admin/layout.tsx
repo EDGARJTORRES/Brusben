@@ -176,11 +176,11 @@ export default function AdminLayout({
 
   return (
     <RouteGuard allowedRoles={["admin", "administrador"]}>
-      <SidebarProvider style={{ "--sidebar-width-icon": "5rem" } as React.CSSProperties}>
+      <SidebarProvider style={{ "--sidebar-width-icon": "4rem" } as React.CSSProperties}>
       <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
-        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
+        <header className="sticky top-0 z-20 flex h-18 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
           <div className="flex items-center gap-4 flex-1">
             <SidebarTrigger className="md:hidden" />
 
@@ -298,7 +298,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border bg-sidebar z-40">
-      <SidebarHeader className="h-auto flex flex-col gap-4 px-4 py-4 border-b border-border/60 overflow-visible">
+      <SidebarHeader className="h-auto flex flex-col gap-4 px-2 py-4 border-b border-border/60 overflow-visible">
         <div
           className={cn(
             "flex items-center gap-3 transition-all",
@@ -306,10 +306,10 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
           )}
         >
           <div className="relative flex-shrink-0">
-            <div className="h-12 w-12 rounded-2xl bg-primary dark:bg-primary flex items-center justify-center ring-2 ring-primary/10">
-              <GraduationCap className="h-7 w-7 text-white" />
+            <div className="h-10 w-10 rounded-xl bg-primary dark:bg-primary flex items-center justify-center ring-2 ring-primary/10">
+              <GraduationCap className="h-6 w-6 text-white" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col justify-center min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
@@ -335,7 +335,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
         </button>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-6 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
+      <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
         <SidebarMenu className="gap-2">
           {menuGroups.map((item) => {
             if (item.type === "single") {
@@ -348,7 +348,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
                     isActive={isActive}
                     className={cn(
                       "h-11 px-4 rounded-2xl transition-all duration-200 font-bold",
-                      isCollapsed ? "w-14 h-14 p-0 justify-center items-center" : "w-full",
+                      isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
                       isActive
                         ? "bg-primary text-white hover:bg-primary/90"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -366,7 +366,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
                     >
                       <item.icon
                         className={cn(
-                          "h-6 w-6 flex-shrink-0 transition-transform",
+                          "h-5 w-5 flex-shrink-0 transition-transform",
                           isActive ? "text-white" : "text-muted-foreground"
                         )}
                       />
@@ -438,7 +438,7 @@ function SidebarGroupItem({
         }}
         className={cn(
           "w-full flex items-center rounded-2xl transition-all duration-200 font-bold relative z-10",
-          isCollapsed ? "h-14 w-14 justify-center mx-auto" : "h-12 px-4 justify-between",
+          isCollapsed ? "h-12 w-12 justify-center mx-auto" : "h-12 px-4 justify-between",
           hasActiveChild
             ? "bg-primary/10 text-primary"
             : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -489,7 +489,7 @@ function SidebarGroupItem({
 
       {/* Submenú flotante cuando está colapsado */}
       {isCollapsed && showFloatingMenu && (
-        <div className="fixed left-[calc(5rem+1rem)] top-[6rem] z-[100] min-w-[220px] rounded-2xl border border-border bg-background shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed left-[calc(4rem+1rem)] top-[6rem] z-[100] min-w-[220px] rounded-2xl border border-border bg-background shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200">
           <div className="px-3 py-2 text-xs font-black uppercase tracking-wider text-muted-foreground">
             {item.label}
           </div>

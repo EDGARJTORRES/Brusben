@@ -85,10 +85,10 @@ export default function MatriculasPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
         <div>
-          <h1 className="text-3xl font-black flex items-center gap-3 tracking-tight">
-            <GraduationCap className="h-7 w-7 text-primary" />
+          <h4 className="text-2xl font-black flex items-center gap-3 tracking-tight">
+            <GraduationCap className="h-6 w-6 text-primary" />
             Gestión de Matrículas
-          </h1>
+          </h4>
           <p className="text-muted-foreground text-sm font-medium mt-1">
             Estudiantes matriculados por curso — solo con pago confirmado.
           </p>
@@ -206,7 +206,7 @@ export default function MatriculasPage() {
                       className={cn(
                         "rounded-xl h-9 px-4 font-bold text-xs gap-1.5 transition-all border-1",
                         curso.totalEstudiantes > 0
-                          ? "bg-card hover:bg-card/90 text-black"
+                          ? "bg-card text-card hover:bg-card/90 text-black"
                           : "bg-muted text-muted-foreground cursor-not-allowed"
                       )}
                     >

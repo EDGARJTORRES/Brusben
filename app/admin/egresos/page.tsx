@@ -405,7 +405,7 @@ export default function EgresosPage() {
           </p>
         </div>
         <Button
-          className="rounded-xl h-11 bg-rose-600 hover:bg-rose-700 gap-2 font-black text-white shadow-lg shadow-rose-600/20"
+          className="rounded-xl h-11 bg-rose-600 hover:bg-rose-700 gap-2 font-black text-white"
           onClick={() => setIsModalOpen(true)}
         >
           <Plus className="h-5 w-5" />

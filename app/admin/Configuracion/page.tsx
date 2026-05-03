@@ -28,25 +28,25 @@ export default function ConfiguracionPage() {
 
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-0">
       
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
 
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-            <Settings className="h-8 w-8 text-primary" />
+          <h4 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+            <Settings className="h-6 w-6 text-primary" />
             Configuración
-          </h1>
+          </h4>
           <p className="text-muted-foreground font-medium">
             Personaliza el entorno y controla la seguridad de la academia.
           </p>
         </div>
       </div>
 
-      <div className="grid gap-12 lg:grid-cols-1 lg:items-start">
+      <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
 
         {/* ================= PERFIL ================= */}
-        <div className="space-y-10">
+        <div className="space-y-5">
 
           {/* ================= SEGURIDAD ================= */}
 
@@ -88,7 +88,7 @@ export default function ConfiguracionPage() {
         </div>
 
         {/* ================= RESTO (SIN CAMBIOS) ================= */}
-        <div className="space-y-10">
+        <div className="space-y-5">
 
           <div className="flex items-center gap-4 text-orange-600 bg-orange-50 p-4 rounded-3xl border border-orange-100">
             <div className="h-12 w-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white">
@@ -103,7 +103,7 @@ export default function ConfiguracionPage() {
               </p>
             </div>
           </div>
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
+          <div className="grid gap-12 lg:grid-cols-1 lg:items-start">
             <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-8">
               <div className="space-y-4">
                 <Label className="text-xs font-black uppercase tracking-widest text-slate-400">

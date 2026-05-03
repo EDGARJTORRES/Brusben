@@ -63,12 +63,12 @@ public class PagoController {
             Curso curso = cursoRepository.findById(idCurso).orElseThrow(() -> new RuntimeException("Curso no encontrado"));
 
             // --- Lógica para asegurar que exista el registro en la tabla 'estudiantes' ---
-            Estudiante estudiante = estudianteRepository.findByCorreo(usuario.getEmail())
+            Estudiante estudiante = estudianteRepository.findByEmail(usuario.getEmail())
                     .orElseGet(() -> {
                         Estudiante nuevo = new Estudiante();
                         nuevo.setNombres(usuario.getNombres());
                         nuevo.setDni(usuario.getDni());
-                        nuevo.setCorreo(usuario.getEmail());
+                        nuevo.setEmail(usuario.getEmail());
                         return estudianteRepository.save(nuevo);
                     });
 

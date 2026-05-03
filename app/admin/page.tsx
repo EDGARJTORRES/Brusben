@@ -326,10 +326,117 @@ export default function AdminDashboard() {
       ],
     }
   }, [pagados])
-
-  // ── Actividad reciente ──────────────────────────────────────────────────────
-
+  
   const recentPayments = useMemo(() => payments.slice(0, 6), [payments])
+
+  // ── Estadísticas de docentes ────────────────────────────────────────────────
+
+  const docentesActivos = useMemo(
+    () => users.filter((u) => u.nombreRol?.toLowerCase() === "docente" && u.activo),
+    [users]
+  )
+
+  // ── Distribución de pagos ───────────────────────────────────────────────────
+
+  const pagoDistribution = useMemo(() => ({
+    pagados: pagados.length,
+    pendientes: pendientes.length,
+    anulados: anulados.length,
+  }), [pagados, pendientes, anulados])
+
+  const pagoDistributionChartOptions = useMemo(() => ({
+    chart: { type: "pie", backgroundColor: "transparent", height: 240 },
+    title: { text: "" },
+    credits: { enabled: false },
+    tooltip: {
+      pointFormat: "<b>{point.name}</b><br/>{point.y} ({point.percentage:.1f}%)",
+      backgroundColor: "#fff",
+      borderColor: "#e2e8f0",
+      borderRadius: 12,
+    },
+    plotOptions: {
+      pie: {
+        allowPointSelect: true,
+        innerSize: 75,
+        dataLabels: {
+          enabled: true,
+          distance: -25,
+          formatter: function (this: any) {
+            return `${this.point.y}`
+          },
+          style: { fontSize: "12px", fontWeight: "900", color: "#fff", textOutline: "none" },
+        },
+        colors: ["#720202d2", "#f59e0b", "#000000c7"],
+      },
+    },
+    legend: {
+      layout: "vertical",
+      align: "right",
+      verticalAlign: "middle",
+      itemStyle: { fontSize: "12px", fontWeight: "700", color: "#64748b" },
+    },
+    series: [
+      {
+        name: "Pagos",
+        type: "pie",
+        data: [
+          { name: "Pagados", y: pagoDistribution.pagados },
+          { name: "Pendientes", y: pagoDistribution.pendientes },
+          { name: "Anulados", y: pagoDistribution.anulados },
+        ],
+      },
+    ],
+  }), [pagoDistribution])
+
+  // ── Análisis por curso (pie chart) ───────────────────────────────────────────
+
+  const cursosByStatus = useMemo(() => ({
+    activos: cursosActivos.length,
+    inactivos: courses.length - cursosActivos.length,
+  }), [cursosActivos, courses])
+
+  const cursoStatusChartOptions = useMemo(() => ({
+    chart: { type: "pie", backgroundColor: "transparent", height: 240 },
+    title: { text: "" },
+    credits: { enabled: false },
+    tooltip: {
+      pointFormat: "<b>{point.name}</b><br/>{point.y} cursos ({point.percentage:.1f}%)",
+      backgroundColor: "#fff",
+      borderColor: "#e2e8f0",
+      borderRadius: 12,
+    },
+    plotOptions: {
+      pie: {
+        allowPointSelect: true,
+        innerSize: 75,
+        dataLabels: {
+          enabled: true,
+          distance: -25,
+          formatter: function (this: any) {
+            return `${this.point.y}`
+          },
+          style: { fontSize: "12px", fontWeight: "900", color: "#fff", textOutline: "none" },
+        },
+        colors: ["#373738ff", "#cbd5e1"],
+      },
+    },
+    legend: {
+      layout: "vertical",
+      align: "right",
+      verticalAlign: "middle",
+      itemStyle: { fontSize: "12px", fontWeight: "700", color: "#64748b" },
+    },
+    series: [
+      {
+        name: "Cursos",
+        type: "pie",
+        data: [
+          { name: "Activos", y: cursosByStatus.activos },
+          { name: "Inactivos", y: cursosByStatus.inactivos },
+        ],
+      },
+    ],
+  }), [cursosByStatus])
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -382,21 +489,21 @@ export default function AdminDashboard() {
           trend="up"
           color="blue"
         />
-        <KpiCard
-          title="Cursos Activos"
-          value={isLoading ? "—" : cursosActivos.length}
-          sub={`${courses.length} cursos en total`}
-          icon={BookOpen}
+        <MetricCard
+          title="Promedio por Curso"
+          value={isLoading ? "—" : cursosActivos.length > 0 ? formatCurrency(totalIngresos / cursosActivos.length) : "S/ 0"}
+          sub="Ingreso promedio"
+          icon={BarChart3}
+          color="sky"
           trend="neutral"
-          color="violet"
         />
-        <KpiCard
-          title="Pagos de Hoy"
-          value={isLoading ? "—" : pagosHoy.length}
-          sub={`${pendientes.length} pendientes`}
-          icon={CreditCard}
-          trend={pendientes.length > 0 ? "down" : "up"}
-          color="amber"
+        <MetricCard
+          title="Tasa de Conversión"
+          value={isLoading ? "—" : payments.length > 0 ? `${((pagados.length / payments.length) * 100).toFixed(0)}%` : "0%"}
+          sub="Pagos completados"
+          icon={CheckCircle2}
+          color="teal"
+          trend="up"
         />
       </div>
 
@@ -405,7 +512,7 @@ export default function AdminDashboard() {
 
         {/* Gráfico ingresos */}
         <Card className="lg:col-span-8 border border-border shadow-sm rounded-2xl overflow-hidden">
-          <CardHeader className="px-5 py-2.5 border-b border-border/50">
+          <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
@@ -473,7 +580,7 @@ export default function AdminDashboard() {
 
         {/* Top cursos */}
         <Card className="lg:col-span-5 border border-border shadow-sm rounded-2xl overflow-hidden">
-          <CardHeader className="px-5 py-2.5 border-b border-border/50">
+          <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
@@ -526,7 +633,7 @@ export default function AdminDashboard() {
 
         {/* Actividad reciente */}
         <Card className="lg:col-span-7 border border-border shadow-sm rounded-2xl overflow-hidden">
-          <CardHeader className="px-5 py-2.5 border-b border-border/50">
+          <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
@@ -579,6 +686,60 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+      </div>
+
+
+      {/* ── CHARTS GRID ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+
+        {/* Distribución de pagos */}
+        <Card className="lg:col-span-6 border border-border shadow-sm rounded-2xl overflow-hidden">
+          <CardHeader className="px-5 py-0 border-b border-border/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-green-500/10 text-green-600 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-bold">Distribución de Pagos</CardTitle>
+                  <p className="text-xs text-muted-foreground">Estado de todos los pagos</p>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="px-4 pt-4 pb-2 flex justify-center">
+            {isLoading ? (
+              <div className="h-[240px] w-full bg-muted animate-pulse rounded-xl" />
+            ) : (
+              <HighchartsReact highcharts={Highcharts} options={pagoDistributionChartOptions} />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Estados de cursos */}
+        <Card className="lg:col-span-6 border border-border shadow-sm rounded-2xl overflow-hidden">
+          <CardHeader className="px-5 py-0 border-b border-border/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-bold">Estado de Cursos</CardTitle>
+                  <p className="text-xs text-muted-foreground">Cursos activos e inactivos</p>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="px-4 pt-4 pb-2 flex justify-center">
+            {isLoading ? (
+              <div className="h-[240px] w-full bg-muted animate-pulse rounded-xl" />
+            ) : (
+              <HighchartsReact highcharts={Highcharts} options={cursoStatusChartOptions} />
             )}
           </CardContent>
         </Card>
@@ -676,4 +837,77 @@ function EmptyChart() {
   )
 }
 
+function MetricCard({
+  title,
+  value,
+  sub,
+  icon: Icon,
+  color,
+  trend,
+}: {
+  title: string
+  value: string | number
+  sub: string
+  icon: React.ElementType
+  color: "rose" | "sky" | "teal" | "indigo"
+  trend: "up" | "down" | "neutral"
+}) {
+  const colors = {
+    rose: { bg: "bg-rose-500/10", text: "text-rose-600" },
+    sky: { bg: "bg-sky-500/10", text: "text-sky-600" },
+    teal: { bg: "bg-teal-500/10", text: "text-teal-600" },
+    indigo: { bg: "bg-indigo-500/10", text: "text-indigo-600" },
+  }
+  const c = colors[color]
+
+  return (
+    <Card className="border border-border shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+      <CardContent className="px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", c.bg, c.text)}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">
+              {title}
+            </p>
+            <p className="text-lg font-black text-foreground leading-none">{value}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium truncate">{sub}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function SummaryCard({
+  title,
+  value,
+  sub,
+  icon: Icon,
+  bgColor,
+  textColor,
+}: {
+  title: string
+  value: string | number
+  sub: string
+  icon: React.ElementType
+  bgColor: string
+  textColor: string
+}) {
+  return (
+    <div className={cn("rounded-2xl p-5 border border-border/50 shadow-sm flex flex-col gap-3", bgColor)}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{title}</p>
+          <p className={cn("text-2xl font-black", textColor)}>{value}</p>
+        </div>
+        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", textColor, bgColor)}>
+          <Icon className="h-5 w-5 opacity-70" />
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground font-medium">{sub}</p>
+    </div>
+  )
+}
 

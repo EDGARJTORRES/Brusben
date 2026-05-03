@@ -232,38 +232,37 @@ export function TotpSetup({ idUsuario, totpActivo, onUpdate }: Props) {
   // Vista Principal (Idle)
   return (
     <div className={cn(
-      "relative overflow-hidden transition-all duration-500 rounded-3xl border p-6 group",
+      "relative overflow-hidden transition-all duration-500 rounded-2xl border p-6 group",
       totpActivo 
         ? "bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.1)]" 
         : "bg-secondary/20 border-border/50"
     )}>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
-        <div className="flex items-center gap-4">
-          <div className={cn(
-            "h-14 w-14 rounded-2xl flex items-center justify-center transition-all duration-500 rotate-0 group-hover:rotate-12",
-            totpActivo ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-muted text-muted-foreground"
-          )}>
-            {totpActivo ? <ShieldCheck className="h-7 w-7" /> : <ShieldOff className="h-7 w-7" />}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className="font-black text-lg">Autenticación 2FA</h4>
-              {totpActivo && (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 animate-pulse">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] font-black uppercase tracking-wider">Protegido</span>
-                </div>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground font-medium max-w-xs mt-1">
-              {totpActivo 
-                ? "Tu cuenta está blindada con seguridad avanzada de Google." 
-                : "Agrega una capa extra de seguridad para proteger tus datos sensibles."}
-            </p>
-          </div>
+      <div className="flex items-center gap-4 relative z-10">
+        <div className={cn(
+          "h-14 w-14 rounded-2xl flex items-center justify-center transition-all duration-500 rotate-0 group-hover:rotate-12",
+          totpActivo ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-muted text-muted-foreground"
+        )}>
+          {totpActivo ? <ShieldCheck className="h-7 w-7" /> : <ShieldOff className="h-7 w-7" />}
         </div>
-
-        <div className="flex items-center gap-4 bg-background/50 backdrop-blur-sm p-3 rounded-2xl border border-border/40 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
+        <div>
+          <div className="flex items-center gap-2">
+            <h4 className="font-black text-lg">Autenticación 2FA</h4>
+            {totpActivo && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 animate-pulse">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span className="text-[10px] font-black uppercase tracking-wider">Protegido</span>
+              </div>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground font-medium  mt-1">
+            {totpActivo 
+              ? "Tu cuenta está blindada con seguridad avanzada de Google." 
+              : "Agrega una capa extra de seguridad para proteger tus datos sensibles."}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center justify-center mt-4">
+        <div className="flex items-center gap-4 bg-background/50 backdrop-blur-sm p-3 rounded-2xl border border-border/40 shadow-sm w-full sm:w-auto justify-between sm:justify-start mt-4 ">
           <span className={cn(
             "text-xs font-black uppercase tracking-widest px-2",
             totpActivo ? "text-emerald-500" : "text-muted-foreground"
