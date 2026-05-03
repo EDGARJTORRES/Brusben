@@ -782,28 +782,12 @@ function KpiCard({
             <Icon className="h-4 w-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-2">
               {title}
             </p>
-            <p className="text-xl font-black text-foreground leading-none">{value}</p>
+            <p className="text-xl font-black text-foreground leading-none mb-2">{value}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5 font-medium truncate">{sub}</p>
           </div>
-          {trend !== "neutral" && (
-            <div
-              className={cn(
-                "flex items-center gap-1 text-[10px] font-bold rounded-full px-2 py-1 flex-shrink-0",
-                trend === "up"
-                  ? "bg-emerald-500/10 text-emerald-600"
-                  : "bg-rose-500/10 text-rose-600"
-              )}
-            >
-              {trend === "up" ? (
-                <TrendingUp className="h-3 w-3" />
-              ) : (
-                <TrendingDown className="h-3 w-3" />
-              )}
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
@@ -868,10 +852,10 @@ function MetricCard({
             <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-2">
               {title}
             </p>
-            <p className="text-lg font-black text-foreground leading-none">{value}</p>
+            <p className="text-lg font-black text-foreground leading-none mb-2">{value}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5 font-medium truncate">{sub}</p>
           </div>
         </div>
@@ -879,35 +863,3 @@ function MetricCard({
     </Card>
   )
 }
-
-function SummaryCard({
-  title,
-  value,
-  sub,
-  icon: Icon,
-  bgColor,
-  textColor,
-}: {
-  title: string
-  value: string | number
-  sub: string
-  icon: React.ElementType
-  bgColor: string
-  textColor: string
-}) {
-  return (
-    <div className={cn("rounded-2xl p-5 border border-border/50 shadow-sm flex flex-col gap-3", bgColor)}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{title}</p>
-          <p className={cn("text-2xl font-black", textColor)}>{value}</p>
-        </div>
-        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", textColor, bgColor)}>
-          <Icon className="h-5 w-5 opacity-70" />
-        </div>
-      </div>
-      <p className="text-xs text-muted-foreground font-medium">{sub}</p>
-    </div>
-  )
-}
-

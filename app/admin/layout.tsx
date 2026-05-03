@@ -5,7 +5,6 @@ import Link from "next/link"
 import { useState } from "react"
 import {
   Home,
-  Users,
   BookOpen,
   CreditCard as PaymentIcon,
   GraduationCap,

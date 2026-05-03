@@ -10,6 +10,8 @@ import {
   ChevronRight,
   LayoutGrid,
   DollarSign,
+  CalendarDays,
+  Sparkles,
   Users,
 } from "lucide-react"
 
@@ -19,6 +21,12 @@ import { useAuth } from "@/lib/auth-context"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return "Buenos días"
+  if (h < 18) return "Buenas tardes"
+  return "Buenas noches"
+}
 const statsCards = [
   {
     title: "MIS CURSOS",
@@ -69,26 +77,31 @@ export default function StudentDashboard() {
   const router = useRouter()
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
-           ¡Hola, {user?.nombre || "Estudiante"}! 👋
-          </h1>
-          <p className="text-muted-foreground font-medium">
-            Continúa donde lo dejaste y alcanza tus metas en <span className="text-primary font-bold">Brusben</span>.
+    <div className="space-y-7 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+      {/* ── HEADER ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h4 className="text-2xl font-black text-foreground flex items-center gap-2 flex-wrap">
+            <Sparkles className="h-6 w-6 text-primary flex-shrink-0" />
+            {getGreeting()}, {user?.nombre ?? "Admin"} 👋
+          </h4>
+          <p className="text-muted-foreground text-sm mt-1">
+             Continúa donde lo dejaste y alcanza tus metas en <span className="text-foreground font-bold">Brusben E.I.R.L </span>.
           </p>
         </div>
-        
-        {/* Date Badge */}
-        <div className="flex items-center gap-4 bg-card p-3 px-5 rounded-2xl border border-border shadow-sm">
-          <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-            <TrendingUp className="h-5 w-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">FECHA DE HOY</span>
-            <span className="text-sm font-bold text-foreground">{new Date().toLocaleDateString()}</span>
+
+        <div className="flex items-center gap-3 bg-card border border-border rounded-2xl px-5 py-3 shadow-sm self-start sm:self-auto">
+          <CalendarDays className="h-5 w-5 text-primary" />
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Hoy</p>
+            <p className="text-sm font-bold text-foreground">
+              {new Date().toLocaleDateString("es-PE", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+            </p>
           </div>
         </div>
       </div>
@@ -96,8 +109,8 @@ export default function StudentDashboard() {
       {/* Stats Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat) => (
-          <Card key={stat.title} className="border-0 shadow-sm rounded-3xl overflow-hidden relative group">
-            <CardContent className="p-8">
+          <Card key={stat.title} className="bborder border-border shadow-sm rounded-2xl overflow-hidden relative group">
+            <CardContent className="py-2 px-8">
               <div className="flex items-start justify-between">
                 <div className={`${stat.iconBg} ${stat.color} p-2 rounded-2xl mb-4`}>
                   <stat.icon className="h-7 w-7" />

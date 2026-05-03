@@ -90,7 +90,7 @@ export default function StudentLayout({
       <StudentSidebar pathname={pathname} user={user} onLogout={handleLogout} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
-        <header className="sticky top-0 z-20 flex h-20 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
+        <header className="sticky top-0 z-20 flex h-18 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
           <div className="flex items-center gap-4 flex-1">
             <SidebarTrigger className="md:hidden" />
             
@@ -99,15 +99,15 @@ export default function StudentLayout({
                 <BreadcrumbList>
                   <BreadcrumbItem>
                     <BreadcrumbLink href="/mis-clases"  className="flex items-center gap-1.5 text-sm font-bold tracking-wider">
-                      <Home className="h-6 w-4" />
+                      <Home className="h-4 w-4" />
                       Home
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   {pathname !== "/mis-clases" && (
                     <>
-                      <BreadcrumbSeparator className="text-slate-300" />
+                      <BreadcrumbSeparator className="text-muted-foreground" />
                       <BreadcrumbItem>
-                        <BreadcrumbPage className="text-xs font-bold text-primary uppercase tracking-wider">
+                        <BreadcrumbPage className="text-sm font-bold text-primary">
                           {pathname.split("/").pop()?.replace(/-/g, " ")}
                         </BreadcrumbPage>
                       </BreadcrumbItem>
@@ -120,36 +120,36 @@ export default function StudentLayout({
           
           <div className="flex items-center gap-6">
             <div className="relative hidden lg:block group">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input
                 placeholder="Buscar mis clases..."
-                className="pl-10 h-10 w-64 bg-slate-100/50 border-0 focus-visible:bg-white focus-visible:ring-1 focus-visible:ring-primary/20 transition-all rounded-full text-sm"
+                className="pl-10 h-10 w-64 bg-muted/50 border-0 focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-primary/20 transition-all rounded-full text-sm"
               />
             </div>
 
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-600">
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-muted text-muted-foreground">
                 <div className="relative">
                   <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-500 border-2 border-white ring-1 ring-rose-200 text-[8px] font-black text-white flex items-center justify-center">2</span>
+                  <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-rose-500 border-2 border-background ring-1 ring-rose-200 text-[8px] font-black text-white flex items-center justify-center">2</span>
                 </div>
               </Button>
-              <div className="h-8 w-[1px] bg-slate-100 mx-2" />
+              <div className="h-8 w-[1px] bg-border mx-2" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="flex h-10 items-center gap-2 sm:gap-3 px-2 rounded-xl hover:bg-slate-100 transition-all group"
+                    className="flex h-10 items-center gap-3 px-2 rounded-xl hover:bg-muted transition-all group"
                   >
                     <div className="h-8 w-8 rounded-full ring-2 ring-background shadow-sm overflow-hidden border border-border flex-shrink-0 bg-primary text-white flex items-center justify-center font-bold text-sm">
                       {user?.nombre ? getInitials(user.nombre) : "E"}
                     </div>
                     <div className="hidden sm:flex flex-col items-start leading-none">
                       <span className="text-sm font-bold text-foreground">{user?.nombre || "Estudiante"}</span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{user?.rol || "Estudiante"}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{user?.rol || "Estudiante"}</span>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px] p-2 rounded-xl shadow-xl border-border">
@@ -198,15 +198,15 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
   }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-slate-100 bg-white z-30">
+    <Sidebar collapsible="icon" className="border-r border-border bg-sidebar z-40">
       {/* Header with border-bottom */}
-      <SidebarHeader className="h-20 flex px-4 relative border-b border-slate-100/60 overflow-visible">
+      <SidebarHeader className="h-auto flex flex-col gap-4 px-2 py-4 border-b border-border/60 overflow-visible">
         <div className={cn("flex items-center gap-3 transition-all", isCollapsed ? "justify-center w-full" : "w-full justify-start")}>
           <div className="relative flex-shrink-0">
-             <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center ring-2 ring-primary/10">
-                <GraduationCap className="h-7 w-7 text-white" />
+             <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center ring-2 ring-primary/10">
+                <GraduationCap className="h-6 w-6 text-white" />
              </div>
-             <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm" />
+             <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col justify-center min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
@@ -228,7 +228,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
         </button>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
+      <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
         <SidebarMenu className="gap-2">
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label} className="flex justify-center">
@@ -236,11 +236,11 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
                 asChild
                 isActive={pathname === item.href}
                 className={cn(
-                  "h-12 px-4 rounded-2xl transition-all duration-200 font-bold group/item",
-                  isCollapsed ? "w-14 h-14 p-0 justify-center items-center" : "w-full",
+                  "h-11 px-4 rounded-2xl transition-all duration-200 font-bold group/item",
+                  isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
                   pathname === item.href 
                     ? "bg-primary text-white hover:bg-primary/90" 
-                    : "text-slate-600 hover:bg-accent hover:text-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 )}
                 tooltip={{
                   children: item.label,
@@ -251,10 +251,10 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
               >
                 <Link href={item.href} className={cn("flex items-center gap-4", isCollapsed ? "justify-center gap-0" : "")}>
                   <item.icon className={cn(
-                    "h-7 w-7 flex-shrink-0 transition-colors",
+                    "h-5 w-5 flex-shrink-0 transition-colors",
                     pathname === item.href ? "text-white" : "text-slate-400 group-hover/item:text-primary"
                   )} />
-                  {!isCollapsed && <span className="text-base transition-opacity duration-300 whitespace-nowrap">{item.label}</span>}
+                  {!isCollapsed && <span className="text-sm transition-opacity duration-300 whitespace-nowrap">{item.label}</span>}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
