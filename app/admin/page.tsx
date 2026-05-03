@@ -278,7 +278,7 @@ export default function AdminDashboard() {
     })
 
     return {
-      chart: { type: "areaspline", backgroundColor: "transparent", height: 220, margin: [10, 10, 30, 50] },
+      chart: { type: "areaspline", backgroundColor: "transparent", height: 260, margin: [10, 10, 30, 50] },
       title: { text: "" },
       credits: { enabled: false },
       xAxis: {
@@ -357,7 +357,7 @@ export default function AdminDashboard() {
     plotOptions: {
       pie: {
         allowPointSelect: true,
-        innerSize: 75,
+        innerSize: "0%",
         dataLabels: {
           enabled: true,
           distance: -25,
@@ -366,7 +366,7 @@ export default function AdminDashboard() {
           },
           style: { fontSize: "12px", fontWeight: "900", color: "#fff", textOutline: "none" },
         },
-        colors: ["#720202d2", "#f59e0b", "#000000c7"],
+        colors: ["#10b981", "#fbbf24", "#f87171"],
       },
     },
     legend: {
@@ -417,7 +417,7 @@ export default function AdminDashboard() {
           },
           style: { fontSize: "12px", fontWeight: "900", color: "#fff", textOutline: "none" },
         },
-        colors: ["#373738ff", "#cbd5e1"],
+        colors: ["#0c0174ff", "#5e0808ff"],
       },
     },
     legend: {
@@ -562,7 +562,7 @@ export default function AdminDashboard() {
                   className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center group-hover:scale-105 transition-transform">
                       <a.icon className={cn("h-4 w-4", a.color)} />
                     </div>
                     <span className="text-sm font-semibold">{a.label}</span>
@@ -711,11 +711,39 @@ export default function AdminDashboard() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="px-4 pt-4 pb-2 flex justify-center">
+          <CardContent className="px-4 pt-4 pb-2 flex justify-center items-center">
             {isLoading ? (
-              <div className="h-[240px] w-full bg-muted animate-pulse rounded-xl" />
+              <div className="h-[240px] w-full bg-muted animate-pulse rounded-xl " />
             ) : (
+              <>
               <HighchartsReact highcharts={Highcharts} options={pagoDistributionChartOptions} />
+              {/* Leyenda de montos debajo del gráfico */}
+                <div className="mt-1 space-y-1 pb-1">
+                 {[
+                    { name: "Pagados", value: pagoDistribution.pagados, color: "#10b981" },
+                    { name: "Pendientes", value: pagoDistribution.pendientes, color: "#fbbf24" },
+                    { name: "Anulados", value: pagoDistribution.anulados, color: "#f87171" },
+                  ].map((item, i) => (
+                    <div key={item.name} className="flex items-center justify-between text-[11px]">
+                      
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="h-2 w-2 rounded-full flex-shrink-0"
+                          style={{ background: item.color }}
+                        />
+                        <span className="truncate font-semibold text-muted-foreground">
+                          {item.name}
+                        </span>
+                      </div>
+
+                      <span className="font-black text-foreground flex-shrink-0 ml-2">
+                        {item.value}
+                      </span>
+
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -739,7 +767,34 @@ export default function AdminDashboard() {
             {isLoading ? (
               <div className="h-[240px] w-full bg-muted animate-pulse rounded-xl" />
             ) : (
+              <>
               <HighchartsReact highcharts={Highcharts} options={cursoStatusChartOptions} />
+                <div className="mt-1 space-y-1 pb-1">
+                  {[
+                    { name: "Activos", value:cursosByStatus.activos, color: "#0c0174ff" },
+                    { name: "Inactivos", value: cursosByStatus.inactivos, color: "#5e0808ff" }
+                    
+                  ].map((item, i) => (
+                    <div key={item.name} className="flex items-center justify-between text-[11px]">
+                      
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="h-2 w-2 rounded-full flex-shrink-0"
+                          style={{ background: item.color }}
+                        />
+                        <span className="truncate font-semibold text-muted-foreground">
+                          {item.name}
+                        </span>
+                      </div>
+
+                      <span className="font-black text-foreground flex-shrink-0 ml-2">
+                        {item.value}
+                      </span>
+
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
