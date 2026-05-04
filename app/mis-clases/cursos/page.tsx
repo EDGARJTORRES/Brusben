@@ -152,22 +152,26 @@ export default function StudentCoursesPage() {
              </Button>
           </div>
         ) : courses.map((course) => (
-          <Card key={course.idPago || course.idCurso} className="p-0 overflow-hidden border-0 group rounded-3xl bg-card ring-1 ring-slate-100 dark:ring-slate-800 flex flex-col h-full">
+          <Card 
+            key={course.idPago || course.idCurso} 
+            className="p-0 overflow-hidden border border-border/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group rounded-[2rem] bg-card cursor-pointer flex flex-col h-full"
+            onClick={() => router.push(`/clase/${course.idCurso}`)}
+          >
             
             {/* Imagen con overlay */}
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-36 overflow-hidden bg-muted">
               <img 
                 src={"/cursos/" + course.imgCurso} 
                 alt={course.titulo}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
               
               {/* Badge de estado */}
-              <div className="absolute top-3 left-3">
+              <div className="absolute top-4 right-4">
                 <Badge 
                   className={cn(
-                    "rounded-full px-3 py-1 border-0 font-bold text-[10px] shadow-lg flex items-center gap-1.5 backdrop-blur-sm",
+                    "rounded-full px-3 py-1.5 border-0 font-black text-[10px] shadow-lg flex items-center gap-1.5 backdrop-blur-sm tracking-wider uppercase",
                     course.status === "Completado"
                       ? "bg-emerald-500/90 text-white"
                       : "bg-blue-500/90 text-white"
@@ -178,30 +182,45 @@ export default function StudentCoursesPage() {
                 </Badge>
               </div>
 
-              {/* Badge categoría */}
-              {course.categoria && (
-                <div className="absolute top-3 right-3">
-                  <Badge className="rounded-full px-3 py-1 border-0 font-bold text-[10px] bg-white/20 text-white backdrop-blur-sm shadow-lg">
-                    {course.categoria}
-                  </Badge>
-                </div>
-              )}
 
               {/* Título sobre la imagen */}
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <h3 className="text-lg font-extrabold text-white leading-tight line-clamp-2 drop-shadow-lg">
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <h3 className="text-lg font-black text-white leading-tight line-clamp-2 drop-shadow-lg">
                   {course.titulo}
                 </h3>
               </div>
             </div>
 
             {/* Contenido */}
-            <CardContent className="px-5 py-4 flex-1 flex flex-col gap-4">
+            <CardContent className="px-6 py-5 flex-1 flex flex-col gap-4">
               
+              {/* Badge categoría movido al contenido */}
+              <div className="flex items-center">
+                <Badge 
+                  style={{ backgroundColor: course.catColor || "#6366f1" }}
+                  className="text-white text-[10px] font-black border-0 px-3 py-1 shadow-md uppercase tracking-wider"
+                >
+                  {course.categoria || course.catNombre || "General"}
+                </Badge>
+              </div>
+              
+              {/* Docente igual que catálogo */}
+              <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-2xl border border-border/40">
+                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-xs font-black text-primary">
+                    {course.docenteNombre?.substring(0, 1) || "D"}
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mb-1">Docente</p>
+                  <p className="text-sm font-bold text-foreground truncate leading-none">{course.docenteNombre || "No asignado"}</p>
+                </div>
+              </div>
+
               {/* Barra de progreso */}
-              <div className="space-y-2">
+              <div className="space-y-2 mt-auto">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Progreso</span>
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Progreso</span>
                   <span className="text-xs font-black text-foreground">{course.progreso || 0}%</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -216,31 +235,18 @@ export default function StudentCoursesPage() {
                   />
                 </div>
               </div>
-
-              {/* Info extra */}
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <MonitorPlay className="h-3.5 w-3.5" />
-                  <span className="text-[11px] font-medium">Clases</span>
-                </div>
-                <div className="h-3 w-px bg-slate-200 dark:bg-slate-700" />
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span className="text-[11px] font-medium">En curso</span>
-                </div>
-              </div>
             </CardContent>
 
             {/* Footer con botón */}
-            <CardFooter className="px-5 pb-5 pt-0">
+            <CardFooter className="px-6 pb-6 pt-0">
               <Button 
                 className={cn(
-                  "w-full rounded-2xl h-12 font-bold shadow-lg transition-all duration-300 gap-2 flex items-center justify-center group/btn",
+                  "w-full rounded-2xl h-11 font-black shadow-lg transition-all duration-300 gap-2 flex items-center justify-center group/btn active:scale-95",
                   course.status === "Completado" 
                     ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 shadow-emerald-100" 
-                    : "bg-primary text-white hover:bg-primary/90 "
+                    : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
                 )}
-                onClick={() => router.push(`/clase/${course.idCurso}`)}
+                onClick={(e) => { e.stopPropagation(); router.push(`/clase/${course.idCurso}`) }}
               >
                 {course.status === "Completado" ? (
                   <>Ver Certificado <Award className="h-4 w-4 group-hover/btn:rotate-12 transition-transform" /></>

@@ -185,7 +185,7 @@ export default function PagosPage() {
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
-        format: [226, 400]
+        format: [226, 800]
       })
 
       const w = 226
@@ -328,8 +328,10 @@ export default function PagosPage() {
       doc.text("Sistema generado por Brusben E.I.R.L", w / 2, y, { align: "center" })
       y += 15
 
-      const finalHeight = y + 10
+      const finalHeight = y + 20
+      doc.setPage(1)
       doc.internal.pageSize.height = finalHeight
+      doc.internal.pageSize.setHeight(finalHeight)
 
       doc.save(`Boleta_${String(pago.idPago).padStart(8, '0')}.pdf`)
       toast.success("Boleta generada exitosamente")
@@ -538,7 +540,7 @@ export default function PagosPage() {
           <p className="text-muted-foreground mt-1 font-medium text-sm">Gestiona y monitorea todos los ingresos financieros de la plataforma.</p>
         </div>
         <div className="flex gap-4">
-           <Button variant="outline" className="rounded-xl h-11 px-6 font-bold border-border gap-2 hover:bg-muted/50" onClick={handleExportPDF}>
+           <Button variant="outline" className="rounded-xl h-11 px-6 font-bold bg-card border-border gap-2 hover:bg-muted/50" onClick={handleExportPDF}>
              <Download className="h-4 w-4 text-muted-foreground" />
              Exportar a PDF
            </Button>

@@ -252,7 +252,7 @@ export default function UsuariosPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {ROLES.map((role) => (
           <Card key={role.id}>
-            <CardContent className="pt-6">
+            <CardContent className="py-2">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{role.label}: </p>

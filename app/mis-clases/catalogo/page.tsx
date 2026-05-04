@@ -33,6 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 
 import { cn } from "@/lib/utils"
@@ -191,46 +192,30 @@ export default function EstudiantesPage() {
         </div>
       </div>
 
-      {/* STATS — sin cambios */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <Card className="border-0 shadow-sm bg-primary/10 p-5 rounded-2xl relative overflow-hidden group">
-          <div className="absolute -right-4 -bottom-4 bg-primary/10 h-20 w-20 rounded-full group-hover:scale-150 transition-transform duration-500" />
-          <p className="text-primary text-xs font-bold uppercase tracking-widest mb-1">Cursos Disponibles</p>
-          <p className="text-3xl font-black text-primary">{totalCursos}</p>
-        </Card>
-        <Card className="border-0 shadow-sm bg-emerald-500/10 p-5 rounded-2xl relative overflow-hidden group">
-          <div className="absolute -right-4 -bottom-4 bg-emerald-500/10 h-20 w-20 rounded-full group-hover:scale-150 transition-transform duration-500" />
-          <p className="text-emerald-700 text-xs font-bold uppercase tracking-widest mb-1">Categorías</p>
-          <p className="text-3xl font-black text-emerald-700">{totalCategorias}</p>
-        </Card>
-        <Card className="border-0 shadow-sm bg-amber-500/10 p-5 rounded-2xl relative overflow-hidden group">
-          <div className="absolute -right-4 -bottom-4 bg-amber-500/10 h-20 w-20 rounded-full group-hover:scale-150 transition-transform duration-500" />
-          <p className="text-amber-700 text-xs font-bold uppercase tracking-widest mb-1">Precio Promedio</p>
-          <p className="text-3xl font-black text-amber-700">S/ {precioPromedio.toFixed(2)}</p>
-        </Card>
-      </div>
-
-      {/* FILTROS — sin cambios */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* FILTROS */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Buscar cursos por nombre..."
-            className="pl-10 h-11 rounded-xl bg-background border-border/50 font-medium text-sm"
+            className="pl-11 h-12 rounded-2xl bg-card border-border/50 font-bold text-sm focus-visible:ring-1 focus-visible:ring-primary/30 shadow-sm transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select
-          className="h-11 rounded-xl border border-border/50 px-4 bg-background text-sm font-medium text-foreground"
-          value={categoriaFilter}
-          onChange={(e) => setCategoriaFilter(e.target.value)}
-        >
-          <option value="all">Todas las categorías</option>
-          {categorias.map(cat => (
-            <option key={cat.catId} value={cat.catNombre}>{cat.catNombre}</option>
-          ))}
-        </select>
+        <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+          <SelectTrigger className="h-14 pl-11 rounded-2xl border-border/50 px-5 bg-card text-sm font-bold shadow-sm w-full sm:w-[220px] focus:ring-1 focus:ring-primary/30">
+            <SelectValue placeholder="Categoría" />
+          </SelectTrigger>
+          <SelectContent className="rounded-2xl border-border/50 shadow-xl">
+            <SelectItem value="all" className="font-bold cursor-pointer">Todas las categorías</SelectItem>
+            {categorias.map(cat => (
+              <SelectItem key={cat.catId} value={cat.catNombre} className="font-bold cursor-pointer">
+                {cat.catNombre}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* GRID — sin cambios */}
@@ -251,61 +236,63 @@ export default function EstudiantesPage() {
           {filteredCourses.map((course) => (
             <Card
               key={course.idCurso}
-              className="p-0 border-0 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group rounded-3xl bg-card ring-1 ring-slate-100 dark:ring-slate-800 h-full flex flex-col justify-between cursor-pointer"
+              className="p-0 border border-border/40 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group rounded-[2rem] bg-card h-full flex flex-col justify-between cursor-pointer overflow-hidden"
               onClick={() => { setSelectedCourse(course); setIsDetailOpen(true) }}
             >
-              <div className="relative h-40 overflow-hidden rounded-t-3xl bg-slate-100">
+              <div className="relative h-36 overflow-hidden bg-muted">
                 <img
                   src={getImageUrl(course.imgCurso)}
                   alt={course.titulo}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                 />
-                <div className="absolute top-3 left-3">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-40" />
+                <div className="absolute top-4 left-4">
                   <Badge
                     style={{ backgroundColor: course.catColor || "#6366f1" }}
-                    className="text-white text-[10px] font-bold border-0 px-3 py-1 shadow-md"
+                    className="text-white text-[10px] font-black border-0 px-3 py-1.5 shadow-md uppercase tracking-wider"
                   >
                     {course.catNombre || "General"}
                   </Badge>
                 </div>
               </div>
-              <CardHeader className="py-3 px-5 pb-0">
-                <CardTitle className="text-base font-bold line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+              <CardHeader className="py-5 px-6 pb-0">
+                <CardTitle className="text-lg font-black line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                   {course.titulo || "Sin título"}
                 </CardTitle>
-                <CardDescription className="line-clamp-2 text-sm min-h-[40px] mt-1">
+                <CardDescription className="line-clamp-2 text-sm min-h-[20px] mt-2 font-medium">
                   {course.descripcion || "Sin descripción"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="px-5 py-3">
-                <div className="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-muted/30 rounded-xl">
-                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-[10px] font-bold text-primary">
+              <CardContent className="px-6 py-2">
+                <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-2xl border border-border/40">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-black text-primary">
                       {course.docenteNombre?.substring(0, 1) || "D"}
                     </span>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Docente</p>
-                    <p className="text-xs font-bold text-foreground">{course.docenteNombre || "No asignado"}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none mb-1">Docente</p>
+                    <p className="text-sm font-bold text-foreground truncate leading-none">{course.docenteNombre || "No asignado"}</p>
                   </div>
                 </div>
               </CardContent>
               <CardFooter
-                className="px-5 pb-5 pt-0 flex justify-between items-center"
+                className="px-6 pb-6 pt-0 flex justify-between items-center"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Precio</p>
-                  <p className="text-xl font-black text-foreground">
-                    S/ {Number(course.precioCurso || 0).toFixed(2)}
+                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">Inversión</p>
+                  <p className="text-2xl font-black text-foreground tracking-tight leading-none">
+                    <span className="text-sm text-muted-foreground mr-1">S/</span>
+                    {Number(course.precioCurso || 0).toFixed(2)}
                   </p>
                 </div>
                 <Button
-                  className="rounded-2xl h-10 px-5 font-black bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 text-sm gap-2"
+                  className="rounded-2xl h-11 px-6 font-black bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 text-sm gap-2 active:scale-95 transition-all"
                   onClick={(e) => { e.stopPropagation(); handleInscribir(course) }}
                 >
                   <UserCheck className="h-4 w-4" />
-                  Inscribirse
+                  Inscribirme
                 </Button>
               </CardFooter>
             </Card>

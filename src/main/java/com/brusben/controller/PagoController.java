@@ -120,8 +120,26 @@ public class PagoController {
                     map.put("titulo", p.getCurso().getTitulo());
                     map.put("imgCurso", p.getCurso().getImgCurso());
                     map.put("categoria", p.getCurso().getCategoria() != null ? p.getCurso().getCategoria().getCatNombre() : "");
+                    map.put("catColor", p.getCurso().getCategoria() != null ? p.getCurso().getCategoria().getCatColor() : "#6366f1");
+                    map.put("docenteNombre", p.getCurso().getDocente() != null ? p.getCurso().getDocente().getNombres() : "No asignado");
                     map.put("progreso", 0);
                     map.put("status", "En Progreso");
+                    return map;
+                }).collect(Collectors.toList());
+    }
+
+    @GetMapping("/historial/{idUsuario}")
+    public List<Map<String, Object>> historialPagosUsuario(@PathVariable Integer idUsuario) {
+        return pagoRepository.findAllByOrderByIdPagoDesc().stream()
+                .filter(p -> p.getUsuario().getIdUsuario().equals(idUsuario))
+                .map(p -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("idPago", p.getIdPago());
+                    map.put("course", p.getCurso().getTitulo());
+                    map.put("amount", "S/ " + p.getMonto());
+                    map.put("date", p.getFechaPago());
+                    map.put("status", p.getEstado());
+                    map.put("method", p.getMetodoPago());
                     return map;
                 }).collect(Collectors.toList());
     }

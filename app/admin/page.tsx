@@ -832,10 +832,10 @@ function KpiCard({
 
   return (
     <Card className="border border-border shadow-sm rounded-2xl overflow-hidden">
-      <CardContent className="px-4 py-2">
+      <CardContent className="px-4 py-1">
         <div className="flex items-center justify-between gap-3">
-          <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0", c.bg, c.text)}>
-            <Icon className="h-4 w-4" />
+          <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", c.bg, c.text)}>
+            <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-2">
@@ -902,7 +902,7 @@ function MetricCard({
 
   return (
     <Card className="border border-border shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-      <CardContent className="px-4 py-3">
+      <CardContent className="px-4 py-1">
         <div className="flex items-center justify-between gap-3">
           <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", c.bg, c.text)}>
             <Icon className="h-5 w-5" />

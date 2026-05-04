@@ -271,15 +271,18 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
             const isActive = pathname === item.href
 
             return (
-              <SidebarMenuItem key={item.label} className="flex justify-center">
+              <SidebarMenuItem key={item.label} className="flex justify-center relative">
+                {isActive && (
+                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-md shadow-sm" />
+                )}
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
                   className={cn(
-                    "h-11 px-4 rounded-2xl transition-all duration-200 font-bold group/item",
+                    "h-10 px-6 rounded-2xl transition-all duration-200 font-bold group/item",
                     isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
                     isActive
-                      ? "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
+                      ? "bg-primary text-white hover:bg-primary/90 shadow-lg"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                   tooltip={{

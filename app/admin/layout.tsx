@@ -404,7 +404,10 @@ function AdminSidebar({
               const isActive = pathname === item.href
 
               return (
-                <SidebarMenuItem key={item.label} className="flex justify-center">
+                <SidebarMenuItem key={item.label} className="flex justify-center relative">
+                  {isActive && (
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-md shadow-sm" />
+                  )}
                   <SidebarMenuButton
                     asChild
                     isActive={isActive}
@@ -502,6 +505,9 @@ function SidebarGroupItem({
 
   return (
     <div className="relative space-y-1">
+      {hasActiveChild && (
+        <div className="absolute -left-2 top-6 -translate-y-1/2 w-1.0 h-8 bg-primary rounded-r-md shadow-sm pointer-events-none" />
+      )}
       <button
         onClick={() => {
           if (isCollapsed) {
