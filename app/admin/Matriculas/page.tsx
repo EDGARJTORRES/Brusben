@@ -93,20 +93,35 @@ export default function MatriculasPage() {
             Estudiantes matriculados por curso — solo con pago confirmado.
           </p>
         </div>
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar curso..."
-            className="pl-10 rounded-xl h-11"
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-        </div>
       </div>
 
 
       {/* TABLA / LISTA */}
-      <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
+      <div className="border-none shadow-sm rounded-2xl overflow-hidden">
+                {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 bg-muted/20 px-6 py-4">
+          {/* DERECHA: título */}
+          <h2 className="text-lg font-black text-foreground text-right md:text-left flex items-center gap-2">
+            Listado de Usuarios
+          </h2>
+          {/* IZQUIERDA: filtros */}
+          <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+
+            {/* Search */}
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar curso..."
+                className="pl-10 rounded-xl h-11"
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+
+          </div>
+
+
+        </div>
         {/* Cabecera de tabla */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-2 bg-muted/50 border-b border-border text-[11px] font-black uppercase tracking-widest text-muted-foreground">
           <div className="col-span-4">Curso</div>
@@ -219,7 +234,7 @@ export default function MatriculasPage() {
             })
           )}
         </div>
-      </Card>
+      </div>
 
       {/* PAGINACIÓN */}
       {!isLoading && totalPages > 1 && (

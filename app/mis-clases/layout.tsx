@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
+import React from "react"
 import {
   Home,
   Users,
@@ -16,6 +17,11 @@ import {
   User,
   Calendar,
   HelpCircle,
+  LayoutGrid,
+  Layers,
+  FileText,
+  CreditCard,
+  MessageSquare,
 } from "lucide-react"
 
 import {
@@ -54,14 +60,33 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { RouteGuard } from "@/lib/route-guard"
 
-const menuItems = [
-  { icon: Home, label: "Inicio", href: "/mis-clases" },
-  { icon: BookOpen, label: "Cursos", href: "/mis-clases/cursos" },
-  { icon: Search, label: "Catálogo", href: "/mis-clases/catalogo" },
-  { icon: Users, label: "Compañeros", href: "/mis-clases/estudiantes" },
-  { icon: PaymentIcon, label: "Mis Pagos", href: "/mis-clases/pagos" },
-  { icon: Calendar, label: "Calendario", href: "/mis-clases/calendario" },
-  { icon: HelpCircle, label: "Ayuda", href: "/mis-clases/ayuda" },
+type SingleMenuItem = {
+  type: "single"
+  icon: any
+  label: string
+  href: string
+  badge?: string | number
+}
+
+type LabelMenuItem = {
+  type: "label"
+  label: string
+}
+
+type MenuItem = SingleMenuItem | LabelMenuItem
+
+const menuGroups: MenuItem[] = [
+  { type: "label", label: "Principal" },
+  { type: "single", icon: LayoutGrid, label: "Inicio", href: "/mis-clases" },
+  { type: "single", icon: Layers, label: "Mis Cursos", href: "/mis-clases/cursos" },
+  { type: "single", icon: Search, label: "Explorar Catálogo", href: "/mis-clases/catalogo" },
+  { type: "label", label: "Estudios" },
+  { type: "single", icon: Users, label: "Compañeros", href: "/mis-clases/estudiantes" },
+  { type: "single", icon: Calendar, label: "Calendario", href: "/mis-clases/calendario" },
+  { type: "label", label: "Finanzas" },
+  { type: "single", icon: CreditCard, label: "Mis Pagos", href: "/mis-clases/pago" },
+  { type: "label", label: "Soporte" },
+  { type: "single", icon: HelpCircle, label: "Ayuda", href: "/mis-clases/ayuda" },
 ]
 
 export default function StudentLayout({
@@ -229,36 +254,73 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
-        <SidebarMenu className="gap-2">
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.label} className="flex justify-center">
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                className={cn(
-                  "h-11 px-4 rounded-2xl transition-all duration-200 font-bold group/item",
-                  isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
-                  pathname === item.href 
-                    ? "bg-primary text-white hover:bg-primary/90" 
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-                tooltip={{
-                  children: item.label,
-                  className:
-                        "z-[210] bg-slate-900 text-white font-bold p-2 px-3 rounded-lg shadow-xl",
-                  sideOffset: 12
-                }}
-              >
-                <Link href={item.href} className={cn("flex items-center gap-4", isCollapsed ? "justify-center gap-0" : "")}>
-                  <item.icon className={cn(
-                    "h-5 w-5 flex-shrink-0 transition-colors",
-                    pathname === item.href ? "text-white" : "text-slate-400 group-hover/item:text-primary"
-                  )} />
-                  {!isCollapsed && <span className="text-sm transition-opacity duration-300 whitespace-nowrap">{item.label}</span>}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+        <SidebarMenu className="gap-1">
+          {menuGroups.map((item, index) => {
+            if (item.type === "label") {
+              if (isCollapsed) return <div key={index} className="h-2" />
+              return (
+                <div key={index} className="flex items-center gap-2 px-4 pt-2 pb-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap">
+                    {item.label}
+                  </span>
+                  <div className="h-[1px] w-full bg-border/60" />
+                </div>
+              )
+            }
+
+            const isActive = pathname === item.href
+
+            return (
+              <SidebarMenuItem key={item.label} className="flex justify-center">
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  className={cn(
+                    "h-11 px-4 rounded-2xl transition-all duration-200 font-bold group/item",
+                    isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
+                    isActive
+                      ? "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                  tooltip={{
+                    children: item.label,
+                    className:
+                      "z-[210] bg-slate-900 text-white font-bold p-2 px-3 rounded-lg shadow-xl",
+                    sideOffset: 12,
+                  }}
+                >
+                  <Link
+                    href={item.href}
+                    className={cn("flex items-center gap-4", isCollapsed ? "justify-center gap-0" : "")}
+                  >
+                    <item.icon
+                      className={cn(
+                        "h-5 w-5 flex-shrink-0 transition-colors",
+                        isActive ? "text-white" : "text-slate-400 group-hover/item:text-primary"
+                      )}
+                    />
+                    {!isCollapsed && (
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-sm transition-opacity duration-300 whitespace-nowrap">
+                          {item.label}
+                        </span>
+                        {item.badge && (
+                          <span className={cn(
+                            "flex items-center justify-center px-2 py-0.5 text-[10px] font-black rounded-full transition-all",
+                            isActive 
+                              ? "bg-white text-primary" 
+                              : "bg-primary/10 text-primary dark:bg-primary/20"
+                          )}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarContent>
       

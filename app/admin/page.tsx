@@ -366,7 +366,8 @@ export default function AdminDashboard() {
           },
           style: { fontSize: "12px", fontWeight: "900", color: "#fff", textOutline: "none" },
         },
-        colors: ["#10b981", "#fbbf24", "#f87171"],
+        colors: ["#f16363ff", "#f59999ff", "#ffe5e5ff"]
+
       },
     },
     legend: {
@@ -417,7 +418,7 @@ export default function AdminDashboard() {
           },
           style: { fontSize: "12px", fontWeight: "900", color: "#fff", textOutline: "none" },
         },
-        colors: ["#0c0174ff", "#5e0808ff"],
+       colors: ["#e54646ff", "#f7cfcfff"]
       },
     },
     legend: {

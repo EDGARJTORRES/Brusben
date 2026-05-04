@@ -547,7 +547,7 @@ export default function PagosPage() {
            </Button>
            
            <Button 
-             className="rounded-xl h-11 bg-primary hover:bg-primary/90 gap-2 font-black text-primary-foreground shadow-lg shadow-primary/20 transition-all"
+             className="rounded-xl h-11 bg-primary hover:bg-primary/90 gap-2 font-black text-primary-foreground transition-all"
              onClick={() => setIsModalOpen(true)}
            >
              <Plus className="h-5 w-5" />
@@ -830,8 +830,8 @@ export default function PagosPage() {
            { title: "MATRÍCULAS MES", value: matriculasMes.toString(), icon: GraduationCap, color: "text-rose-600", bg: "bg-rose-400/10" },
            { title: "NUEVOS ABONOS", value: payments.length > 0 ? "RECIENTE" : "0", icon: Plus, color: "text-emerald-600", bg: "bg-emerald-400/10" },
          ].map((stat) => (
-           <Card key={stat.title} className="border-none shadow-sm bg-secondary/30">
-              <CardContent className="pt-6">
+           <Card key={stat.title}>
+              <CardContent className="px-4 py-2">
                  <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{stat.title}: </p>

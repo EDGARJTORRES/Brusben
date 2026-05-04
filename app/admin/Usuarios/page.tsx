@@ -250,7 +250,7 @@ export default function UsuariosPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {ROLES.map((role) => (
-          <Card key={role.id} className="border-none shadow-sm bg-secondary/30">
+          <Card key={role.id}>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>

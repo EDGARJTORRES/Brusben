@@ -222,7 +222,7 @@ export default function MatriculaDetallePage() {
             bg: "bg-violet-500/10",
           },
         ].map((kpi) => (
-          <Card key={kpi.label} className="border-none shadow-sm bg-secondary/30">
+          <Card key={kpi.label}>
             <CardContent className="pt-5 pb-5">
               <div className="flex items-center justify-between">
                 <div>
@@ -258,7 +258,7 @@ export default function MatriculaDetallePage() {
       </div>
 
       {/* TABLA DE ESTUDIANTES */}
-      <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
+      <div className="border-none shadow-sm rounded-2xl overflow-hidden">
         {/* Cabecera */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-muted/50 border-b border-border text-[11px] font-black uppercase tracking-widest text-muted-foreground">
           <div className="col-span-5">Estudiante</div>
@@ -330,7 +330,7 @@ export default function MatriculaDetallePage() {
             ))
           )}
         </div>
-      </Card>
+      </div>
 
       {/* PAGINACIÓN */}
       {totalPages > 1 && (

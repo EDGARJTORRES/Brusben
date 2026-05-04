@@ -1287,7 +1287,7 @@ export default function CoursesPage() {
             {paginatedCourses.map((course: any) => (
               <Card
                 key={course.idCurso}
-                className="p-0 border-0 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group rounded-3xl bg-card ring-1 ring-slate-100 h-full flex flex-col justify-between"
+                className="p-0 group rounded-3xl bg-card ring-1 ring-slate-100 h-full flex flex-col justify-between"
               >
                 {/* Imagen */}
                 <div className="relative h-30 overflow-hidden rounded-t-3xl bg-slate-100">
@@ -1315,7 +1315,7 @@ export default function CoursesPage() {
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="h-8 w-8 p-0 rounded-xl bg-black/20 hover:bg-black/40 transition-all shadow-lg"
+                          className="h-9 px-3 rounded-xl bg-white/15  text-white border border-white/20 backdrop-blur-sm gap-2 font-bold text-xs"
                         >
                           <MoreVertical className="h-4 w-4 text-white" />
                         </Button>

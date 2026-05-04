@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Home,
   BookOpen,
@@ -23,6 +23,11 @@ import {
   TrendingDown,
   UserCog,
   ListChecks,
+  LayoutGrid,
+  Layers,
+  Hexagon,
+  Briefcase,
+  FileText,
 } from "lucide-react"
 
 import {
@@ -66,6 +71,7 @@ type SingleMenuItem = {
   icon: any
   label: string
   href: string
+  badge?: string | number
 }
 
 type GroupMenuItem = {
@@ -75,26 +81,46 @@ type GroupMenuItem = {
   children: { icon: any; label: string; href: string }[]
 }
 
-type MenuItem = SingleMenuItem | GroupMenuItem
+type LabelMenuItem = {
+  type: "label"
+  label: string
+}
 
-const menuGroups: MenuItem[] = [
+type MenuItem = SingleMenuItem | GroupMenuItem | LabelMenuItem
+
+const getMenuGroups = (totalMatriculas: number): MenuItem[] => [
+  { type: "label", label: "Principal" },
   {
     type: "single",
-    icon: Home,
+    icon: LayoutGrid,
     label: "Inicio",
     href: "/admin",
   },
   {
     type: "single",
-    icon: BookOpen,
+    icon: Layers,
     label: "Cursos",
     href: "/admin/cursos",
   },
   {
     type: "single",
-    icon: GraduationCap,
-    label: "Control Academico",
+    icon: Hexagon,
+    label: "Control Académico",
     href: "/admin/controlacademico",
+  },
+  {
+    type: "single",
+    icon: Briefcase,
+    label: "Matrículas",
+    href: "/admin/matriculas",
+    badge: totalMatriculas,
+  },
+  { type: "label", label: "Finanzas" },
+  {
+    type: "single",
+    icon: BarChart3,
+    label: "Balance General",
+    href: "/admin/balance",
   },
   {
     type: "single",
@@ -108,18 +134,7 @@ const menuGroups: MenuItem[] = [
     label: "Egresos",
     href: "/admin/egresos",
   },
-  {
-    type: "single",
-    icon: ListChecks,
-    label: "Matriculas",
-    href: "/admin/matriculas",
-  },
-  {
-    type: "single",
-    icon: Tag,
-    label: "Categorías",
-    href: "/admin/categorias",
-  },
+  { type: "label", label: "Gestión" },
   {
     type: "single",
     icon: UserCog,
@@ -128,21 +143,28 @@ const menuGroups: MenuItem[] = [
   },
   {
     type: "single",
-    icon: BarChart3,
+    icon: FileText,
     label: "Reportes",
     href: "/admin/reportes",
   },
   {
     type: "single",
-    icon: Settings,
-    label: "Configuración",
-    href: "/admin/configuracion",
+    icon: ClipboardList,
+    label: "Bitácora",
+    href: "/admin/bitacora",
   },
   {
     type: "single",
-    icon: ClipboardList,
-    label: "Bitacora",
-    href: "/admin/bitacora",
+    icon: Tag,
+    label: "Categorías",
+    href: "/admin/categorias",
+  },
+  { type: "label", label: "Sistema" },
+  {
+    type: "single",
+    icon: Settings,
+    label: "Configuración",
+    href: "/admin/configuracion",
   },
   {
     type: "single",
@@ -161,6 +183,23 @@ export default function AdminLayout({
   const pathname = usePathname()
   const router = useRouter()
   const { user, logout } = useAuth()
+  const [totalMatriculas, setTotalMatriculas] = useState<number>(0)
+
+  useEffect(() => {
+    const fetchTotalMatriculas = async () => {
+      try {
+        const res = await fetch("http://localhost:8081/api/matriculas/por-curso")
+        if (res.ok) {
+          const data = await res.json()
+          const total = data.reduce((acc: number, c: any) => acc + (c.totalEstudiantes || 0), 0)
+          setTotalMatriculas(total)
+        }
+      } catch (error) {
+        console.error("Error fetching matriculas:", error)
+      }
+    }
+    fetchTotalMatriculas()
+  }, [])
 
   const getInitials = (nombre?: string) => {
     if (!nombre) return "U"
@@ -176,7 +215,7 @@ export default function AdminLayout({
   return (
     <RouteGuard allowedRoles={["admin", "administrador"]}>
       <SidebarProvider style={{ "--sidebar-width-icon": "4rem" } as React.CSSProperties}>
-      <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} />
+      <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} totalMatriculas={totalMatriculas} />
       <SidebarInset className="bg-background">
         {/* Modern Header */}
         <header className="sticky top-0 z-20 flex h-18 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
@@ -284,9 +323,20 @@ export default function AdminLayout({
   )
 }
 
-function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: any; onLogout: () => void }) {
+function AdminSidebar({ 
+  pathname, 
+  user, 
+  onLogout, 
+  totalMatriculas 
+}: { 
+  pathname: string; 
+  user: any; 
+  onLogout: () => void; 
+  totalMatriculas: number 
+}) {
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
+  const menuGroups = getMenuGroups(totalMatriculas)
 
   // Obtener iniciales del nombre para el avatar
   const getInitials = (nombre?: string) => {
@@ -335,8 +385,20 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
-        <SidebarMenu className="gap-2">
-          {menuGroups.map((item) => {
+        <SidebarMenu className="gap-1">
+          {menuGroups.map((item, index) => {
+            if (item.type === "label") {
+              if (isCollapsed) return <div key={index} className="h-2" />
+              return (
+                <div key={index} className="flex items-center gap-2 px-4 pt-2 pb-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap">
+                    {item.label}
+                  </span>
+                  <div className="h-[1px] w-full bg-border/60" />
+                </div>
+              )
+            }
+
             if (item.type === "single") {
               const isActive = pathname === item.href
 
@@ -349,7 +411,7 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
                       "h-11 px-4 rounded-2xl transition-all duration-200 font-bold",
                       isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
                       isActive
-                        ? "bg-primary text-white hover:bg-primary/90"
+                        ? "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
                     tooltip={{
@@ -370,9 +432,21 @@ function AdminSidebar({ pathname, user, onLogout }: { pathname: string; user: an
                         )}
                       />
                       {!isCollapsed && (
-                        <span className="text-sm transition-opacity duration-300 whitespace-nowrap">
-                          {item.label}
-                        </span>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-sm transition-opacity duration-300 whitespace-nowrap">
+                            {item.label}
+                          </span>
+                          {item.badge && (
+                            <span className={cn(
+                              "flex items-center justify-center px-2 py-0.5 text-[10px] font-black rounded-full transition-all",
+                              isActive 
+                                ? "bg-white text-primary" 
+                                : "bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400"
+                            )}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </Link>
                   </SidebarMenuButton>

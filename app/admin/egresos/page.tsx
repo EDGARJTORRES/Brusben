@@ -662,7 +662,7 @@ export default function EgresosPage() {
           { title: "PAGOS REALIZADOS", value: egresos.length.toString(), icon: Receipt, color: "text-blue-600", bg: "bg-blue-400/10" },
           { title: "DOCENTES PAGADOS", value: new Set(egresos.map(e => e.docente)).size.toString(), icon: User, color: "text-violet-600", bg: "bg-violet-400/10" },
         ].map((stat) => (
-          <Card key={stat.title} className="border-none shadow-sm bg-secondary/30">
+          <Card key={stat.title}>
             <CardContent className="px-4 py-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -679,83 +679,94 @@ export default function EgresosPage() {
       </div>
 
       {/* TABLA */}
-      <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
-        <div className="flex items-center justify-between gap-3 border-b border-border/50 bg-muted/20 px-5 py-2.5">
-          <h2 className="text-lg font-bold">Listado de Egresos</h2>
+      <div className="rounded-2xl  bg-card backdrop-blur-sm overflow-hidden border border-border/30">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 bg-muted/20 px-6 py-4">
+          {/* DERECHA: título */}
+          <h2 className="text-lg font-black text-foreground text-right md:text-left flex items-center gap-2">
+            Listado de Egresos
+          </h2>
+          {/* IZQUIERDA: filtros */}
+          <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+
+            <Badge className="ml-2 font-bold text-xs h-6 px-2 py-1 rounded-full bg-chart-3">
+              {egresos.length} registros
+            </Badge>
+          </div>
         </div>
-
-        <Table>
-          <TableHeader className="bg-muted/30">
-            <TableRow className="border-b border-border/50 hover:bg-transparent">
-              <TableHead className="py-2 px-6 font-bold text-xs uppercase">ID</TableHead>
-              <TableHead className="font-bold text-xs">Docente / Curso</TableHead>
-              <TableHead className="font-bold text-xs">Monto</TableHead>
-              <TableHead className="font-bold text-xs">Método</TableHead>
-              <TableHead className="font-bold text-xs">Fecha</TableHead>
-              <TableHead className="text-right font-bold pr-8 text-xs">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-20 text-center font-bold text-muted-foreground animate-pulse">
-                  Cargando egresos...
-                </TableCell>
+        <div className="p-0">
+          <Table>
+            <TableHeader className="bg-muted/30">
+              <TableRow className="border-b border-border/50 hover:bg-transparent">
+                <TableHead className="py-2 px-6 font-bold text-xs uppercase">ID</TableHead>
+                <TableHead className="font-bold text-xs">Docente / Curso</TableHead>
+                <TableHead className="font-bold text-xs">Monto</TableHead>
+                <TableHead className="font-bold text-xs">Método</TableHead>
+                <TableHead className="font-bold text-xs">Fecha</TableHead>
+                <TableHead className="text-right font-bold pr-8 text-xs">Acciones</TableHead>
               </TableRow>
-            ) : egresos.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-20 text-center">
-                  <p className="font-bold opacity-30">No hay egresos registrados</p>
-                </TableCell>
-              </TableRow>
-            ) : currentEgresos.map((e) => (
-              <TableRow key={e.idEgreso} className="border-b border-border hover:bg-muted/70 transition-colors">
-                <TableCell className="px-6 py-4">
-                  <span className="font-mono text-sm font-bold text-muted-foreground">#{e.idEgreso}</span>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black text-foreground leading-none">{e.docente}</span>
-                    <span className="text-xs font-bold text-rose-600 mt-1 leading-none">{e.curso}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-sm font-black text-rose-600">S/ {Number(e.monto).toFixed(2)}</span>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <Badge className="bg-muted text-muted-foreground border-0 text-[10px] font-black rounded-full px-4">
-                    {e.metodoPago}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {new Date(e.fechaEgreso).toLocaleDateString('es-PE')}
-                  </span>
-                </TableCell>
-                <TableCell className="px-6 py-4 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl">
-                        <MoreVertical className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl">
-                      <DropdownMenuItem onClick={() => verBoleta(e)} className="font-bold cursor-pointer">
-                        <Receipt className="mr-2 h-4 w-4" />
-                        Ver Boleta
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleEliminar(e.idEgreso)} className="text-rose-600 font-bold cursor-pointer">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-20 text-center font-bold text-muted-foreground animate-pulse">
+                    Cargando egresos...
+                  </TableCell>
+                </TableRow>
+              ) : egresos.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-20 text-center">
+                    <p className="font-bold opacity-30">No hay egresos registrados</p>
+                  </TableCell>
+                </TableRow>
+              ) : currentEgresos.map((e) => (
+                <TableRow key={e.idEgreso} className="border-b border-border hover:bg-muted/70 transition-colors">
+                  <TableCell className="px-6 py-4">
+                    <span className="font-mono text-sm font-bold text-muted-foreground">#{e.idEgreso}</span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-black text-foreground leading-none">{e.docente}</span>
+                      <span className="text-xs font-bold text-rose-600 mt-1 leading-none">{e.curso}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <span className="text-sm font-black text-rose-600">S/ {Number(e.monto).toFixed(2)}</span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <Badge className="bg-muted text-muted-foreground border-0 text-[10px] font-black rounded-full px-4">
+                      {e.metodoPago}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-6 py-4">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {new Date(e.fechaEgreso).toLocaleDateString('es-PE')}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl">
+                          <MoreVertical className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="rounded-xl">
+                        <DropdownMenuItem onClick={() => verBoleta(e)} className="font-bold cursor-pointer">
+                          <Receipt className="mr-2 h-4 w-4" />
+                          Ver Boleta
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEliminar(e.idEgreso)} className="text-rose-600 font-bold cursor-pointer">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
         {/* PAGINACIÓN */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-border/40 bg-muted/10">
           <p className="text-xs text-muted-foreground font-medium">
@@ -795,7 +806,7 @@ export default function EgresosPage() {
             </Button>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
