@@ -1,7 +1,7 @@
  "use client"
 
 import { useState, useEffect } from "react"
-import { DollarSign, Plus, Download, User, BookOpen, CreditCard, Search, MoreVertical, Trash2, Receipt } from "lucide-react"
+import { DollarSign, Plus, Download, User, BookOpen, CreditCard, Search, Settings, Trash2, Receipt } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
@@ -681,7 +681,7 @@ export default function EgresosPage() {
       {/* TABLA */}
       <div className="rounded-2xl  bg-card backdrop-blur-sm overflow-hidden border border-border/30">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 bg-muted/20 px-6 py-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50  px-6 py-4">
           {/* DERECHA: título */}
           <h2 className="text-lg font-black text-foreground text-right md:text-left flex items-center gap-2">
             Listado de Egresos
@@ -700,10 +700,10 @@ export default function EgresosPage() {
               <TableRow className="border-b border-border/50 hover:bg-transparent">
                 <TableHead className="py-2 px-6 font-bold text-xs uppercase">ID</TableHead>
                 <TableHead className="font-bold text-xs">Docente / Curso</TableHead>
-                <TableHead className="font-bold text-xs">Monto</TableHead>
-                <TableHead className="font-bold text-xs">Método</TableHead>
-                <TableHead className="font-bold text-xs">Fecha</TableHead>
-                <TableHead className="text-right font-bold pr-8 text-xs">Acciones</TableHead>
+                <TableHead className="font-bold text-center">Monto</TableHead>
+                <TableHead className="font-bold text-center">Método</TableHead>
+                <TableHead className="font-bold text-center">Fecha</TableHead>
+                <TableHead className="font-bold text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -733,21 +733,21 @@ export default function EgresosPage() {
                   <TableCell className="px-6 py-4">
                     <span className="text-sm font-black text-rose-600">S/ {Number(e.monto).toFixed(2)}</span>
                   </TableCell>
-                  <TableCell className="px-6 py-4">
+                  <TableCell className="px-6 py-4 text-center">
                     <Badge className="bg-muted text-muted-foreground border-0 text-[10px] font-black rounded-full px-4">
                       {e.metodoPago}
                     </Badge>
                   </TableCell>
-                  <TableCell className="px-6 py-4">
+                  <TableCell className="px-6 py-4 text-center">
                     <span className="text-xs font-medium text-muted-foreground">
                       {new Date(e.fechaEgreso).toLocaleDateString('es-PE')}
                     </span>
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
+                  <TableCell className="px-6 py-4 text-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl">
-                          <MoreVertical className="h-5 w-5" />
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl p-4 border-1 border-gray-300">
+                          <Settings className="h-5 w-5" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-xl">

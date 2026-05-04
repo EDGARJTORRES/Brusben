@@ -1253,7 +1253,7 @@ export default function CoursesPage() {
           {/* DERECHA: BUSCADOR + SELECT */}
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
 
-            <div className="relative w-full sm:w-120">
+            <div className="relative w-full sm:w-120 bg-card">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
               <Input
                 placeholder="Buscar cursos..."

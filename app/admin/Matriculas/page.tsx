@@ -97,12 +97,12 @@ export default function MatriculasPage() {
 
 
       {/* TABLA / LISTA */}
-      <div className="border-none shadow-sm rounded-2xl overflow-hidden">
-                {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 bg-muted/20 px-6 py-4">
+      <div className="rounded-2xl  bg-card backdrop-blur-sm overflow-hidden border border-border/30">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50  px-6 py-4">
           {/* DERECHA: título */}
           <h2 className="text-lg font-black text-foreground text-right md:text-left flex items-center gap-2">
-            Listado de Usuarios
+            Listado de Matriculas
           </h2>
           {/* IZQUIERDA: filtros */}
           <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">

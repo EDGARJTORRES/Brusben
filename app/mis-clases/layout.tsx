@@ -200,7 +200,7 @@ export default function StudentLayout({
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto bg-sidebar">
+        <main className="flex-1 p-8 overflow-y-auto bg-background">
           <div className="max-w-7xl mx-auto space-y-8">
             {children}
           </div>

@@ -11,11 +11,13 @@ import {
   Wallet,
   ArrowUpRight,
   ArrowDownRight,
-  Filter
+  Filter,
+  Search
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 interface CursoFinanzas {
@@ -31,6 +33,8 @@ interface CursoFinanzas {
 export default function BalancePage() {
   const [data, setData] = useState<CursoFinanzas[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("TODOS")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,6 +82,17 @@ export default function BalancePage() {
   const totalEgresos = data.reduce((acc, c) => acc + c.egresos, 0)
   const balanceTotal = totalIngresos - totalEgresos
   const margenPromedio = totalIngresos > 0 ? (balanceTotal / totalIngresos) * 100 : 0
+
+  const filteredData = data.filter((curso) => {
+    const matchesSearch = curso.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    let matchesStatus = true
+    if (statusFilter === "RENTABLE") matchesStatus = curso.balance > 0
+    else if (statusFilter === "PERDIDA") matchesStatus = curso.balance < 0
+    else if (statusFilter === "EQUILIBRADO") matchesStatus = curso.balance === 0
+    
+    return matchesSearch && matchesStatus
+  })
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -145,17 +160,30 @@ export default function BalancePage() {
 
       {/* TABLE SECTION */}
       <div className="border-none shadow-sm rounded-3xl overflow-hidden bg-card">
-        <div className="border-b border-border/50 bg-muted/20 px-8 py-6">
+        <div className="border-b border-border/50  px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="text-xl font-black">Análisis por Curso</div>
             <div className="flex items-center gap-2">
               <div className="relative group">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <input 
                   placeholder="Filtrar curso..." 
-                  className="pl-10 pr-4 py-2 bg-muted/40 border-0 rounded-xl text-sm font-bold focus:ring-1 focus:ring-primary/20 transition-all outline-none"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 h-10 bg-muted/40 border-0 rounded-xl text-sm font-bold focus:ring-1 focus:ring-primary/20 transition-all outline-none w-48 lg:w-64"
                 />
               </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px] bg-muted/40 border-0 rounded-xl text-sm font-bold h-10">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-border/50 shadow-xl">
+                  <SelectItem value="TODOS" className="font-bold cursor-pointer">Todos</SelectItem>
+                  <SelectItem value="RENTABLE" className="font-bold cursor-pointer text-emerald-600">Rentable</SelectItem>
+                  <SelectItem value="PERDIDA" className="font-bold cursor-pointer text-rose-600">En Pérdida</SelectItem>
+                  <SelectItem value="EQUILIBRADO" className="font-bold cursor-pointer text-muted-foreground">Equilibrado</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -179,13 +207,15 @@ export default function BalancePage() {
                     <TableCell colSpan={7} className="h-16 animate-pulse bg-muted/20" />
                   </TableRow>
                 ))
-              ) : data.length === 0 ? (
+              ) : filteredData.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-40 text-center text-muted-foreground font-bold italic">
-                    No se encontraron datos financieros disponibles.
+                    {data.length === 0 
+                      ? "No se encontraron datos financieros disponibles." 
+                      : "Ningún curso coincide con los filtros aplicados."}
                   </TableCell>
                 </TableRow>
-              ) : data.map((curso) => (
+              ) : filteredData.map((curso) => (
                 <TableRow key={curso.idCurso} className="border-b border-border/30 hover:bg-muted/30 transition-colors group">
                   <TableCell className="px-8 py-5">
                     <div className="flex items-center gap-3">

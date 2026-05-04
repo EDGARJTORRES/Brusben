@@ -17,7 +17,8 @@ import {
   Fingerprint,
   ChevronLeft,
   ChevronRight,
-  Smartphone
+  Smartphone,
+  Settings
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -270,7 +271,7 @@ export default function UsuariosPage() {
 
       <div className="rounded-2xl  bg-card backdrop-blur-sm overflow-hidden border border-border/30">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 bg-muted/20 px-6 py-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50  px-6 py-4">
           {/* DERECHA: título */}
           <h2 className="text-lg font-black text-foreground text-right md:text-left flex items-center gap-2">
             Listado de Usuarios
@@ -383,8 +384,8 @@ export default function UsuariosPage() {
                     <TableCell className="text-right pr-8">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted">
-                            <MoreVertical className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl p-4 border-1 border-gray-300">
+                            <Settings className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48 p-2 rounded-xl shadow-xl">

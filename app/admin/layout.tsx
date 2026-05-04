@@ -16,6 +16,7 @@ import {
   User,
   BarChart3,
   Settings,
+  Monitor,
   Tag,
   HelpCircle,
   ClipboardList,
@@ -104,7 +105,7 @@ const getMenuGroups = (totalMatriculas: number): MenuItem[] => [
   },
   {
     type: "single",
-    icon: Hexagon,
+    icon:  Monitor,
     label: "Control Académico",
     href: "/admin/controlacademico",
   },
@@ -149,12 +150,6 @@ const getMenuGroups = (totalMatriculas: number): MenuItem[] => [
   },
   {
     type: "single",
-    icon: ClipboardList,
-    label: "Bitácora",
-    href: "/admin/bitacora",
-  },
-  {
-    type: "single",
     icon: Tag,
     label: "Categorías",
     href: "/admin/categorias",
@@ -165,6 +160,12 @@ const getMenuGroups = (totalMatriculas: number): MenuItem[] => [
     icon: Settings,
     label: "Configuración",
     href: "/admin/configuracion",
+  },
+  {
+    type: "single",
+    icon: ClipboardList,
+    label: "Bitácora",
+    href: "/admin/bitacora",
   },
   {
     type: "single",
@@ -216,7 +217,7 @@ export default function AdminLayout({
     <RouteGuard allowedRoles={["admin", "administrador"]}>
       <SidebarProvider style={{ "--sidebar-width-icon": "4rem" } as React.CSSProperties}>
       <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} totalMatriculas={totalMatriculas} />
-      <SidebarInset className="bg-background">
+      <SidebarInset className="bg-sidebar">
         {/* Modern Header */}
         <header className="sticky top-0 z-20 flex h-18 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
           <div className="flex items-center gap-4 flex-1">
@@ -314,7 +315,7 @@ export default function AdminLayout({
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto bg-sidebar">
+        <main className="flex-1 p-8 overflow-y-auto bg-background">
           <div className="max-w-7xl mx-auto space-y-8">{children}</div>
         </main>
       </SidebarInset>
@@ -408,10 +409,10 @@ function AdminSidebar({
                     asChild
                     isActive={isActive}
                     className={cn(
-                      "h-11 px-4 rounded-2xl transition-all duration-200 font-bold",
+                      "h-10 px-6 rounded-2xl transition-all duration-200 font-bold",
                       isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
                       isActive
-                        ? "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
+                        ? "bg-primary text-white hover:bg-primary/90 shadow-lg"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
                     tooltip={{

@@ -87,7 +87,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative overflow-hidden dark:bg-secondary">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-sidebar relative overflow-hidden dark:bg-secondary">
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0  -mr-48 -mt-48" />
         <div className="absolute bottom-0 left-0  rounded-full  -ml-48 -mb-48" />

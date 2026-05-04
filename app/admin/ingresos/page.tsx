@@ -9,13 +9,10 @@ import {
   Download,
   DollarSign,
   CreditCard, 
-  Filter,
-  Calendar,
   TrendingUp,
   GraduationCap,
-  ChevronDown,
   Search,
-  MoreVertical,
+  Settings,
   Receipt
 } from "lucide-react"
 
@@ -847,7 +844,7 @@ export default function PagosPage() {
       </div>
 
       <div className="rounded-2xl shadow-sm bg-card border border-border/50 overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50 bg-muted/20 px-6 py-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50  px-6 py-4">
           <h2 className="text-lg font-bold text-foreground">Listado de Pagos</h2>
           <div className="flex items-center gap-4 flex-1 max-w-xl justify-end">
             <div className="relative w-full md:w-80 group">
@@ -865,9 +862,9 @@ export default function PagosPage() {
             <TableRow className="border-b border-border/50 hover:bg-transparent">
               <TableHead className="py-4 px-6 font-bold text-xs uppercase tracking-wider">ID</TableHead>
               <TableHead className="font-bold text-xs">Estudiante / Curso</TableHead>
-              <TableHead className="font-bold text-xs">Monto</TableHead>
-              <TableHead className="font-bold text-xs">Estado</TableHead>
-              <TableHead className="font-bold text-xs">Método</TableHead>
+              <TableHead className="font-bold text-center">Monto</TableHead>
+              <TableHead className="font-bold text-center">Estado</TableHead>
+              <TableHead className="font-bold text-center">Método</TableHead>
               <TableHead className="text-right font-bold pr-8 text-xs">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -920,8 +917,8 @@ export default function PagosPage() {
                 <TableCell className="px-6 py-4 text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 border border-transparent hover:border-border hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-all group">
-                        <MoreVertical className="h-5 w-5" />
+                      <Button variant="ghost" size="icon"  className="h-10 w-10 rounded-xl p-4 border-1 border-gray-300">
+                        <Settings className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-xl font-medium shadow-xl">
