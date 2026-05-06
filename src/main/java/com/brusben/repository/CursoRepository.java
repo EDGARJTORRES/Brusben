@@ -11,4 +11,5 @@ public interface CursoRepository extends JpaRepository<Curso, Integer> {
     List<Curso> findByEstCurso(String estCurso);
     List<Curso> findByCategoriaCatId(Integer catId);
     List<Curso> findByDocenteIdUsuario(Integer idDocente);
+    List<Curso> findAllByOrderByIdCursoDesc();
 }

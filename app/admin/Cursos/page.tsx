@@ -571,10 +571,10 @@ export default function CoursesPage() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-12 w-12 rounded-2xl bg-white/10 hover:bg-white hover:text-slate-900 transition-all border border-white/10"
+                className="h-12 w-12 rounded-2xl bg-white/10 hover:bg-white/20 hover:text-white transition-all border border-white/10"
                 onClick={() => { setViewMode("list"); setSelectedCourseContent(null); }}
               >
-                <ArrowLeft className="h-6 w-6" />
+                <ArrowLeft className="h-6 w-6 text-white" />
               </Button>
               <div>
                 <div className="flex items-center gap-3 mb-1">
@@ -1315,7 +1315,7 @@ export default function CoursesPage() {
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="h-9 px-3 rounded-xl bg-white/15  text-white border border-white/20 backdrop-blur-sm gap-2 font-bold text-xs"
+                          className="h-9 px-3 rounded-xl bg-white/15  text-white border border-white/20  hover:bg-white/30 backdrop-blur-sm gap-2 font-bold text-xs"
                         >
                           <MoreVertical className="h-4 w-4 text-white" />
                         </Button>

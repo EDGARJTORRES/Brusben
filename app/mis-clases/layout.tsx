@@ -273,7 +273,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
             return (
               <SidebarMenuItem key={item.label} className="flex justify-center relative">
                 {isActive && (
-                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-md shadow-sm" />
+                  <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-2 h-7 bg-white/50 rounded-2xl shadow-sm" />
                 )}
                 <SidebarMenuButton
                   asChild

@@ -156,7 +156,7 @@ export default function MatriculaDetallePage() {
     <div className="space-y-8 animate-in fade-in duration-500">
 
       {/* BANNER DEL CURSO con botón de regreso integrado */}
-      <div className="relative h-45 rounded-3xl overflow-hidden bg-muted shadow-md">
+      <div className="relative h-45 rounded-xl overflow-hidden bg-muted shadow-md">
         {imgUrl ? (
           <img src={imgUrl} alt={curso.titulo} className="w-full h-full object-cover" />
         ) : (
@@ -167,27 +167,28 @@ export default function MatriculaDetallePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
 
         {/* Botón regresar — esquina superior izquierda */}
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push("/admin/matriculas")}
-            className="h-9 px-3 rounded-xl bg-white/15  text-white border border-white/20 backdrop-blur-sm gap-2 font-bold text-xs"
+            className="h-9 px-3 rounded-xl bg-white/15  text-white border border-white/20 backdrop-blur-sm gap-2 font-bold text-xs hover:text-white hover:bg-white/20 cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
             Regresar
           </Button>
-        </div>
-
-        {/* Info del curso — parte inferior */}
-        <div className="absolute inset-0 flex flex-col justify-end px-8 pb-6">
           <span
-            className="text-[10px] font-bold px-2.5 py-1 rounded-full text-white w-fit mb-2"
+            className="text-[12px] font-bold px-4 py-2 rounded-full text-white w-fit mb-2 "
             style={{ backgroundColor: curso.categoriaColor || "#6366f1" }}
           >
             {curso.categoria}
           </span>
-          <h2 className="text-white font-black text-xl leading-snug drop-shadow max-w-2xl">
+        </div>
+
+        {/* Info del curso — parte inferior */}
+        <div className="absolute inset-0 flex flex-col justify-end px-8 pb-6">
+
+          <h2 className="text-white font-black text-3xl leading-snug drop-shadow max-w-2xl">
             {curso.titulo}
           </h2>
           <div className="flex items-center gap-2 mt-2">

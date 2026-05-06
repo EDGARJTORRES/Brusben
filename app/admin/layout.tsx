@@ -406,13 +406,13 @@ function AdminSidebar({
               return (
                 <SidebarMenuItem key={item.label} className="flex justify-center relative">
                   {isActive && (
-                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-md shadow-sm" />
+                    <div className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-2 h-7 bg-white/50 rounded-2xl shadow-sm" />
                   )}
                   <SidebarMenuButton
                     asChild
                     isActive={isActive}
                     className={cn(
-                      "h-10 px-6 rounded-2xl transition-all duration-200 font-bold",
+                      "h-10 px-6 rounded-xl transition-all duration-200 font-bold",
                       isCollapsed ? "w-12 h-12 p-0 justify-center items-center" : "w-full",
                       isActive
                         ? "bg-primary text-white hover:bg-primary/90 shadow-lg"

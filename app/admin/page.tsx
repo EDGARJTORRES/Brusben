@@ -238,11 +238,11 @@ export default function AdminDashboard() {
           },
           colorByPoint: true,
           colors: [
-            "#818cf8",
-            "#6366f1",
-            "#4f46e5",
-            "#4338ca",
-            "#3730a3",
+            "#fa9494",
+            "#f76767",
+            "#f53b3bff",
+            "#f01616",
+            "#e60000",
           ],
         },
       },
@@ -306,7 +306,7 @@ export default function AdminDashboard() {
       plotOptions: {
         areaspline: {
           fillOpacity: 0.15,
-          marker: { radius: 4, fillColor: "#6366f1", lineWidth: 2, lineColor: "#fff" },
+          marker: { radius: 4, fillColor: "#bd0b0bff", lineWidth: 2, lineColor: "#fff" },
         },
       },
       series: [
@@ -314,12 +314,12 @@ export default function AdminDashboard() {
           type: "areaspline",
           name: "Ingresos",
           data: valores,
-          color: "#6366f1",
+          color: "#c40f0fff",
           fillColor: {
             linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
             stops: [
-              [0, "rgba(99,102,241,0.3)"],
-              [1, "rgba(99,102,241,0)"],
+              [0, "rgba(247, 23, 23, 0.3)"],
+              [1, "rgba(250, 73, 73, 0)"],
             ],
           },
         },
@@ -615,7 +615,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span
                           className="h-2 w-2 rounded-full flex-shrink-0"
-                          style={{ background: ["#818cf8","#6366f1","#4f46e5","#4338ca","#3730a3"][i] }}
+                          style={{ background: ["#fc6a6aff","#fa4747ff","#f53b3bff","#f01616ff","#e60000ff"][i] }}
                         />
                         <span className="truncate font-semibold text-muted-foreground capitalize">
                           {c.name.toLowerCase()}

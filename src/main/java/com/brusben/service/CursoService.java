@@ -43,8 +43,10 @@ public class CursoService {
     }
 
     public List<CursoDTO> getAllCursos() {
-        return cursoRepository.findAll()
-                .stream().map(this::convertToDTO).collect(Collectors.toList());
+        return cursoRepository.findAllByOrderByIdCursoDesc()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public CursoDTO getCursoById(Integer id) {
