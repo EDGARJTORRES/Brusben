@@ -581,13 +581,12 @@ export default function EgresosPage() {
 
       doc.setFillColor(243, 244, 246)
 
-      doc.roundedRect(
+      // RECTANGULAR (sin bordes redondos)
+      doc.rect(
         margin + 20,
         y,
         contentWidth - 40,
         38,
-        12,
-        12,
         "F"
       )
 
@@ -616,9 +615,9 @@ export default function EgresosPage() {
 
       doc.line(
         margin + 20,
-        y,
+        y + 35,
         pageWidth - margin - 20,
-        y
+        y + 35
       )
 
       y += 28
@@ -716,15 +715,20 @@ export default function EgresosPage() {
       // =========================================================================
       // FOOTER TEXTO
       // =========================================================================
+      // LÍNEA PUNTEADA
+      doc.setDrawColor(220, 220, 220)
 
-      doc.setDrawColor(229, 231, 235)
+      doc.setLineDashPattern([2, 2], 0)
 
       doc.line(
         margin + 20,
         y,
-        pageWidth - margin - 20,
+        pageWidth - margin - 30,
         y
       )
+
+      // volver línea normal
+      doc.setLineDashPattern([], 0)
 
       y += 30
 
