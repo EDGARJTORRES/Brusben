@@ -9,6 +9,7 @@ import {
   BookOpen, 
   Users, 
   Wallet,
+  Download,
   ArrowUpRight,
   ArrowDownRight,
   Filter,
@@ -19,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 interface CursoFinanzas {
   idCurso: number
@@ -107,10 +109,14 @@ export default function BalancePage() {
             Análisis detallado de rentabilidad por curso y rendimiento global.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-           <Badge variant="outline" className="px-4 py-2 rounded-xl border-dashed font-bold text-xs">
+        <div className="flex items-center gap-4">
+           <Badge variant="outline" className="py-2 rounded-xl border-dashed font-bold text-xs">
              Última actualización: {new Date().toLocaleDateString()}
            </Badge>
+           <Button variant="outline" className="rounded-xl h-11 px-6 font-bold border-border gap-2 bg-card">
+              <Download className="h-4 w-4 " />
+              Exportar a PDF
+            </Button>
         </div>
       </div>
 
@@ -159,18 +165,18 @@ export default function BalancePage() {
       </div>
 
       {/* TABLE SECTION */}
-      <div className="border-none shadow-sm rounded-3xl overflow-hidden bg-card">
+      <div className="border-none shadow-sm rounded-2xl overflow-hidden bg-card">
         <div className="border-b border-border/50  px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="text-xl font-black">Análisis por Curso</div>
             <div className="flex items-center gap-2">
               <div className="relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground  transition-colors" />
                 <input 
                   placeholder="Filtrar curso..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 h-10 bg-muted/40 border-0 rounded-xl text-sm font-bold focus:ring-1 focus:ring-primary/20 transition-all outline-none w-48 lg:w-64"
+                  className="pl-10 pr-4 py-2 h-10 bg-muted/40 border-0 rounded-xl text-sm font-bold transition-all outline-none w-48 lg:w-64"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -217,7 +223,7 @@ export default function BalancePage() {
                 </TableRow>
               ) : filteredData.map((curso) => (
                 <TableRow key={curso.idCurso} className="border-b border-border/30 hover:bg-muted/30 transition-colors group">
-                  <TableCell className="px-8 py-5">
+                  <TableCell className="px-8 py-3">
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
                         <BookOpen className="h-4 w-4" />
@@ -240,12 +246,12 @@ export default function BalancePage() {
                   <TableCell className="text-right font-black text-sm text-emerald-600">
                     S/ {curso.ingresos.toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right font-black text-sm text-rose-600">
+                  <TableCell className="text-center font-black text-sm text-rose-600">
                     - S/ {curso.egresos.toLocaleString()}
                   </TableCell>
                   <TableCell className={cn(
-                    "text-right font-black text-sm",
-                    curso.balance >= 0 ? "text-primary" : "text-rose-600"
+                    "text-center font-black text-sm ",
+                    curso.balance >= 0 ? "text-chart-4" : "text-rose-600"
                   )}>
                     S/ {curso.balance.toLocaleString()}
                   </TableCell>
@@ -273,22 +279,17 @@ export default function BalancePage() {
 
 function KPICard({ title, value, icon: Icon, description, trend, trendUp, color, bg }: any) {
   return (
-    <Card className=" rounded-3xl bg-card transition-all hover:shadow-md hover:translate-y-[-2px]">
-      <CardContent className="px-6 py-2">
-        <div className="flex items-center justify-between mb-4">
-          <div className={cn("p-3 rounded-2xl", bg, color)}>
+    <Card className="rounded-2xl bg-card transition-all">
+      <CardContent className="px-6 py-0 flex flex-col items-center">
+        <div className="flex flex-col items-center">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
+        </div>
+        <div className="flex items-center justify-between my-2">
+          <div className={cn("p-3 rounded-full", bg, color)}>
             <Icon className="h-5 w-5" />
           </div>
-          <div className={cn(
-            "flex items-center gap-1 text-xs font-black px-2 py-1 rounded-lg",
-            trendUp ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
-          )}>
-            {trendUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-            {trend}
-          </div>
         </div>
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
+        <div className="flex flex-col items-center">
           <h3 className="text-2xl font-black mt-1 tracking-tight text-foreground">{value}</h3>
           <p className="text-xs font-medium text-muted-foreground mt-2">{description}</p>
         </div>

@@ -81,7 +81,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-xs text-white/40 font-medium font-mono uppercase tracking-[0.2em]">
-            © 2026 Brusben. Digital Education Platform. 
+            © Plataforma Digital de Capacitaciones.
           </p>
         </div>
       </div>

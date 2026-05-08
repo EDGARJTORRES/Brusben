@@ -567,7 +567,7 @@ export default function CoursesPage() {
            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
            <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full -ml-24 -mb-24 blur-2xl opacity-30" />
            
-           <div className="relative z-10 flex items-center gap-6">
+           <div className="relative z-10 flex items-center gap-4">
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -577,11 +577,11 @@ export default function CoursesPage() {
                 <ArrowLeft className="h-6 w-6 text-white" />
               </Button>
               <div>
-                <div className="flex items-center gap-3 mb-1">
+                <div className="flex items-center gap-1 mb-1">
                    <Badge className="bg-primary text-white border-0 font-bold uppercase tracking-widest text-[10px] px-3">Gestión de Contenido</Badge>
                    <span className="text-slate-400 text-xs font-bold ring-1 ring-slate-700 px-2 py-0.5 rounded-full">ID: {selectedCourseContent.idCurso}</span>
                 </div>
-                <h3 className="text-1xl md:text-2xl font-black tracking-tight">{selectedCourseContent.titulo}</h3>
+                <h3 className="text-xl md:text-xl font-black tracking-tight">{selectedCourseContent.titulo}</h3>
               </div>
            </div>
 
@@ -1315,7 +1315,7 @@ export default function CoursesPage() {
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="h-9 px-3 rounded-xl bg-white/15  text-white border border-white/20  hover:bg-white/30 backdrop-blur-sm gap-2 font-bold text-xs"
+                          className="h-9 w-7 rounded-lg bg-white/15  text-white border border-white/20  hover:bg-white/30 backdrop-blur-sm gap-2 font-bold text-xs"
                         >
                           <MoreVertical className="h-4 w-4 text-white" />
                         </Button>

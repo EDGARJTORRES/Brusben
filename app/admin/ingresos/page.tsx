@@ -727,7 +727,7 @@ export default function PagosPage() {
                   <p className="text-xs mt-1">Sistema de Aula Virtual</p>
                   <p className="text-xs">RUC: 20409499849</p>
                   <p className="text-xs">Chiclayo, Perú</p>
-                  <p className="text-xs">Tel: (01) 123-4567</p>
+                  <p className="text-xs">Tel: (+51) 994-995-141</p>
                 </div>
 
                 {/* TIPO DOCUMENTO */}

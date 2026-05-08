@@ -306,7 +306,7 @@ export default function AdminDashboard() {
       plotOptions: {
         areaspline: {
           fillOpacity: 0.15,
-          marker: { radius: 4, fillColor: "#bd0b0bff", lineWidth: 2, lineColor: "#fff" },
+          marker: { radius: 4, fillColor: "#bd0b90ff", lineWidth: 2, lineColor: "#fff" },
         },
       },
       series: [
@@ -314,12 +314,12 @@ export default function AdminDashboard() {
           type: "areaspline",
           name: "Ingresos",
           data: valores,
-          color: "#c40f0fff",
+          color: "#c40f73ff",
           fillColor: {
             linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
             stops: [
-              [0, "rgba(247, 23, 23, 0.3)"],
-              [1, "rgba(250, 73, 73, 0)"],
+              [0, "rgba(184, 23, 247, 0.27)"],
+              [1, "rgba(244, 73, 250, 0)"],
             ],
           },
         },
@@ -409,10 +409,10 @@ export default function AdminDashboard() {
     plotOptions: {
       pie: {
         allowPointSelect: true,
-        innerSize: 75,
+        innerSize: 130,
         dataLabels: {
           enabled: true,
-          distance: -25,
+          distance: -15,
           formatter: function (this: any) {
             return `${this.point.y}`
           },
@@ -754,7 +754,7 @@ export default function AdminDashboard() {
           <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                <div className="h-9 w-9 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
                   <BookOpen className="h-5 w-5" />
                 </div>
                 <div>

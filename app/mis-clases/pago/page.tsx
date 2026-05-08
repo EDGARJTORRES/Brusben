@@ -9,7 +9,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Download
+  Download,
+  Eye
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -288,18 +289,17 @@ export default function MisPagosPage() {
         </div>
       </div>
 
-      <Card className="border-0 shadow-sm rounded-3xl bg-card overflow-hidden">
-        <CardContent className="p-0">
+      <div className="border-0 shadow-sm rounded-3xl bg-card overflow-hidden">
+        <div className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-b border-border/50 hover:bg-transparent">
-                  <TableHead className="py-4 px-6 font-bold text-xs uppercase tracking-wider">ID Pago</TableHead>
+                  <TableHead className="py-4 px-6 font-bold text-xs uppercase tracking-wider"></TableHead>
                   <TableHead className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Curso</TableHead>
                   <TableHead className="py-4 px-6 font-bold text-center text-xs uppercase tracking-wider">Monto</TableHead>
                   <TableHead className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Fecha</TableHead>
                   <TableHead className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Método</TableHead>
-                  <TableHead className="py-4 px-6 font-bold text-xs uppercase tracking-wider">Estado</TableHead>
                   <TableHead className="py-4 px-6 font-bold text-center text-xs uppercase tracking-wider">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -322,11 +322,20 @@ export default function MisPagosPage() {
                 ) : (
                   payments.map((p) => (
                     <TableRow key={p.idPago} className="border-b border-border/40 hover:bg-muted/50 transition-colors group">
-                      <TableCell className="px-6 py-4 font-mono font-bold text-sm text-muted-foreground">
-                        #{p.idPago}
+                      <TableCell className="px-6 py-4 w-20">
+                        <div className="h-10 w-10 rounded-xl overflow-hidden bg-muted relative group/card">
+                          <div className="absolute inset-0  bg-black/20 transition-all duration-300 flex items-center justify-center opacity-100">
+                            <Eye className="h-4 w-4 text-white" />
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4 font-black text-sm text-foreground">
-                        {p.course}
+                      <TableCell className="min-w-0">
+                        <p className="font-bold text-sm truncate group-hover:text-primary transition-colors">
+                          {p.course}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+                          ID #{p.idPago}
+                        </p>
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center">
                         <span className="font-black text-sm text-foreground">
@@ -342,9 +351,6 @@ export default function MisPagosPage() {
                       </TableCell>
                       <TableCell className="px-6 py-4 text-sm font-bold text-muted-foreground">
                         {p.method}
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        {getStatusBadge(p.status)}
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center">
                         <Button 
@@ -364,8 +370,8 @@ export default function MisPagosPage() {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* MODAL VISTA PREVIA BOLETA */}
       <Dialog open={isBoletaModalOpen} onOpenChange={setIsBoletaModalOpen}>
@@ -393,7 +399,7 @@ export default function MisPagosPage() {
                   <p className="text-xs mt-1">Sistema de Aula Virtual</p>
                   <p className="text-xs">RUC: 20409499849</p>
                   <p className="text-xs">Chiclayo, Perú</p>
-                  <p className="text-xs">Tel: (01) 123-4567</p>
+                  <p className="text-xs">Tel: (+51) 994-995-141</p>
                 </div>
 
                 {/* TIPO DOCUMENTO */}

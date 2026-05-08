@@ -174,213 +174,626 @@ export default function EgresosPage() {
       const jspdfModule = await import("jspdf/dist/jspdf.umd.min.js")
       const jsPDF = jspdfModule.jsPDF
 
-      // Cargar logo
+      // LOGO
       const imgData = await new Promise<string>((resolve) => {
         const img = new window.Image()
-        img.src = '/images/logo_brusben_light.png'
+        img.src = "/images/logo_brusben_light.png"
+
         img.onload = () => {
-          const canvas = document.createElement('canvas')
+          const canvas = document.createElement("canvas")
           canvas.width = img.width
           canvas.height = img.height
-          const ctx = canvas.getContext('2d')
+
+          const ctx = canvas.getContext("2d")
           if (ctx) ctx.drawImage(img, 0, 0)
-          resolve(canvas.toDataURL('image/png'))
+
+          resolve(canvas.toDataURL("image/png"))
         }
-        img.onerror = () => resolve('')
+
+        img.onerror = () => resolve("")
       })
 
-      // Formato ticket: 80mm de ancho (aprox 226 puntos)
+      // PDF
       const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt',
-        format: [226, 400] // ancho x alto inicial (se ajusta después)
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4",
       })
 
-      const w = 226
-      let y = 40
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
 
-      // ══════════════════════════════════════════════════════════════════════════
-      // HEADER - LOGO Y EMPRESA
-      // ══════════════════════════════════════════════════════════════════════════
-      
-      // Logo centrado
+      const margin = 20
+      const contentWidth = pageWidth - margin * 2
+
+      let y = 70
+
+      // =========================================================================
+      // HEADER ROJO
+      // =========================================================================
+      doc.setFillColor(220, 38, 38)
+
+      doc.roundedRect(
+        0,
+        0,
+        pageWidth,
+        20,
+        0,
+        0,
+        "F"
+      )
+
+
+      // =========================================================================
+      // CARD PRINCIPAL
+      // =========================================================================
+      doc.setFillColor(255, 255, 255)
+
+      doc.roundedRect(
+        margin,
+        45,
+        contentWidth,
+        pageHeight - 90,
+        24,
+        24,
+        "F"
+      )
+
+      // =========================================================================
+      // HEADER CONTENIDO
+      // =========================================================================
+
+      // LOGO BOX
+      doc.setFillColor(254, 242, 242)
+
+      doc.roundedRect(
+        margin + 20,
+        y,
+        80,
+        70,
+        18,
+        18,
+        "F"
+      )
+
+      // LOGO
       if (imgData) {
-        const logoWidth = 60
-        const logoHeight = 22
-        doc.addImage(imgData, 'PNG', (w - logoWidth) / 2, y, logoWidth, logoHeight)
-        y += logoHeight + 5
+        doc.addImage(
+          imgData,
+          "PNG",
+          margin + 25,
+          y + 10,
+          70,
+          42
+        )
       }
 
-      doc.setFontSize(7)
-      doc.setFont("courier", "normal")
-      doc.text("Sistema de Aula Virtual", w / 2, y, { align: "center" })
-      y += 8
-      doc.text("RUC: 20409499849", w / 2, y, { align: "center" })
-      y += 8
-      doc.text("Chiclayo, Perú", w / 2, y, { align: "center" })
-      y += 8
-      doc.text("Tel: (01) 123-4567", w / 2, y, { align: "center" })
-      y += 10
+      // EMPRESA
+      doc.setTextColor(20)
 
-      // Línea separadora
-      doc.setLineWidth(0.5)
-      doc.line(10, y, w - 10, y)
-      y += 10
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(20)
 
-      // ══════════════════════════════════════════════════════════════════════════
-      // TIPO DE DOCUMENTO
-      // ══════════════════════════════════════════════════════════════════════════
+      doc.text(
+        "BRUSBEN E.I.R.L",
+        margin + 110,
+        y + 20
+      )
+
+      doc.setFont("helvetica", "normal")
       doc.setFontSize(10)
-      doc.setFont("courier", "bold")
-      doc.text("BOLETA DE PAGO", w / 2, y, { align: "center" })
-      y += 10
+      doc.setTextColor(120)
+
+      doc.text(
+        "Sistema de Aula Virtual",
+        margin + 110,
+        y + 40
+      )
+
+      doc.text(
+        "RUC: 20409499849",
+        margin + 110,
+        y + 56
+      )
+
+      doc.text(
+        "Chiclayo, Perú",
+        margin + 110,
+        y + 72
+      )
+
+      // BADGE
+      doc.setFillColor(254, 242, 242)
+
+      doc.roundedRect(
+        pageWidth - 190,
+        y + 5,
+        130,
+        30,
+        15,
+        15,
+        "F"
+      )
+
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(10)
+      doc.setTextColor(220, 38, 38)
+
+      doc.text(
+        "COMPROBANTE",
+        pageWidth - 125,
+        y + 24,
+        {
+          align: "center",
+        }
+      )
+
+      // NUMERO
+      doc.setTextColor(20)
+
+      doc.setFontSize(24)
+
+      doc.text(
+        `#${String(egreso.idEgreso).padStart(8, "0")}`,
+        pageWidth - 60,
+        y + 65,
+        {
+          align: "right",
+        }
+      )
+
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(9)
+      doc.setTextColor(120)
+
+      doc.text(
+        "Emitido automáticamente",
+        pageWidth - 60,
+        y + 84,
+        {
+          align: "right",
+        }
+      )
+
+      // LÍNEA PUNTEADA
+      doc.setDrawColor(220, 220, 220)
+
+      doc.setLineDashPattern([2, 2], 0)
+
+      doc.line(
+        margin + 20,
+        y + 105,
+        pageWidth - margin - 30,
+        y + 105
+      )
+
+      // volver línea normal
+      doc.setLineDashPattern([], 0)
+
+      y += 120
+
+      // =========================================================================
+      // INFO CARDS
+      // =========================================================================
+
+      // espacio horizontal entre cards
+      const cardGap = 20
+
+      // ancho reducido
+      const cardWidth = (contentWidth - 60 - cardGap) / 2
+
+      // posición inicial
+      const leftCardX = margin + 20
+
+      // CARD IZQUIERDA
+      doc.setFillColor(249, 250, 251)
+
+      doc.roundedRect(
+        leftCardX,
+        y,
+        cardWidth,
+        120,
+        18,
+        18,
+        "F"
+      )
+
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(9)
+      doc.setTextColor(140)
+
+      doc.text(
+        "INFORMACIÓN DEL DOCENTE",
+        leftCardX + 15,
+        y + 22
+      )
+
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(9)
+      doc.setTextColor(90)
+
+      doc.text("Nombre", leftCardX + 15, y + 45)
+
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(11)
+      doc.setTextColor(20)
+
+      doc.text(
+        egreso.docente,
+        leftCardX + 15,
+        y + 62
+      )
+
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(9)
+      doc.setTextColor(90)
+
+      doc.text("DNI", leftCardX + 15, y + 84)
+
+      doc.setFont("helvetica", "bold")
+      doc.setTextColor(20)
+
+      doc.text(
+        egreso.docenteDni,
+        leftCardX + 15,
+        y + 100
+      )
+
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(9)
+      doc.setTextColor(90)
+
+      doc.text("Correo", leftCardX + 120, y + 84)
+
+      doc.setFont("helvetica", "bold")
+      doc.setTextColor(20)
       doc.setFontSize(8)
-      doc.text(`N° ${String(egreso.idEgreso).padStart(8, '0')}`, w / 2, y, { align: "center" })
-      y += 10
 
-      // Línea separadora
-      doc.line(10, y, w - 10, y)
-      y += 10
+      const emailLines = doc.splitTextToSize(
+        egreso.docenteEmail,
+        cardWidth - 135
+      )
 
-      // ══════════════════════════════════════════════════════════════════════════
-      // DATOS DEL CLIENTE (DOCENTE)
-      // ══════════════════════════════════════════════════════════════════════════
-      doc.setFontSize(7)
-      doc.setFont("courier", "bold")
-      doc.text("DOCENTE:", 15, y)
-      y += 8
+      doc.text(
+        emailLines,
+        leftCardX + 120,
+        y + 100
+      )
 
-      doc.setFont("courier", "normal")
-      doc.text(`Nombre: ${egreso.docente}`, 15, y)
-      y += 8
-      doc.text(`DNI: ${egreso.docenteDni}`, 15, y)
-      y += 8
-      doc.text(`Email: ${egreso.docenteEmail}`, 15, y)
-      y += 10
+      // CARD DERECHA
+      const rightX = leftCardX + cardWidth + cardGap
 
-      // Línea separadora
-      doc.line(10, y, w - 10, y)
-      y += 10
+      doc.setFillColor(249, 250, 251)
 
-      // ══════════════════════════════════════════════════════════════════════════
-      // FECHA Y MÉTODO
-      // ══════════════════════════════════════════════════════════════════════════
-      doc.setFont("courier", "normal")
-      doc.text(`Fecha: ${new Date(egreso.fechaEgreso).toLocaleDateString('es-PE', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })}`, 15, y)
-      y += 8
-      doc.text(`Método: ${egreso.metodoPago}`, 15, y)
-      y += 8
-      if (egreso.nroOperacion) {
-        doc.text(`N° Op: ${egreso.nroOperacion}`, 15, y)
-        y += 8
-      }
-      y += 3
+      doc.roundedRect(
+        rightX,
+        y,
+        cardWidth,
+        120,
+        18,
+        18,
+        "F"
+      )
 
-      // Línea separadora
-      doc.line(10, y, w - 10, y)
-      y += 10
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(9)
+      doc.setTextColor(140)
 
-      // ══════════════════════════════════════════════════════════════════════════
-      // DETALLE DE PRODUCTOS/SERVICIOS
-      // ══════════════════════════════════════════════════════════════════════════
-      doc.setFont("courier", "bold")
-      doc.text("DESCRIPCIÓN", 15, y)
-      doc.text("IMPORTE", w - 15, y, { align: "right" })
-      y += 8
+      doc.text(
+        "DETALLE DEL PAGO",
+        rightX + 15,
+        y + 22
+      )
 
-      doc.line(10, y, w - 10, y)
-      y += 8
-
-      // Item
-      doc.setFont("courier", "normal")
-      const maxWidth = w - 80
-      const lines = doc.splitTextToSize(egreso.concepto, maxWidth)
-      lines.forEach((line: string) => {
-        doc.text(line, 15, y)
-        y += 8
+      const fecha = new Date(
+        egreso.fechaEgreso
+      ).toLocaleDateString("es-PE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       })
-      
-      // Curso en línea aparte
-      doc.setFontSize(6)
-      doc.setFont("courier", "italic")
-      const cursoLines = doc.splitTextToSize(`Curso: ${egreso.curso}`, maxWidth)
-      cursoLines.forEach((line: string) => {
-        doc.text(line, 15, y)
-        y += 7
+
+      const details = [
+        ["Fecha", fecha],
+        ["Método", egreso.metodoPago],
+        ["N° Operación", egreso.nroOperacion || "-"],
+      ]
+
+      let detailY = y + 50
+
+      details.forEach(([label, value]) => {
+        doc.setFont("helvetica", "normal")
+        doc.setFontSize(9)
+        doc.setTextColor(100)
+
+        doc.text(
+          label,
+          rightX + 15,
+          detailY
+        )
+
+        doc.setFont("helvetica", "bold")
+        doc.setTextColor(20)
+
+        doc.text(
+          String(value),
+          rightX + cardWidth - 15,
+          detailY,
+          {
+            align: "right",
+          }
+        )
+
+        detailY += 24
       })
-      y += 3
 
-      doc.setFontSize(7)
-      doc.setFont("courier", "normal")
-      doc.text(`S/ ${Number(egreso.monto).toFixed(2)}`, w - 15, y - 8, { align: "right" })
-      y += 3
+      y += 160
 
-      // Línea separadora
-      doc.line(10, y, w - 10, y)
-      y += 10
+      // =========================================================================
+      // CONCEPTO
+      // =========================================================================
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(9)
+      doc.setTextColor(140)
 
-      // ══════════════════════════════════════════════════════════════════════════
+      doc.text(
+        "CONCEPTO",
+        margin + 20,
+        y
+      )
+
+      y += 25
+
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(18)
+      doc.setTextColor(20)
+
+      const conceptoLines = doc.splitTextToSize(
+        egreso.concepto,
+        contentWidth - 100
+      )
+
+      doc.text(
+        conceptoLines,
+        margin + 20,
+        y
+      )
+
+      y += conceptoLines.length * 20
+
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(11)
+      doc.setTextColor(110)
+
+      doc.text(
+        `Curso: ${egreso.curso}`,
+        margin + 20,
+        y
+      )
+
+      y += 40
+
+      // =========================================================================
+      // TABLA
+      // =========================================================================
+
+      doc.setFillColor(243, 244, 246)
+
+      doc.roundedRect(
+        margin + 20,
+        y,
+        contentWidth - 40,
+        38,
+        12,
+        12,
+        "F"
+      )
+
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(10)
+      doc.setTextColor(60)
+
+      doc.text(
+        "Descripción",
+        margin + 35,
+        y + 24
+      )
+
+      doc.text(
+        "Importe",
+        pageWidth - 75,
+        y + 24,
+        {
+          align: "right",
+        }
+      )
+
+      y += 38
+
+      doc.setDrawColor(229, 231, 235)
+
+      doc.line(
+        margin + 20,
+        y,
+        pageWidth - margin - 20,
+        y
+      )
+
+      y += 28
+
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(10)
+      doc.setTextColor(40)
+
+      doc.text(
+        egreso.concepto,
+        margin + 35,
+        y
+      )
+
+      doc.setFont("helvetica", "bold")
+
+      doc.text(
+        `S/ ${Number(egreso.monto).toFixed(2)}`,
+        pageWidth - 75,
+        y,
+        {
+          align: "right",
+        }
+      )
+
+      y += 60
+
+      // =========================================================================
       // TOTALES
-      // ══════════════════════════════════════════════════════════════════════════
-      doc.setFont("courier", "bold")
-      doc.setFontSize(8)
-      doc.text("SUBTOTAL:", 15, y)
-      doc.text(`S/ ${Number(egreso.monto).toFixed(2)}`, w - 15, y, { align: "right" })
-      y += 10
+      // =========================================================================
 
-      doc.text("IGV (0%):", 15, y)
-      doc.text("S/ 0.00", w - 15, y, { align: "right" })
-      y += 12
+      const totalX = pageWidth - 280
 
-      // Línea doble
-      doc.setLineWidth(1)
-      doc.line(10, y, w - 10, y)
-      y += 2
-      doc.line(10, y, w - 10, y)
-      y += 10
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(11)
+      doc.setTextColor(100)
 
+      doc.text("Subtotal", totalX, y)
+
+      doc.text(
+        `S/ ${Number(egreso.monto).toFixed(2)}`,
+        pageWidth - 60,
+        y,
+        {
+          align: "right",
+        }
+      )
+
+      y += 24
+
+      doc.text("IGV", totalX, y)
+
+      doc.text(
+        "S/ 0.00",
+        pageWidth - 60,
+        y,
+        {
+          align: "right",
+        }
+      )
+
+      y += 20
+
+      doc.setDrawColor(220)
+
+      doc.line(
+        totalX,
+        y,
+        pageWidth - 60,
+        y
+      )
+
+      y += 30
+
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(16)
+      doc.setTextColor(20)
+
+      doc.text("TOTAL", totalX, y)
+
+      doc.setTextColor(220, 38, 38)
+      doc.setFontSize(26)
+
+      doc.text(
+        `S/ ${Number(egreso.monto).toFixed(2)}`,
+        pageWidth - 60,
+        y,
+        {
+          align: "right",
+        }
+      )
+
+      y += 80
+
+      // =========================================================================
+      // FOOTER TEXTO
+      // =========================================================================
+
+      doc.setDrawColor(229, 231, 235)
+
+      doc.line(
+        margin + 20,
+        y,
+        pageWidth - margin - 20,
+        y
+      )
+
+      y += 30
+
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(12)
+      doc.setTextColor(30)
+
+      doc.text(
+        "Gracias por confiar en Brusben",
+        pageWidth / 2,
+        y,
+        {
+          align: "center",
+        }
+      )
+
+      y += 20
+
+      doc.setFont("helvetica", "normal")
       doc.setFontSize(10)
-      doc.text("TOTAL:", 15, y)
-      doc.text(`S/ ${Number(egreso.monto).toFixed(2)}`, w - 15, y, { align: "right" })
-      y += 12
+      doc.setTextColor(120)
 
-      // Línea doble
-      doc.line(10, y, w - 10, y)
-      y += 2
-      doc.line(10, y, w - 10, y)
-      y += 12
+      doc.text(
+        "Este comprobante fue generado electrónicamente",
+        pageWidth / 2,
+        y,
+        {
+          align: "center",
+        }
+      )
 
-      // ══════════════════════════════════════════════════════════════════════════
-      // FOOTER
-      // ══════════════════════════════════════════════════════════════════════════
-      doc.setFontSize(6)
-      doc.setFont("courier", "normal")
-      doc.text("¡Gracias por su preferencia!", w / 2, y, { align: "center" })
-      y += 8
-      doc.text("Conserve este documento", w / 2, y, { align: "center" })
-      y += 8
-      doc.text("para cualquier reclamo", w / 2, y, { align: "center" })
-      y += 10
+      y += 25
 
-      doc.setFontSize(5)
-      doc.text("Sistema generado por Brusben E.I.R.L", w / 2, y, { align: "center" })
-      y += 15
+      doc.setFontSize(8)
 
-      // Ajustar altura del documento
-      const finalHeight = y + 10
-      doc.internal.pageSize.height = finalHeight
+      doc.text(
+        "© Brusben E.I.R.L — Sistema Aula Virtual",
+        pageWidth / 2,
+        y,
+        {
+          align: "center",
+        }
+      )
 
-      doc.save(`Boleta_${String(egreso.idEgreso).padStart(8, '0')}.pdf`)
-      toast.success("Boleta generada exitosamente")
+      // =========================================================================
+      // FOOTER ROJO
+      // =========================================================================
+      doc.setFillColor(220, 38, 38)
+
+      doc.roundedRect(
+        0,
+        pageHeight - 20,
+        pageWidth,
+        20,
+        0,
+        0,
+        "F"
+      )
+
+
+      // SAVE
+      doc.save(
+        `Comprobante_${String(egreso.idEgreso).padStart(8, "0")}.pdf`
+      )
+
+      toast.success("Comprobante generado exitosamente")
     } catch (error) {
       console.error(error)
-      toast.error("Error al generar la boleta")
+      toast.error("Error al generar el comprobante")
     }
   }
 
@@ -475,7 +888,7 @@ export default function EgresosPage() {
               </Select>
               {formData.idDocente && cursos.length === 0 && (
                 <p className="text-xs text-amber-600 font-medium ml-1">
-                  ⚠️ Este docente ya tiene egresos registrados para todos sus cursos activos
+                  Este docente ya tiene egresos registrados para todos sus cursos activos
                 </p>
               )}
             </div>
@@ -531,116 +944,274 @@ export default function EgresosPage() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL VISTA PREVIA BOLETA */}
+      {/* MODAL VISTA PREVIA COMPROBANTE */}
       <Dialog open={isBoletaModalOpen} onOpenChange={setIsBoletaModalOpen}>
-        <DialogContent className="bg-card sm:max-w-[500px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-border sticky top-0 bg-card z-10">
-            <DialogTitle className="text-2xl font-black text-foreground">Vista Previa - Boleta</DialogTitle>
-            <p className="text-sm text-muted-foreground font-medium mt-1">
-              Revisa la boleta antes de descargar
+        <DialogContent className="bg-card sm:max-w-[650px] p-0 overflow-hidden border-none shadow-2xl rounded-[2rem] max-h-[92vh] overflow-y-auto">
+          
+          {/* HEADER MODAL */}
+          <div className="sticky top-0 z-10 backdrop-blur-xl bg-card/90 border-b border-border px-8 py-6">
+            <DialogTitle className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
+              Comprobante de Pago
+            </DialogTitle>
+
+            <p className="text-sm text-muted-foreground mt-1 font-medium">
+              Verifica la información antes de descargar el PDF
             </p>
           </div>
 
           {selectedEgreso && (
             <div className="p-8">
-              {/* Simulación de boleta tipo ticket */}
-              <div className="bg-white text-black p-6 rounded-lg shadow-lg border-2 border-dashed border-gray-300 text-sm max-w-[320px] mx-auto" style={{ fontFamily: 'Courier New, monospace' }}>
-                
-                {/* HEADER */}
-                <div className="text-center border-b-2 border-gray-800 pb-3 mb-3">
-                  <div className="flex justify-center mb-2">
-                    <img 
-                      src="/images/logo_brusben_light.png" 
-                      alt="Brusben" 
-                      className="h-12 object-contain"
-                    />
-                  </div>
-                  <p className="text-xs mt-1">Sistema de Aula Virtual</p>
-                  <p className="text-xs">RUC: 20409499849</p>
-                  <p className="text-xs">Chiclayo, Perú</p>
-                  <p className="text-xs">Tel: (01) 123-4567</p>
-                </div>
 
-                {/* TIPO DOCUMENTO */}
-                <div className="text-center border-b border-gray-400 pb-2 mb-3">
-                  <p className="font-black text-base">BOLETA DE PAGO</p>
-                  <p className="text-sm font-bold">N° {String(selectedEgreso.idEgreso).padStart(8, '0')}</p>
-                </div>
+              {/* COMPROBANTE */}
+              <div className="relative overflow-hidden rounded-[2rem] border border-border bg-white shadow-2xl">
 
-                {/* CLIENTE */}
-                <div className="border-b border-gray-400 pb-2 mb-3">
-                  <p className="font-bold text-xs mb-1">DOCENTE:</p>
-                  <p className="text-xs">Nombre: {selectedEgreso.docente}</p>
-                  <p className="text-xs">DNI: {selectedEgreso.docenteDni}</p>
-                  <p className="text-xs">Email: {selectedEgreso.docenteEmail}</p>
-                </div>
+                {/* DECORACIÓN */}
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-primary/70 to-primary"></div>
 
-                {/* FECHA Y MÉTODO */}
-                <div className="border-b border-gray-400 pb-2 mb-3 text-xs">
-                  <p>Fecha: {new Date(selectedEgreso.fechaEgreso).toLocaleDateString('es-PE', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}</p>
-                  <p>Método: {selectedEgreso.metodoPago}</p>
-                  {selectedEgreso.nroOperacion && <p>N° Op: {selectedEgreso.nroOperacion}</p>}
-                </div>
+                <div className="p-8">
 
-                {/* DETALLE */}
-                <div className="border-b border-gray-400 pb-2 mb-3">
-                  <div className="flex justify-between font-bold text-xs mb-2">
-                    <span>DESCRIPCIÓN</span>
-                    <span>IMPORTE</span>
-                  </div>
-                  <div className="border-t border-gray-400 pt-2">
-                    <p className="text-xs mb-1">{selectedEgreso.concepto}</p>
-                    <p className="text-xs italic text-gray-600 mb-2">Curso: {selectedEgreso.curso}</p>
-                    <div className="flex justify-between">
-                      <span className="text-xs">Cantidad: 1</span>
-                      <span className="text-xs font-bold">S/ {Number(selectedEgreso.monto).toFixed(2)}</span>
+                  {/* HEADER */}
+                  <div className="flex items-start justify-between gap-6 border-b border-dashed border-gray-300 pb-6">
+                    
+                    {/* EMPRESA */}
+                    <div className="flex gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden">
+                        <img
+                          src="/images/logo_brusben_light.png"
+                          alt="Brusben"
+                          className="w-12 h-12 object-contain"
+                        />
+                      </div>
+
+                      <div>
+                        <h2 className="text-xl font-black text-gray-900">
+                          BRUSBEN E.I.R.L
+                        </h2>
+
+                        <p className="text-sm text-gray-500">
+                          Sistema de Aula Virtual
+                        </p>
+
+                        <div className="mt-2 space-y-1 text-xs text-gray-500">
+                          <p>RUC: 20409499849</p>
+                          <p>Chiclayo, Perú</p>
+                          <p>Tel: (+51) 994-995-141</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* COMPROBANTE */}
+                    <div className="text-right">
+                      <div className="inline-flex items-center rounded-full bg-primary/10 text-primary px-4 py-2 text-xs font-black uppercase tracking-wider">
+                        Comprobante
+                      </div>
+
+                      <h3 className="mt-4 text-2xl font-black text-gray-900">
+                        #{String(selectedEgreso.idEgreso).padStart(8, '0')}
+                      </h3>
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        Emitido automáticamente
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                {/* TOTALES */}
-                <div className="border-b-2 border-gray-800 pb-2 mb-3 text-xs">
-                  <div className="flex justify-between mb-1">
-                    <span className="font-bold">SUBTOTAL:</span>
-                    <span>S/ {Number(selectedEgreso.monto).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-bold">IGV (0%):</span>
-                    <span>S/ 0.00</span>
-                  </div>
-                  <div className="flex justify-between text-base font-black border-t-2 border-gray-800 pt-2">
-                    <span>TOTAL:</span>
-                    <span>S/ {Number(selectedEgreso.monto).toFixed(2)}</span>
-                  </div>
-                </div>
+                  {/* INFORMACIÓN */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6 border-b border-dashed border-gray-300">
 
-                {/* FOOTER */}
-                <div className="text-center text-xs border-t border-gray-400 pt-3">
-                  <p className="font-bold mb-1">¡Gracias por su preferencia!</p>
-                  <p className="mb-1">Conserve este documento</p>
-                  <p className="mb-2">para cualquier reclamo</p>
-                  <p className="text-[10px] text-gray-600">Sistema generado por Brusben E.I.R.L</p>
-                </div>
+                    {/* DOCENTE */}
+                    <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                      <p className="text-xs font-black tracking-widest text-gray-400 uppercase mb-3">
+                        Información del Docente
+                      </p>
 
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-gray-500">Nombre</p>
+                          <p className="font-bold text-gray-900">
+                            {selectedEgreso.docente}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs text-gray-500">DNI</p>
+                          <p className="font-semibold text-gray-800">
+                            {selectedEgreso.docenteDni}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs text-gray-500">Correo</p>
+                          <p className="font-medium text-gray-800 break-all">
+                            {selectedEgreso.docenteEmail}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* DETALLE PAGO */}
+                    <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                      <p className="text-xs font-black tracking-widest text-gray-400 uppercase mb-3">
+                        Detalle del Pago
+                      </p>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-gray-500">Fecha</span>
+                          <span className="font-semibold text-right text-gray-900">
+                            {new Date(selectedEgreso.fechaEgreso).toLocaleDateString('es-PE', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between gap-4">
+                          <span className="text-gray-500">Método</span>
+                          <span className="font-semibold text-gray-900">
+                            {selectedEgreso.metodoPago}
+                          </span>
+                        </div>
+
+                        {selectedEgreso.nroOperacion && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-gray-500">N° Operación</span>
+                            <span className="font-semibold text-gray-900">
+                              {selectedEgreso.nroOperacion}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DETALLE */}
+                  <div className="py-6 border-b border-dashed border-gray-300">
+
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <p className="text-xs font-black tracking-widest text-gray-400 uppercase">
+                          Concepto
+                        </p>
+
+                        <h4 className="text-lg font-black text-gray-900 mt-1">
+                          {selectedEgreso.concepto}
+                        </h4>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                          Curso: {selectedEgreso.curso}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">
+                          Cantidad
+                        </p>
+
+                        <p className="text-lg font-black text-gray-900">
+                          1
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* TABLA */}
+                    <div className="overflow-hidden rounded-2xl border border-gray-200">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            <th className="text-left px-4 py-3 font-black text-gray-700">
+                              Descripción
+                            </th>
+                            <th className="text-right px-4 py-3 font-black text-gray-700">
+                              Importe
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          <tr className="border-t border-gray-200">
+                            <td className="px-4 py-4 text-gray-700">
+                              {selectedEgreso.concepto}
+                            </td>
+
+                            <td className="px-4 py-4 text-right font-black text-gray-900">
+                              S/ {Number(selectedEgreso.monto).toFixed(2)}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* TOTAL */}
+                  <div className="pt-6 flex justify-end">
+                    <div className="w-full max-w-sm space-y-3">
+
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 font-medium">
+                          Subtotal
+                        </span>
+
+                        <span className="font-bold text-gray-900">
+                          S/ {Number(selectedEgreso.monto).toFixed(2)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 font-medium">
+                          IGV
+                        </span>
+
+                        <span className="font-bold text-gray-900">
+                          S/ 0.00
+                        </span>
+                      </div>
+
+                      <div className="border-t border-dashed border-gray-300 pt-4 flex justify-between items-center">
+                        <span className="text-lg font-black text-gray-900">
+                          TOTAL
+                        </span>
+
+                        <span className="text-3xl font-black text-primary">
+                          S/ {Number(selectedEgreso.monto).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FOOTER */}
+                  <div className="mt-8 pt-6 border-t border-dashed border-gray-300 text-center">
+                    <p className="font-bold text-gray-800">
+                      Gracias por confiar en Brusben
+                    </p>
+
+                    <p className="text-sm text-gray-500 mt-1">
+                      Este comprobante fue generado electrónicamente
+                    </p>
+
+                    <p className="text-xs text-gray-400 mt-3">
+                      © Brusben E.I.R.L — Sistema Aula Virtual
+                    </p>
+                  </div>
+
+                </div>
               </div>
 
               {/* BOTONES */}
-              <div className="flex gap-3 mt-6">
+              <div className="flex gap-3 mt-8">
                 <Button
                   variant="outline"
-                  className="flex-1 h-12 rounded-xl font-bold"
+                  className="flex-1 h-12 rounded-2xl font-bold border-2"
                   onClick={() => setIsBoletaModalOpen(false)}
                 >
                   Cerrar
                 </Button>
+
                 <Button
-                  className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 font-black gap-2"
+                  className="flex-1 h-12 rounded-2xl bg-primary hover:bg-primary/90 font-black gap-2 shadow-lg"
                   onClick={() => {
                     generarBoleta(selectedEgreso)
                     setIsBoletaModalOpen(false)
@@ -650,6 +1221,7 @@ export default function EgresosPage() {
                   Descargar PDF
                 </Button>
               </div>
+
             </div>
           )}
         </DialogContent>

@@ -145,11 +145,11 @@ export default function MatriculasPage() {
               return (
                 <div
                   key={curso.idCurso}
-                  className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors group"
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-3 items-center hover:bg-muted/30 transition-colors group"
                 >
                   {/* Curso */}
                   <div className="col-span-4 flex items-center gap-4 min-w-0">
-                    <div className="h-11 w-11 rounded-xl overflow-hidden bg-muted flex-shrink-0 ring-1 ring-border">
+                    <div className="h-10 w-10 rounded-xl overflow-hidden bg-muted flex-shrink-0 ring-1 ring-border">
                       {imgUrl ? (
                         <img src={imgUrl} alt={curso.titulo} className="h-full w-full object-cover" />
                       ) : (

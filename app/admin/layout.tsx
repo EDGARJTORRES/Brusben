@@ -305,7 +305,7 @@ export default function AdminLayout({
                     onClick={handleLogout}
                     className="rounded-lg h-10 px-3 cursor-pointer font-bold text-rose-600 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-500/10 gap-2"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-4 w-4 text-rose-600" />
                     Cerrar Sesión
                   </DropdownMenuItem>
                 </DropdownMenuContent>

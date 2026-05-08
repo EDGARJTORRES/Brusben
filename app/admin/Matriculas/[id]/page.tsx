@@ -224,7 +224,7 @@ export default function MatriculaDetallePage() {
           },
         ].map((kpi) => (
           <Card key={kpi.label}>
-            <CardContent className="pt-5 pb-5">
+            <CardContent className="pt-2 pb-2">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
@@ -251,7 +251,7 @@ export default function MatriculaDetallePage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nombre, email o DNI..."
-            className="pl-10 rounded-xl h-10"
+            className="pl-10 rounded-xl h-10 bg-card"
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
           />
