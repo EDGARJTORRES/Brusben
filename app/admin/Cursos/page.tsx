@@ -209,7 +209,7 @@ export default function CoursesPage() {
       })
 
       if (res.ok) {
-        toast.success(isEditing ? "Curso actualizado 🔥" : "Curso registrado 🔥")
+        toast.success(isEditing ? "Curso actualizado" : "Curso registrado")
         resetForm()
         fetchCourses()
         setActiveTab("listado")

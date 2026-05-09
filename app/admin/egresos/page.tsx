@@ -173,18 +173,59 @@ export default function EgresosPage() {
       // @ts-ignore
       const jspdfModule = await import("jspdf/dist/jspdf.umd.min.js")
       const jsPDF = jspdfModule.jsPDF
+      const QRCode = (await import("qrcode")).default
 
+      // =========================================================================
+      // QR
+      // =========================================================================
+
+      const qrData = `
+      COMPROBANTE: ${String(egreso.idEgreso).padStart(8, "0")}
+      DOCENTE: ${egreso.docente}
+      CURSO: ${egreso.curso}
+      MONTO: S/ ${Number(egreso.monto).toFixed(2)}
+      FECHA: ${egreso.fechaEgreso}
+      `
+
+      const qrImage = await QRCode.toDataURL(qrData, {
+        width: 200,
+        margin: 1,
+      })
       // LOGO
       const imgData = await new Promise<string>((resolve) => {
         const img = new window.Image()
+
         img.src = "/images/logo_brusben_light.png"
 
         img.onload = () => {
           const canvas = document.createElement("canvas")
+
           canvas.width = img.width
           canvas.height = img.height
 
           const ctx = canvas.getContext("2d")
+
+          if (ctx) ctx.drawImage(img, 0, 0)
+
+          resolve(canvas.toDataURL("image/png"))
+        }
+
+        img.onerror = () => resolve("")
+      })
+
+      const firmaData = await new Promise<string>((resolve) => {
+        const img = new window.Image()
+
+        img.src = "/images/firma_rodrigo.png"
+
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+
+          canvas.width = img.width
+          canvas.height = img.height
+
+          const ctx = canvas.getContext("2d")
+
           if (ctx) ctx.drawImage(img, 0, 0)
 
           resolve(canvas.toDataURL("image/png"))
@@ -645,9 +686,66 @@ export default function EgresosPage() {
 
       y += 60
 
-      // =========================================================================
-      // TOTALES
-      // =========================================================================
+      // -------------------------------------------------------------------------
+      // FIRMA IZQUIERDA
+      // -------------------------------------------------------------------------
+
+      const firmaX = margin + 40
+      const firmaY = y - 10
+
+      // Imagen firma
+      if (firmaData) {
+        doc.addImage(
+          firmaData,
+          "PNG",
+          firmaX,
+          firmaY,
+          100,
+          55
+        )
+      }
+
+      // Línea firma
+      doc.setDrawColor(180)
+
+      doc.line(
+        firmaX,
+        firmaY + 58,
+        firmaX + 130,
+        firmaY + 58
+      )
+
+      // Nombre
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(10)
+      doc.setTextColor(30)
+
+      doc.text(
+        "Rodrigo Morazzani",
+        firmaX + 65,
+        firmaY + 74,
+        {
+          align: "center"
+        }
+      )
+
+      // Cargo
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(9)
+      doc.setTextColor(120)
+
+      doc.text(
+        "Gerente General",
+        firmaX + 65,
+        firmaY + 88,
+        {
+          align: "center"
+        }
+      )
+
+      // -------------------------------------------------------------------------
+      // TOTALES DERECHA
+      // -------------------------------------------------------------------------
 
       const totalX = pageWidth - 280
 
@@ -710,12 +808,13 @@ export default function EgresosPage() {
         }
       )
 
-      y += 80
+      y += 40
 
       // =========================================================================
-      // FOOTER TEXTO
+      // FOOTER TEXTO + QR
       // =========================================================================
-      // LÍNEA PUNTEADA
+
+      // línea punteada
       doc.setDrawColor(220, 220, 220)
 
       doc.setLineDashPattern([2, 2], 0)
@@ -727,10 +826,37 @@ export default function EgresosPage() {
         y
       )
 
-      // volver línea normal
       doc.setLineDashPattern([], 0)
 
-      y += 30
+      y += 25
+
+      // -------------------------------------------------------------------------
+      // QR IZQUIERDA
+      // -------------------------------------------------------------------------
+
+      const qrX = margin + 33
+      const qrY = y
+
+      doc.setFillColor(250, 250, 250)
+
+      doc.addImage(
+        qrImage,
+        "PNG",
+        qrX,
+        qrY,
+        70,
+        70
+      )
+
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(7)
+      doc.setTextColor(120)
+
+      // -------------------------------------------------------------------------
+      // TEXTO DERECHA
+      // -------------------------------------------------------------------------
+
+      const footerTextX = pageWidth / 2 + 240
 
       doc.setFont("helvetica", "bold")
       doc.setFontSize(12)
@@ -738,14 +864,12 @@ export default function EgresosPage() {
 
       doc.text(
         "Gracias por confiar en Brusben",
-        pageWidth / 2,
-        y,
+        footerTextX,
+        y + 18,
         {
-          align: "center",
+          align: "right",
         }
       )
-
-      y += 20
 
       doc.setFont("helvetica", "normal")
       doc.setFontSize(10)
@@ -753,25 +877,25 @@ export default function EgresosPage() {
 
       doc.text(
         "Este comprobante fue generado electrónicamente",
-        pageWidth / 2,
-        y,
+        footerTextX,
+        y + 40,
         {
-          align: "center",
+          align: "right",
         }
       )
-
-      y += 25
 
       doc.setFontSize(8)
 
       doc.text(
         "© Brusben E.I.R.L — Sistema Aula Virtual",
-        pageWidth / 2,
-        y,
+        footerTextX,
+        y + 62,
         {
-          align: "center",
+          align: "right",
         }
       )
+
+      y += 95
 
       // =========================================================================
       // FOOTER ROJO

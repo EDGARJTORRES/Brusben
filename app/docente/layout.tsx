@@ -16,6 +16,7 @@ import {
   ChevronDown,
   User,
   Calendar,
+  Settings,
   HelpCircle,
   LayoutGrid,
   Layers,
@@ -80,8 +81,11 @@ const menuGroups: MenuItem[] = [
   { type: "single", icon: LayoutGrid, label: "Inicio", href: "/docente" },
   { type: "label", label: "Gestión" },
   { type: "single", icon: BookOpen, label: "Cursos", href: "/docente/curso" },
-  { type: "single", icon: CreditCard, label: "Pagos", href: "/docente/pago" },
   { type: "single", icon: FileText, label: "Infografías", href: "/docente/infografia" },
+  { type: "label", label: "Finanzas" },
+  { type: "single", icon: CreditCard, label: "Pagos", href: "/docente/pago" },
+  { type: "label", label: "Configuración" },
+  { type: "single", icon: Settings, label: "Configuración", href: "/docente/configuracion" },
   { type: "label", label: "Soporte" },
   { type: "single", icon: HelpCircle, label: "Ayuda", href: "/docente/ayuda" },
 ]
@@ -176,7 +180,7 @@ export default function StudentLayout({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[200px] p-2 rounded-xl shadow-xl border-border">
                   <DropdownMenuItem
-                    onClick={() => router.push("/mis-clases/perfil")}
+                    onClick={() => router.push("/docente/perfil")}
                     className="rounded-lg h-10 px-3 cursor-pointer font-medium hover:bg-muted gap-2"
                   >
                     <User className="h-4 w-4" />

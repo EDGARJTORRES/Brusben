@@ -106,6 +106,20 @@ export default function UsuariosPage() {
     nmrCelular: "",
   })
 
+  const validatePassword = (password: string) => {
+    const requirements = {
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      minLength: password.length >= 8
+    }
+    
+    const isValid = Object.values(requirements).every(req => req === true)
+    
+    return { isValid, requirements }
+  }
+
   useEffect(() => {
     fetchUsers()
   }, [])
@@ -126,9 +140,28 @@ export default function UsuariosPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validar contraseña solo si es nuevo usuario o si se proporcionó una contraseña
+    if (!editingUser || formData.password) {
+      const { isValid } = validatePassword(formData.password || "")
+      if (!isValid) {
+        toast.error("La contraseña debe cumplir con todos los requisitos")
+        return
+      }
+    }
+    
+    // Verificar si el email ya existe (solo para nuevos usuarios)
+    if (!editingUser) {
+      const emailExists = users.some(user => user.email.toLowerCase() === formData.email.toLowerCase())
+      if (emailExists) {
+        toast.error("El correo electrónico ya está registrado")
+        return
+      }
+    }
+    
     const method = editingUser ? "PUT" : "POST"
     const url = editingUser 
-      ? `http://localhost:8081/api/usuarios/${editingUser.idUsuario}`
+      ? `http://localhost:8081/api/usuarios/${editingUser.idUsuario}` 
       : "http://localhost:8081/api/usuarios"
 
     try {
@@ -145,7 +178,12 @@ export default function UsuariosPage() {
         resetForm()
       } else {
         const errorData = await res.json().catch(() => ({}))
-        toast.error(errorData.message || "Error al guardar usuario")
+        // Manejar específicamente el error de email duplicado
+        if (errorData.message && errorData.message.includes("usuarios_email_key")) {
+          toast.error("El correo electrónico ya está registrado")
+        } else {
+          toast.error(errorData.message || "Error al guardar usuario")
+        }
       }
     } catch (error) {
       toast.error("Error de conexión")
@@ -516,7 +554,7 @@ export default function UsuariosPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <UserIcon className="h-3 w-3 text-primary" /> Nombre Completo
+                    <UserIcon className="h-5 w-5 text-primary" /> Nombre Completo
                   </label>
                   <Input 
                     placeholder="Ej. Luis Alejandro Flores García" 
@@ -528,7 +566,7 @@ export default function UsuariosPage() {
                 </div>
                 <div className="space-y-2">
                     <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                      <Fingerprint className="h-3 w-3 text-primary" /> DNI
+                      <Fingerprint className="h-5 w-5 text-primary" /> DNI
                     </label>
                     <Input 
                       placeholder="12345678" 
@@ -543,7 +581,7 @@ export default function UsuariosPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Fingerprint className="h-3 w-3 text-primary" /> Celular
+                    <Fingerprint className="h-5 w-5 text-primary" /> Celular
                   </label>
                   <Input 
                     placeholder="Ej. 987654321" 
@@ -555,7 +593,7 @@ export default function UsuariosPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Shield className="h-3 w-3 text-primary" /> Rol
+                    <Shield className="h-5 w-5 text-primary" /> Rol
                   </label>
                   <Select 
                     value={formData.idRol.toString()} 
@@ -577,7 +615,7 @@ export default function UsuariosPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Mail className="h-3 w-3 text-primary" /> Correo Electrónico
+                    <Mail className="h-5 w-5 text-primary" /> Correo Electrónico
                   </label>
                   <Input 
                     type="email"
@@ -588,17 +626,122 @@ export default function UsuariosPage() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Shield className="h-3 w-3 text-primary" /> Contraseña
+                    <Shield className="h-5 w-5 text-primary" /> Contraseña
                   </label>
-                  <Input 
-                    type="password"
-                    placeholder="••••••••"
-                    className="h-12 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  />
+                  
+                  <div className="relative">
+                    <Input 
+                      type="password"
+                      placeholder="••••••••"
+                      className="h-12 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                      value={formData.password}
+                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    />
+                    
+                    {/* Tooltip que aparece arriba del input */}
+                    {formData.password && !validatePassword(formData.password).isValid && (
+                      <div 
+                        className="absolute bottom-full left-0 right-0 mb-2 p-3 rounded-xl bg-background border-2 border-border shadow-xl z-50"
+                      >
+                        <div className="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-3 h-3 bg-background border-r-2 border-b-2 border-border"></div>
+                        <p className="text-xs font-black uppercase text-muted-foreground tracking-wider mb-2">Requisitos de contraseña:</p>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={cn(
+                              "w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-black",
+                              validatePassword(formData.password).requirements.minLength 
+                                ? "bg-emerald-500 text-white" 
+                                : "bg-gray-200 text-gray-500"
+                            )}>
+                              ✓
+                            </span>
+                            <span className={cn(
+                              "font-medium",
+                              validatePassword(formData.password).requirements.minLength 
+                                ? "text-emerald-600" 
+                                : "text-gray-500"
+                            )}>
+                              Mínimo 8 caracteres
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={cn(
+                              "w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-black",
+                              validatePassword(formData.password).requirements.hasUppercase 
+                                ? "bg-emerald-500 text-white" 
+                                : "bg-gray-200 text-gray-500"
+                            )}>
+                              ✓
+                            </span>
+                            <span className={cn(
+                              "font-medium",
+                              validatePassword(formData.password).requirements.hasUppercase 
+                                ? "text-emerald-600" 
+                                : "text-gray-500"
+                            )}>
+                              Mayúscula (A-Z)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={cn(
+                              "w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-black",
+                              validatePassword(formData.password).requirements.hasLowercase 
+                                ? "bg-emerald-500 text-white" 
+                                : "bg-gray-200 text-gray-500"
+                            )}>
+                              ✓
+                            </span>
+                            <span className={cn(
+                              "font-medium",
+                              validatePassword(formData.password).requirements.hasLowercase 
+                                ? "text-emerald-600" 
+                                : "text-gray-500"
+                            )}>
+                              Minúscula (a-z)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={cn(
+                              "w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-black",
+                              validatePassword(formData.password).requirements.hasNumber 
+                                ? "bg-emerald-500 text-white" 
+                                : "bg-gray-200 text-gray-500"
+                            )}>
+                              ✓
+                            </span>
+                            <span className={cn(
+                              "font-medium",
+                              validatePassword(formData.password).requirements.hasNumber 
+                                ? "text-emerald-600" 
+                                : "text-gray-500"
+                            )}>
+                              Número (0-9)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={cn(
+                              "w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-black",
+                              validatePassword(formData.password).requirements.hasSpecialChar 
+                                ? "bg-emerald-500 text-white" 
+                                : "bg-gray-200 text-gray-500"
+                            )}>
+                              ✓
+                            </span>
+                            <span className={cn(
+                              "font-medium",
+                              validatePassword(formData.password).requirements.hasSpecialChar 
+                                ? "text-emerald-600" 
+                                : "text-gray-500"
+                            )}>
+                              Carácter especial
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-400/5 border border-emerald-400/10 transition-all select-none">
