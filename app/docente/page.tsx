@@ -238,7 +238,7 @@ export default function TeacherDashboard() {
                   </div>
                   <div className="space-y-2 flex-1">
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{stat.title}</p>
-                    <p className="text-2xl font-black text-slate-800">{stat.value}</p>
+                    <p className="text-xl font-black text-slate-800">{stat.value}</p>
                     <p className="text-xs text-slate-500">{stat.description}</p>
                   </div>
                 </div>
