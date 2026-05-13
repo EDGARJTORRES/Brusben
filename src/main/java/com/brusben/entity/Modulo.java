@@ -1,10 +1,14 @@
 package com.brusben.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "modulos", schema = "sc_sistema")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Modulo {
 
     @Id
@@ -14,6 +18,8 @@ public class Modulo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_curso", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     private Curso curso;
 
     @Column(name = "nombre_modulo", nullable = false, length = 150)
@@ -27,6 +33,7 @@ public class Modulo {
 
     @OneToMany(mappedBy = "modulo", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("idMaterial ASC")
+    @JsonManagedReference
     private List<Material> materiales;
 
     public Modulo() {}

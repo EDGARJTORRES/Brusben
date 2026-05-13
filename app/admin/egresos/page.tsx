@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { DollarSign, Plus, Download, User, BookOpen, CreditCard, Search, Settings, Trash2, Receipt } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { logSystemAction } from "@/lib/logging"
+import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,6 +45,7 @@ interface Curso {
 }
 
 export default function EgresosPage() {
+  const { user } = useAuth()
   const [egresos, setEgresos] = useState<Egreso[]>([])
   const [docentes, setDocentes] = useState<Docente[]>([])
   const [cursos, setCursos] = useState<Curso[]>([])
@@ -119,6 +122,14 @@ export default function EgresosPage() {
 
       if (res.ok) {
         const egreso = await res.json()
+        
+        // Get teacher and course names for logging
+        const teacher = docentes.find(d => d.idUsuario === parseInt(formData.idDocente))
+        const course = cursos.find(c => c.idCurso === parseInt(formData.idCurso))
+        
+        // Log the action
+        await logSystemAction('EGRESO_REGISTRADO', [formData.monto, `${teacher?.nombres || 'Docente'} - ${course?.titulo || 'Curso'}`], user?.id)
+        
         toast.success("¡Egreso registrado exitosamente!")
         setIsModalOpen(false)
         resetForm()
@@ -153,8 +164,16 @@ export default function EgresosPage() {
   const handleEliminar = async (id: number) => {
     if (!confirm("¿Eliminar este egreso?")) return
     try {
+      // Find egreso details for logging
+      const egresoToDelete = egresos.find(e => e.idEgreso === id)
+      
       const res = await fetch(`http://localhost:8081/api/egresos-docentes/${id}`, { method: "DELETE" })
       if (res.ok) {
+        // Log the action
+        if (egresoToDelete) {
+          await logSystemAction('EGRESO_ELIMINADO', [egresoToDelete.monto.toString(), `${egresoToDelete.docente} - ${egresoToDelete.curso}`], user?.id)
+        }
+        
         toast.success("Egreso eliminado")
         await fetchData()
       }

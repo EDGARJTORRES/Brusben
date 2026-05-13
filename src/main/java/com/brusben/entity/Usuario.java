@@ -1,5 +1,7 @@
 package com.brusben.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,6 +15,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_rol", nullable = false)
+    @JsonIgnore
     private Rol rol;
 
     @Column(name = "dni", nullable = false, unique = true)

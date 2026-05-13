@@ -99,6 +99,83 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserRaw[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // Custom Radial Chart Component
+  const RadialChart = ({ data, colors }: { data: { pagados: number; pendientes: number; anulados: number; total: number }, colors: string[] }) => {
+    const { pagados, pendientes, anulados, total } = data
+    
+    if (total === 0) {
+      return (
+        <div className="w-48 h-48 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-muted-foreground">0</p>
+            <p className="text-sm text-muted-foreground">Sin pagos</p>
+          </div>
+        </div>
+      )
+    }
+    
+    const percentage = (value: number) => total > 0 ? (value / total) * 100 : 0
+    
+    const segments = [
+      { value: pagados, percentage: percentage(pagados), color: colors[0] },
+      { value: pendientes, percentage: percentage(pendientes), color: colors[1] },
+      { value: anulados, percentage: percentage(anulados), color: colors[2] }
+    ].filter(segment => segment.value > 0)
+    
+    let currentAngle = -90 // Start from top
+    const radius = 80
+    const strokeWidth = 20
+    const center = 96
+    
+    const createArcPath = (startAngle: number, endAngle: number) => {
+      const start = polarToCartesian(center, center, radius, endAngle)
+      const end = polarToCartesian(center, center, radius, startAngle)
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1"
+      
+      return [
+        "M", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+      ].join(" ")
+    }
+    
+    const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
+      const angleInRadians = (angleInDegrees * Math.PI) / 180.0
+      return {
+        x: centerX + radius * Math.cos(angleInRadians),
+        y: centerY + radius * Math.sin(angleInRadians)
+      }
+    }
+    
+    return (
+      <div className="relative">
+        <svg width="192" height="192" className="transform -rotate-90">
+          {segments.map((segment, index) => {
+            const startAngle = currentAngle
+            const endAngle = currentAngle + (segment.percentage * 3.6) // 360 degrees = 100%
+            currentAngle = endAngle
+            
+            return (
+              <path
+                key={index}
+                d={createArcPath(startAngle, endAngle)}
+                fill="none"
+                stroke={segment.color}
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+              />
+            )
+          })}
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-2xl font-black text-foreground">{total}</p>
+            <p className="text-xs text-muted-foreground">Pagos</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   useEffect(() => {
     const load = async () => {
       setIsLoading(true)
@@ -137,6 +214,14 @@ export default function AdminDashboard() {
     () => users.filter((u) => u.nombreRol?.toLowerCase() === "estudiante" && u.activo),
     [users]
   )
+
+  // Calculate payment stats for Radial Chart
+  const paymentStats = useMemo(() => ({
+    pagados: pagados.length,
+    pendientes: pendientes.length,
+    anulados: anulados.length,
+    total: payments.length
+  }), [pagados, pendientes, anulados, payments])
 
   // Pagos de hoy
   const today = new Date().toISOString().split("T")[0]
@@ -409,7 +494,7 @@ export default function AdminDashboard() {
     plotOptions: {
       pie: {
         allowPointSelect: true,
-        innerSize: 130,
+        innerSize: 0,
         dataLabels: {
           enabled: true,
           distance: -15,
@@ -540,8 +625,9 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Acciones rápidas */}
+        {/* Sidebar */}
         <div className="lg:col-span-4 flex flex-col gap-4">
+          {/* Acciones rápidas */}
           <div className="bg-slate-900 dark:bg-slate-800 text-white rounded-2xl p-5 shadow-sm flex-1">
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="h-4 w-4 text-violet-400" />
@@ -712,39 +798,47 @@ export default function AdminDashboard() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="px-4 pt-4 pb-2 flex justify-center items-center">
+          <CardContent className="px-4 pt-4 pb-2">
             {isLoading ? (
               <div className="h-[240px] w-full bg-muted animate-pulse rounded-xl " />
             ) : (
-              <>
-              <HighchartsReact highcharts={Highcharts} options={pagoDistributionChartOptions} />
-              {/* Leyenda de montos debajo del gráfico */}
-                <div className="mt-1 space-y-1 pb-1">
-                 {[
-                    { name: "Pagados", value: pagoDistribution.pagados, color: "#10b981" },
-                    { name: "Pendientes", value: pagoDistribution.pendientes, color: "#fbbf24" },
-                    { name: "Anulados", value: pagoDistribution.anulados, color: "#f87171" },
-                  ].map((item, i) => (
-                    <div key={item.name} className="flex items-center justify-between text-[11px]">
-                      
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span
-                          className="h-2 w-2 rounded-full flex-shrink-0"
-                          style={{ background: item.color }}
-                        />
-                        <span className="truncate font-semibold text-muted-foreground">
-                          {item.name}
-                        </span>
-                      </div>
-
-                      <span className="font-black text-foreground flex-shrink-0 ml-2">
-                        {item.value}
-                      </span>
-
-                    </div>
-                  ))}
+              <div className="flex items-center justify-between gap-6">
+                <div>
+                  <RadialChart 
+                    data={paymentStats} 
+                    colors={['#10b981', '#f59e0b', '#ef4444']} // Green, Amber, Red
+                  />
                 </div>
-              </>
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-emerald-500" />
+                      <span className="text-sm font-medium">Pagados</span>
+                    </div>
+                    <span className="text-sm font-bold">{paymentStats.pagados}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-amber-500" />
+                      <span className="text-sm font-medium">Pendientes</span>
+                    </div>
+                    <span className="text-sm font-bold">{paymentStats.pendientes}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-rose-500" />
+                      <span className="text-sm font-medium">Anulados</span>
+                    </div>
+                    <span className="text-sm font-bold">{paymentStats.anulados}</span>
+                  </div>
+                  <div className="pt-2 border-t border-border/50">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Total</span>
+                      <span className="text-sm font-black text-foreground">{paymentStats.total}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

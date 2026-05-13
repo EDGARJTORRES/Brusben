@@ -17,6 +17,8 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { logSystemAction } from "@/lib/logging"
+import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -79,6 +81,7 @@ const METODO_LABELS: Record<string, string> = {
 // ─── Página ───────────────────────────────────────────────────────────────────
 
 export default function MatriculaDetallePage() {
+  const { user } = useAuth()
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [curso, setCurso] = useState<CursoMatricula | null>(null)

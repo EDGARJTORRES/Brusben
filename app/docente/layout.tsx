@@ -254,7 +254,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
         </button>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
+      <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-0.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
         <SidebarMenu className="gap-1">
           {menuGroups.map((item, index) => {
             if (item.type === "label") {

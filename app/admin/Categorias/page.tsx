@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import { logSystemAction } from "@/lib/logging"
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ interface Categoria {
 }
 
 export default function CategoriasPage() {
+  const { user } = useAuth()
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -136,6 +138,9 @@ export default function CategoriasPage() {
           throw new Error(errorData.error || "Error al actualizar categoría")
         }
 
+        // Log the action
+        await logSystemAction('CATEGORIA_ACTUALIZADA', [formData.catNombre], user?.id)
+
         toast.success("Categoría actualizada exitosamente")
         fetchCategorias()
       } else {
@@ -158,6 +163,9 @@ export default function CategoriasPage() {
           throw new Error(errorData.error || "Error al crear categoría")
         }
 
+        // Log the action
+        await logSystemAction('CATEGORIA_CREADA', [formData.catNombre], user?.id)
+
         toast.success("Categoría creada exitosamente")
         fetchCategorias()
       }
@@ -173,6 +181,9 @@ export default function CategoriasPage() {
 
   const handleDelete = async (id: number) => {
     try {
+      // Find category name for logging
+      const categoryToDelete = categorias.find(c => c.catId === id)
+      
       const response = await fetch(`http://localhost:8081/api/categorias/${id}`, {
         method: "DELETE",
         headers: {"Content-Type": "application/json"},
@@ -180,6 +191,11 @@ export default function CategoriasPage() {
 
       if (!response.ok) {
         throw new Error("Error al eliminar categoría")
+      }
+
+      // Log the action
+      if (categoryToDelete) {
+        await logSystemAction('CATEGORIA_ELIMINADA', [categoryToDelete.catNombre], user?.id)
       }
 
       toast.success("Categoría eliminada correctamente")

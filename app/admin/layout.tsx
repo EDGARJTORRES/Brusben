@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import React, { useState, useEffect } from "react"
+import { Badge } from "@/components/ui/badge"
 import {
   Home,
   BookOpen,
@@ -138,7 +139,7 @@ const getMenuGroups = (totalMatriculas: number): MenuItem[] => [
   { type: "label", label: "Gestión" },
   {
     type: "single",
-    icon: UserCog,
+    icon: User,
     label: "Usuarios",
     href: "/admin/usuarios",
   },
@@ -185,6 +186,8 @@ export default function AdminLayout({
   const router = useRouter()
   const { user, logout } = useAuth()
   const [totalMatriculas, setTotalMatriculas] = useState<number>(0)
+  const [pendingPayments, setPendingPayments] = useState<any[]>([])
+  const [showNotifications, setShowNotifications] = useState(false)
 
   useEffect(() => {
     const fetchTotalMatriculas = async () => {
@@ -200,6 +203,26 @@ export default function AdminLayout({
       }
     }
     fetchTotalMatriculas()
+  }, [])
+
+  useEffect(() => {
+    const fetchPendingPayments = async () => {
+      try {
+        const res = await fetch("http://localhost:8083/api/pagos")
+        if (res.ok) {
+          const data = await res.json()
+          const pending = data.filter((p: any) => p.status === 'PENDIENTE')
+          setPendingPayments(pending)
+        }
+      } catch (error) {
+        console.error("Error fetching pending payments:", error)
+      }
+    }
+    fetchPendingPayments()
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchPendingPayments, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const getInitials = (nombre?: string) => {
@@ -219,7 +242,7 @@ export default function AdminLayout({
       <AdminSidebar pathname={pathname} user={user} onLogout={handleLogout} totalMatriculas={totalMatriculas} />
       <SidebarInset className="bg-sidebar">
         {/* Modern Header */}
-        <header className="sticky top-0 z-20 flex h-18 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-border/40 bg-sidebar backdrop-blur-md px-8">
           <div className="flex items-center gap-4 flex-1">
             <SidebarTrigger className="md:hidden" />
 
@@ -261,18 +284,74 @@ export default function AdminLayout({
 
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 rounded-xl hover:bg-muted text-muted-foreground"
-              >
-                <div className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-rose-500 border-2 border-background ring-1 ring-rose-200 text-[8px] font-black text-white flex items-center justify-center">
-                    3
-                  </span>
-                </div>
-              </Button>
+              <DropdownMenu open={showNotifications} onOpenChange={setShowNotifications}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 w-10 rounded-xl hover:bg-muted relative p-0"
+                  >
+                    <Bell className="h-5 w-5" />
+                    {pendingPayments.length > 0 && (
+                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 border-2 border-background ring-1 ring-red-200 text-[10px] font-black text-white flex items-center justify-center">
+                        {pendingPayments.length}
+                      </span>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 p-0 rounded-xl shadow-xl border-border">
+                  <div className="p-4 border-b border-border/50">
+                    <h3 className="font-bold text-sm text-primary">Pagos Pendientes</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {pendingPayments.length} pagos por procesar
+                    </p>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {pendingPayments.length === 0 ? (
+                      <div className="p-4 text-center text-muted-foreground text-sm">
+                        No hay pagos pendientes
+                      </div>
+                    ) : (
+                      pendingPayments.map(payment => (
+                        <DropdownMenuItem
+                          key={payment.idPago}
+                          onClick={() => {
+                            router.push('/admin/ingresos')
+                            setShowNotifications(false)
+                          }}
+                          className="p-4 cursor-pointer hover:bg-muted/30 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-3 w-full">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-foreground truncate">{payment.student}</p>
+                              <p className="text-xs text-muted-foreground">{payment.course}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs font-bold text-foreground">{payment.amount}</span>
+                                <Badge className="text-[10px] bg-orange-100 text-orange-500 border-orange-200">
+                                  PENDIENTE
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </div>
+                  {pendingPayments.length > 0 && (
+                    <div className="p-3 border-t border-border/50">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          router.push('/admin/ingresos')
+                          setShowNotifications(false)
+                        }}
+                        className="w-full text-xs font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                      >
+                        Ver todos los pagos pendientes
+                      </DropdownMenuItem>
+                    </div>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <div className="h-8 w-[1px] bg-border mx-2" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -348,7 +427,7 @@ function AdminSidebar({
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border bg-sidebar z-40">
-      <SidebarHeader className="h-auto flex flex-col gap-4 px-2 py-4 border-b border-border/60 overflow-visible">
+      <SidebarHeader className="h-auto flex flex-col gap-4 px-2 py-3 border-b border-border/60 overflow-visible">
         <div
           className={cn(
             "flex items-center gap-3 transition-all",
@@ -385,7 +464,7 @@ function AdminSidebar({
         </button>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
+      <SidebarContent className="px-2 py-4 overflow-y-auto overflow-x-visible [&::-webkit-scrollbar]:w-0.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-400">
         <SidebarMenu className="gap-1">
           {menuGroups.map((item, index) => {
             if (item.type === "label") {

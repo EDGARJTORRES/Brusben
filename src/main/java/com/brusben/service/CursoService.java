@@ -58,6 +58,13 @@ public class CursoService {
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    public List<CursoDTO> getCursosByDocente(Integer idDocente) {
+        return cursoRepository.findByDocenteIdUsuario(idDocente)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     public CursoDTO createCurso(CursoDTO dto) {
         Usuario docente = usuarioRepository.findById(dto.getIdDocente())
                 .orElseThrow(() -> new RuntimeException("Docente no encontrado"));

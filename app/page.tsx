@@ -38,6 +38,7 @@ export default function LoginPage() {
             <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
               <GraduationCap className="w-7 h-7 text-white" />
             </div>
+            
 
             {/* Title Column */}
             <div className="flex flex-col">
@@ -95,13 +96,6 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8 relative z-10">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <GraduationCap className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <div>
-              <span className="text-2xl font-black text-foreground tracking-tight">Brusben</span>
-              <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Aula Virtual</p>
-            </div>
           </div>
 
           <div className="absolute top-0 right-0 lg:-top-2">

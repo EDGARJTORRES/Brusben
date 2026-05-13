@@ -20,6 +20,8 @@ import {
   Smartphone,
   Settings
 } from "lucide-react"
+import { logSystemAction } from "@/lib/logging"
+import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -88,6 +90,7 @@ const ROLES = [
 ]
 
 export default function UsuariosPage() {
+  const { user } = useAuth()
   const [users, setUsers] = useState<Usuario[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -172,6 +175,13 @@ export default function UsuariosPage() {
       })
 
       if (res.ok) {
+        // Log the action
+        if (editingUser) {
+          await logSystemAction('USUARIO_ACTUALIZADO', [formData.nombres], editingUser.idUsuario)
+        } else {
+          await logSystemAction('USUARIO_CREADO', [formData.nombres, formData.dni], user?.id)
+        }
+        
         toast.success(editingUser ? "Usuario actualizado" : "Usuario creado")
         setIsDialogOpen(false)
         fetchUsers()
@@ -212,6 +222,13 @@ export default function UsuariosPage() {
       }
 
       if (res.ok) {
+        // Log the action
+        if (user.activo) {
+          await logSystemAction('USUARIO_ELIMINADO', [user.nombres], user.idUsuario)
+        } else {
+          await logSystemAction('USUARIO_ACTUALIZADO', [user.nombres], user.idUsuario) // Reactivación is considered an update
+        }
+        
         toast.success(user.activo ? "Usuario desactivado" : "Usuario reactivado")
         fetchUsers()
       } else {

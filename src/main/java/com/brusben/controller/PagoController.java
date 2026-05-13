@@ -36,15 +36,39 @@ public class PagoController {
 
     @GetMapping
     public List<Map<String, Object>> listarPagos() {
-        return pagoRepository.findAllByOrderByIdPagoDesc().stream().map(p -> {
+        return pagoRepository.findAllWithNames().stream().map(row -> {
             Map<String, Object> map = new java.util.HashMap<>();
-            map.put("idPago", p.getIdPago());
-            map.put("student", p.getUsuario().getNombres());
-            map.put("course", p.getCurso().getTitulo());
-            map.put("amount", "S/ " + p.getMonto());
-            map.put("date", p.getFechaPago());
-            map.put("status", p.getEstado());
-            map.put("method", p.getMetodoPago());
+            map.put("idPago", row.get("idPago"));
+            
+            // Obtener nombres usando consultas separadas para evitar problemas con @JsonIgnore
+            String studentName = "Estudiante no encontrado";
+            String courseTitle = "Curso no encontrado";
+            
+            try {
+                // Obtener información del pago original para acceder a las relaciones
+                Pago pago = pagoRepository.findById((Integer) row.get("idPago")).orElse(null);
+                if (pago != null) {
+                    // Intentar obtener el nombre del estudiante
+                    if (pago.getUsuario() != null) {
+                        studentName = pago.getUsuario().getNombres();
+                    }
+                    
+                    // Intentar obtener el título del curso
+                    if (pago.getCurso() != null) {
+                        courseTitle = pago.getCurso().getTitulo();
+                    }
+                }
+            } catch (Exception e) {
+                // Mantener valores por defecto si hay error
+                System.err.println("Error obteniendo nombres para pago " + row.get("idPago") + ": " + e.getMessage());
+            }
+            
+            map.put("student", studentName);
+            map.put("course", courseTitle);
+            map.put("amount", "S/ " + row.get("monto"));
+            map.put("date", row.get("fechaPago"));
+            map.put("status", row.get("estado"));
+            map.put("method", row.get("metodoPago"));
             return map;
         }).collect(Collectors.toList());
     }

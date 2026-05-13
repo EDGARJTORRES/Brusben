@@ -1,10 +1,14 @@
 package com.brusben.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "cursos", schema = "sc_sistema")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Curso {
 
     @Id
@@ -14,6 +18,8 @@ public class Curso {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_docente", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     private Usuario docente;
 
     @Column(name = "titulo", nullable = false, length = 200)

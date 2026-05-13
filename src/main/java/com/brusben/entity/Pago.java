@@ -1,5 +1,6 @@
 package com.brusben.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,10 +16,12 @@ public class Pago {
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
+    @JsonIgnore
     private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "id_curso", nullable = false)
+    @JsonIgnore
     private Curso curso;
 
     @Column(name = "monto", nullable = false)

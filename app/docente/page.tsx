@@ -231,14 +231,14 @@ export default function TeacherDashboard() {
         ) : (
           statsCards.map((stat: any) => (
             <Card key={stat.title} className="border border-border shadow-sm rounded-2xl overflow-hidden relative group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-              <CardContent className=" px-8">
+              <CardContent className="px-4">
                 <div className="flex items-center gap-6">
                   <div className={`${stat.iconBg} ${stat.color} p-3 rounded-2xl group-hover:scale-110 transition-transform flex-shrink-0`}>
                     <stat.icon className="h-6 w-6" />
                   </div>
                   <div className="space-y-2 flex-1">
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{stat.title}</p>
-                    <p className="text-xl font-black text-slate-800">{stat.value}</p>
+                    <p className="text-2xs font-black text-slate-900">{stat.value}</p>
                     <p className="text-xs text-slate-500">{stat.description}</p>
                   </div>
                 </div>

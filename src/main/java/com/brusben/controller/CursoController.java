@@ -44,6 +44,17 @@ public class CursoController {
         }
     }
 
+    // ─── GET cursos por docente ───────────────────────────────────────────────
+    @GetMapping("/docente/{idDocente}")
+    public ResponseEntity<?> getCursosByDocente(@PathVariable Integer idDocente) {
+        try {
+            return ResponseEntity.ok(cursoService.getCursosByDocente(idDocente));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // ─── GET curso por ID ───────────────────────────────────────────────────
     @GetMapping("/{id}")
     public ResponseEntity<?> getCursoById(@PathVariable Integer id) {

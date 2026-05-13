@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
+import { logSystemAction } from "@/lib/logging"
 import { useAuth } from "@/lib/auth-context"
 import { 
   Plus, Search, MoreVertical, BookOpen, LayoutGrid,
@@ -106,10 +107,12 @@ export default function CoursesPage() {
   const itemsPerPage = 9
 
   useEffect(() => {
-    fetchCourses()
+    if (user?.id) {
+      fetchCourses()
+    }
     fetchDocentes()
     fetchCategorias()
-  }, [])
+  }, [user?.id])
 
   // Reset to page 1 when filter or search changes
   useEffect(() => {
@@ -118,20 +121,24 @@ export default function CoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch("http://localhost:8081/api/cursos")
+      // Obtener cursos solo del docente autenticado
+      if (!user?.id) {
+        toast.error("No se pudo identificar al docente")
+        return
+      }
+      
+      const res = await fetch(`http://localhost:8083/api/cursos/docente/${user.id}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
-      // Filter courses by current teacher ID
-      const teacherCourses = data.filter((course: Curso) => course.idDocente === user?.id)
-      setCourses(teacherCourses)
+      setCourses(data)
     } catch {
-      toast.error("Error al cargar cursos")
+      toast.error("Error al cargar cursos del docente")
     }
   }
 
   const fetchDocentes = async () => {
     try {
-      const res = await fetch("http://localhost:8081/api/cursos/docentes")
+      const res = await fetch("http://localhost:8083/api/cursos/docentes")
       const data = await res.json()
       setDocentes(data)
     } catch (e) {
@@ -141,7 +148,7 @@ export default function CoursesPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await fetch("http://localhost:8081/api/categorias")
+      const res = await fetch("http://localhost:8083/api/categorias")
       const data = await res.json()
       setCategorias(data)
     } catch (e) {
@@ -172,7 +179,7 @@ export default function CoursesPage() {
     formDataUpload.append("file", file)
 
     try {
-      const res = await fetch("http://localhost:8081/api/cursos/upload", {
+      const res = await fetch("http://localhost:8083/api/cursos/upload", {
         method: "POST",
         body: formDataUpload
       })
@@ -201,8 +208,8 @@ export default function CoursesPage() {
 
     try {
       const url = isEditing 
-        ? `http://localhost:8081/api/cursos/${formData.idCurso}`
-        : "http://localhost:8081/api/cursos"
+        ? `http://localhost:8083/api/cursos/${formData.idCurso}`
+        : "http://localhost:8083/api/cursos"
       
       const method = isEditing ? "PUT" : "POST"
 
@@ -213,6 +220,13 @@ export default function CoursesPage() {
       })
 
       if (res.ok) {
+        // Log the action
+        if (isEditing) {
+          await logSystemAction('CURSO_ACTUALIZADO', [formData.titulo], user?.id)
+        } else {
+          await logSystemAction('CURSO_CREADO', [formData.titulo], user?.id)
+        }
+        
         toast.success(isEditing ? "Curso actualizado" : "Curso registrado")
         resetForm()
         fetchCourses()
@@ -254,7 +268,7 @@ export default function CoursesPage() {
 
   const toggleStatus = async (course: any) => {
     try {
-      const res = await fetch(`http://localhost:8081/api/cursos/${course.idCurso}/toggle-estado`, {
+      const res = await fetch(`http://localhost:8083/api/cursos/${course.idCurso}/toggle-estado`, {
         method: "PUT"
       })
       if (res.ok) {
@@ -268,10 +282,18 @@ export default function CoursesPage() {
 
   const deleteCurso = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8081/api/cursos/${id}`, {
+      // Find course title for logging
+      const courseToDelete = courses.find(c => c.idCurso === id)
+      
+      const res = await fetch(`http://localhost:8083/api/cursos/${id}`, {
         method: "DELETE"
       })
       if (res.ok) {
+        // Log the action
+        if (courseToDelete) {
+          await logSystemAction('CURSO_ELIMINADO', [courseToDelete.titulo], user?.id)
+        }
+        
         toast.success("Curso eliminado")
         fetchCourses()
       }
@@ -282,9 +304,7 @@ export default function CoursesPage() {
 
   const filteredCourses = (courses || []).filter(c =>
     (c.titulo || "").toLowerCase().includes(search.toLowerCase()) &&
-    (categoriaFilter === "all" || c.catNombre === categoriaFilter) &&
-    // Double filter to ensure only current teacher's courses are shown
-    c.idDocente === user?.id
+    (categoriaFilter === "all" || c.catNombre === categoriaFilter)
   )
 
   const getImageUrl = (img?: string) => {
@@ -312,13 +332,51 @@ export default function CoursesPage() {
     setIsLoadingContent(true)
     try {
       const [modRes, foroRes] = await Promise.all([
-        fetch(`http://localhost:8081/api/cursos-materiales/${course.idCurso}/modulos`),
-        fetch(`http://localhost:8081/api/cursos-contenido/${course.idCurso}/foros`)
+        fetch(`http://localhost:8083/api/cursos-materiales/${course.idCurso}/modulos`),
+        fetch(`http://localhost:8083/api/cursos-contenido/${course.idCurso}/foros`)
       ])
-      setContentModules(await modRes.json())
-      setContentForos(await foroRes.json())
-    } catch {
+      
+      // Validar respuestas y asegurar que sean arrays
+      const modulosData = await modRes.json()
+      const forosData = await foroRes.json()
+      
+      // Load archivos for each material
+      const modulosWithArchivos = await Promise.all(
+        (Array.isArray(modulosData) ? modulosData : []).map(async (modulo: any) => {
+          const materialesWithArchivos = await Promise.all(
+            (modulo.materiales || []).map(async (material: any) => {
+              try {
+                const archivosRes = await fetch(`http://localhost:8083/api/cursos-materiales/materiales/${material.idMaterial}/archivos`)
+                if (archivosRes.ok) {
+                  const archivosData = await archivosRes.json()
+                  return {
+                    ...material,
+                    archivos: archivosData.success ? archivosData.archivos || [] : []
+                  }
+                }
+              } catch (error) {
+                console.error(`Error loading archivos for material ${material.idMaterial}:`, error)
+              }
+              return {
+                ...material,
+                archivos: []
+              }
+            })
+          )
+          return {
+            ...modulo,
+            materiales: materialesWithArchivos
+          }
+        })
+      )
+      
+      setContentModules(modulosWithArchivos)
+      setContentForos(Array.isArray(forosData) ? forosData : [])
+    } catch (error) {
+      console.error("Error al cargar contenido:", error)
       toast.error("Error al cargar contenido")
+      setContentModules([]) // Asegurar que sea un array vacío en caso de error
+      setContentForos([])
     } finally {
       setIsLoadingContent(false)
     }
@@ -327,7 +385,7 @@ export default function CoursesPage() {
   const addModule = async () => {
     if (!newModuleName.trim()) return
     try {
-      const res = await fetch(`http://localhost:8081/api/cursos-materiales/${selectedCourseContent?.idCurso}/modulos`, {
+      const res = await fetch(`http://localhost:8083/api/cursos-materiales/${selectedCourseContent?.idCurso}/modulos`, {
         method: "POST",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify({ nombre: newModuleName })
@@ -344,16 +402,16 @@ export default function CoursesPage() {
 
   const deleteModulo = async (id: number) => {
      try {
-       await fetch(`http://localhost:8081/api/cursos-materiales/modulos/${id}`, { method: "DELETE" })
+       await fetch(`http://localhost:8083/api/cursos-materiales/modulos/${id}`, { method: "DELETE" })
        openContentManager(selectedCourseContent!)
        toast.success("Módulo eliminado")
      } catch { toast.error("Error al eliminar") }
   }
 
-  // ─── ESTADOS para el modal de material (crear + editar) ─────────────────────
   const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false)
   const [materialModuloId, setMaterialModuloId]         = useState<number | null>(null)
   const [editingMaterialId, setEditingMaterialId]       = useState<number | null>(null)
+  const [selectedClaseId, setSelectedClaseId]           = useState<number | null>(null) 
   const [materialForm, setMaterialForm] = useState({
     titulo: "",
     tipoMaterial: "VIDEO",   // VIDEO | PDF | DOC | LINK
@@ -362,9 +420,208 @@ export default function CoursesPage() {
     videoMode: "file" as "file" | "link"
   })
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false)
+  
+  // Nuevo estado para manejar archivos dentro de una clase
+  const [isArchivoDialogOpen, setIsArchivoDialogOpen] = useState(false)
+  const [archivoForm, setArchivoForm] = useState({
+    titulo: "",
+    tipoArchivo: "PDF",     // PDF | DOC | LINK
+    urlArchivo: "",         // para LINK
+    file: null as File | null
+  })
+  const [isUploadingArchivo, setIsUploadingArchivo] = useState(false)
+  const [currentArchivos, setCurrentArchivos] = useState<any[]>([])
+
+  // Function to check material limits (para clases principales)
+  const checkMaterialLimits = (moduloId: number, tipoMaterial: string) => {
+    const modulo = contentModules.find(m => m.idModulo === moduloId)
+    if (!modulo?.materiales) return { canAdd: true }
+    
+    const materiales = modulo.materiales
+    const videoCount = materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
+    
+    if (tipoMaterial === 'VIDEO' && videoCount >= 1) {
+      return { 
+        canAdd: false, 
+        message: 'Solo se permite 1 video por clase. Elimina el video actual para agregar uno nuevo.' 
+      }
+    }
+    
+    return { canAdd: true }
+  }
+
+  // Function to load files for a specific material
+  const loadArchivosForMaterial = async (idMaterial: number) => {
+    console.log("=== CARGANDO ARCHIVOS PARA MATERIAL ===");
+    console.log("idMaterial:", idMaterial);
+    
+    try {
+      const url = `http://localhost:8083/api/cursos-materiales/materiales/${idMaterial}/archivos`;
+      console.log("URL:", url);
+      
+      const res = await fetch(url);
+      console.log("Response status:", res.status);
+      console.log("Response ok:", res.ok);
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Response data:", data);
+        
+        if (data.success) {
+          console.log("Archivos cargados:", data.archivos);
+          return data.archivos || [];
+        } else {
+          console.log("Error en respuesta:", data.error);
+        }
+      } else {
+        const errorText = await res.text();
+        console.log("Error response text:", errorText);
+      }
+      
+      return [];
+    } catch (error) {
+      console.error("=== ERROR AL CARGAR ARCHIVOS ===");
+      console.error("Error:", error);
+      return [];
+    }
+  }
+
+  // Function to check file limits within a class
+  const checkArchivoLimits = (claseId: number, tipoArchivo: string) => {
+    // Buscar la clase en todos los módulos
+    let claseEncontrada = null
+    for (const modulo of contentModules) {
+      if (modulo.materiales) {
+        claseEncontrada = modulo.materiales.find((m: any) => m.idMaterial === claseId)
+        if (claseEncontrada) break
+      }
+    }
+    
+    if (!claseEncontrada?.archivos) return { canAdd: true }
+    
+    const archivos = claseEncontrada.archivos
+    const videoCount = archivos.filter((a: any) => a.tipoArchivo === 'VIDEO').length
+    
+    if (tipoArchivo === 'VIDEO' && videoCount >= 1) {
+      return { 
+        canAdd: false, 
+        message: 'Esta clase ya tiene un video. Solo se permite 1 video por clase.' 
+      }
+    }
+    
+    return { canAdd: true }
+  }
+
+  // Funciones para manejar archivos dentro de una clase
+  const openAddArchivo = async (idMaterial: number) => {
+    setSelectedClaseId(idMaterial)
+    setIsArchivoDialogOpen(true)
+    
+    // Load archivos for this material
+    const archivos = await loadArchivosForMaterial(idMaterial)
+    setCurrentArchivos(archivos)
+    
+    // Update the class structure with the loaded archivos
+    setContentModules(prevModules => 
+      prevModules.map((modulo: any) => ({
+        ...modulo,
+        materiales: (modulo.materiales || []).map((material: any) => 
+          material.idMaterial === idMaterial 
+            ? { ...material, archivos: archivos }
+            : material
+        )
+      }))
+    )
+    
+    // Reset form
+    setArchivoForm({
+      titulo: "",
+      tipoArchivo: "PDF",
+      urlArchivo: "",
+      file: null
+    })
+  }
+
+  const submitArchivo = async () => {
+    if (!archivoForm.titulo.trim()) {
+      toast.warning("El título es obligatorio")
+      return
+    }
+
+    if (!selectedClaseId) {
+      toast.error("No se ha seleccionado una clase")
+      return
+    }
+
+    // Validar límites
+    const limitCheck = checkArchivoLimits(selectedClaseId, archivoForm.tipoArchivo)
+    if (!limitCheck.canAdd) {
+      toast.error(limitCheck.message)
+      return
+    }
+
+    setIsUploadingArchivo(true)
+    try {
+      const formData = new FormData()
+      formData.append("titulo", archivoForm.titulo)
+      formData.append("tipoArchivo", archivoForm.tipoArchivo)
+      
+      if (archivoForm.tipoArchivo === "LINK") {
+        formData.append("urlArchivo", archivoForm.urlArchivo)
+      } else if (archivoForm.file) {
+        formData.append("file", archivoForm.file)
+      }
+
+      const url = `http://localhost:8083/api/cursos-materiales/materiales/${selectedClaseId}/archivos/upload`;
+      console.log("=== SUBIENDO ARCHIVO ===");
+      console.log("URL:", url);
+      console.log("selectedClaseId:", selectedClaseId);
+      console.log("archivoForm:", archivoForm);
+      console.log("formData entries:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value);
+      }
+
+      const res = await fetch(url, {
+        method: "POST",
+        body: formData
+      });
+
+      console.log("Response status:", res.status);
+      console.log("Response ok:", res.ok);
+
+      if (res!.ok) {
+        toast.success("Archivo añadido a la clase")
+        setIsArchivoDialogOpen(false)
+        openContentManager(selectedCourseContent!)
+      } else {
+        const err = await res!.json()
+        console.log("=== ERROR EN RESPUESTA DEL SERVIDOR ===");
+        console.log("Error response:", err);
+        toast.error(err.error || "Error al guardar archivo")
+      }
+    } catch (error) {
+      console.log("=== ERROR DE CONEXIÓN ===");
+      console.log("Error:", error);
+      toast.error("Error de conexión")
+    } finally {
+      setIsUploadingArchivo(false)
+    }
+  }
+
+  const deleteArchivo = async (idArchivo: number) => {
+    try {
+      await fetch(`http://localhost:8083/api/cursos-materiales/archivos/${idArchivo}`, { method: "DELETE" })
+      openContentManager(selectedCourseContent!)
+      toast.success("Archivo eliminado")
+    } catch { toast.error("Error al eliminar") }
+  }
 
   // Abre el modal en modo CREAR
   const openAddMaterial = (idModulo: number) => {
+    const modulo = contentModules.find(m => m.idModulo === idModulo)
+    const materialesCount = modulo?.materiales?.length || 0
+    
     setMaterialModuloId(idModulo)
     setEditingMaterialId(null)
     setMaterialForm({ titulo: "", tipoMaterial: "VIDEO", urlMaterial: "", file: null, videoMode: "file" })
@@ -393,6 +650,15 @@ export default function CoursesPage() {
       return
     }
 
+    // Validar límites solo para nuevos materiales
+    if (!editingMaterialId && materialModuloId) {
+      const limitCheck = checkMaterialLimits(materialModuloId, materialForm.tipoMaterial)
+      if (!limitCheck.canAdd) {
+        toast.error(limitCheck.message)
+        return
+      }
+    }
+
     setIsUploadingMaterial(true)
     try {
       let res: Response
@@ -400,7 +666,7 @@ export default function CoursesPage() {
       // ── MODO EDICIÓN: solo actualiza título / URL (sin reemplazar archivo) ──
       if (editingMaterialId) {
         res = await fetch(
-          `http://localhost:8081/api/cursos-materiales/materiales/${editingMaterialId}`,
+          `http://localhost:8083/api/cursos-materiales/materiales/${editingMaterialId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -420,7 +686,7 @@ export default function CoursesPage() {
         fd.append("tipoMaterial", materialForm.tipoMaterial)
 
         res = await fetch(
-          `http://localhost:8081/api/cursos-materiales/modulos/${materialModuloId}/materiales/upload`,
+          `http://localhost:8083/api/cursos-materiales/modulos/${materialModuloId}/materiales/upload`,
           { method: "POST", body: fd }
         )
       }
@@ -432,7 +698,7 @@ export default function CoursesPage() {
           return
         }
         res = await fetch(
-          `http://localhost:8081/api/cursos-materiales/modulos/${materialModuloId}/materiales`,
+          `http://localhost:8083/api/cursos-materiales/modulos/${materialModuloId}/materiales`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -462,7 +728,7 @@ export default function CoursesPage() {
 
   const deleteMaterial = async (id: number) => {
     try {
-      await fetch(`http://localhost:8081/api/cursos-materiales/materiales/${id}`, { method: "DELETE" })
+      await fetch(`http://localhost:8083/api/cursos-materiales/materiales/${id}`, { method: "DELETE" })
       openContentManager(selectedCourseContent!)
       toast.success("Material eliminado")
     } catch { toast.error("Error al eliminar") }
@@ -475,8 +741,8 @@ export default function CoursesPage() {
     }
     try {
       const url = isEditingForo 
-        ? `http://localhost:8081/api/cursos-contenido/foros/${currentForoId}`
-        : `http://localhost:8081/api/cursos-contenido/${selectedCourseContent?.idCurso}/foros`
+        ? `http://localhost:8083/api/cursos-contenido/foros/${currentForoId}`
+        : `http://localhost:8083/api/cursos-contenido/${selectedCourseContent?.idCurso}/foros`
       
       const res = await fetch(url, {
         method: isEditingForo ? "PUT" : "POST",
@@ -506,7 +772,7 @@ export default function CoursesPage() {
 
   const deleteForo = async (id: number) => {
     try {
-      await fetch(`http://localhost:8081/api/cursos-contenido/foros/${id}`, { method: "DELETE" })
+      await fetch(`http://localhost:8083/api/cursos-contenido/foros/${id}`, { method: "DELETE" })
       openContentManager(selectedCourseContent!)
       toast.success("Foro desactivado")
     } catch { toast.error("Error al eliminar") }
@@ -520,7 +786,7 @@ export default function CoursesPage() {
 
   const fetchAportes = async (idForo: number) => {
     try {
-      const res = await fetch(`http://localhost:8081/api/cursos-contenido/foros/${idForo}/aportes`)
+      const res = await fetch(`http://localhost:8083/api/cursos-contenido/foros/${idForo}/aportes`)
       if (res.ok) {
          setAportes(await res.json())
       } else {
@@ -535,7 +801,7 @@ export default function CoursesPage() {
     if(!newAporte.trim() || !activeForoId) return
     try {
       // Usaremos idUsuario 1 por defecto al simular que somos el admin
-      const res = await fetch(`http://localhost:8081/api/cursos-contenido/foros/${activeForoId}/aportes`, {
+      const res = await fetch(`http://localhost:8083/api/cursos-contenido/foros/${activeForoId}/aportes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mensaje: newAporte, usuario: { idUsuario: 1 } })
@@ -554,7 +820,7 @@ export default function CoursesPage() {
   
   const handleDeleteAporte = async (idAporte: number) => {
      try {
-        const res = await fetch(`http://localhost:8081/api/cursos-contenido/aportes/${idAporte}`, { method: "DELETE" })
+        const res = await fetch(`http://localhost:8083/api/cursos-contenido/aportes/${idAporte}`, { method: "DELETE" })
         if(res.ok && activeForoId) {
            fetchAportes(activeForoId)
            toast.success("Aporte eliminado")
@@ -684,9 +950,16 @@ export default function CoursesPage() {
                                   <h4 className="text-lg font-black text-foreground">{modulo.nombre}</h4>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2">
                                   <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-10 px-4 font-bold gap-2" onClick={() => openAddMaterial(modulo.idModulo)}>
                                       <PlusCircle className="h-4 w-4" /> Clase
                                   </Button>
+                                  {modulo.materiales && modulo.materiales.length > 0 && (
+                                    <Badge variant="secondary" className="text-xs font-bold">
+                                      {modulo.materiales.length} {modulo.materiales.length === 1 ? 'material' : 'materiales'}
+                                    </Badge>
+                                  )}
+                                </div>
 
                                   <AlertDialog>
                                       <AlertDialogTrigger asChild>
@@ -713,46 +986,114 @@ export default function CoursesPage() {
                             {openModuloId === modulo.idModulo && (
                               <CardContent className="p-6 bg-muted/10">
                                 {modulo.materiales?.length > 0 ? (
-                                  <div className="grid gap-3">
-                                    {modulo.materiales.map((mat: any) => (
-                                      <div key={mat.idMaterial} className="flex items-center justify-between p-4 bg-background rounded-2xl group/mat border border-border/40  transition-all">
-                                          <div className="flex items-center gap-4">
-                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${mat.tipoMaterial === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
-                                                {mat.tipoMaterial === 'VIDEO' ? <Video className="h-5 w-5" /> : <File className="h-5 w-5" />}
+                                  <div className="grid gap-4">
+                                    {modulo.materiales.map((clase: any) => (
+                                      <div key={clase.idMaterial} className="bg-background rounded-2xl border border-border/40 overflow-hidden">
+                                        {/* Header de la clase */}
+                                        <div className="flex items-center justify-between p-4 bg-muted/30 border-b border-border/40">
+                                          <div className="flex items-center gap-3">
+                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                                                clase.tipoMaterial === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 
+                                                clase.tipoMaterial === 'PDF' ? 'bg-red-500/10 text-red-600' :
+                                                clase.tipoMaterial === 'DOC' ? 'bg-amber-500/10 text-amber-600' :
+                                                'bg-purple-500/10 text-purple-600'
+                                              }`}>
+                                              {clase.tipoMaterial === 'VIDEO' ? <Video className="h-5 w-5" /> : 
+                                               clase.tipoMaterial === 'PDF' ? <File className="h-5 w-5" /> :
+                                               clase.tipoMaterial === 'DOC' ? <FileText className="h-5 w-5" /> :
+                                               <LinkIcon className="h-5 w-5" />}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-sm text-foreground">{mat.titulo}</p>
-                                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">{mat.tipoMaterial}</p>
+                                              <p className="font-bold text-sm text-foreground">{clase.titulo}</p>
+                                              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                                                {clase.tipoMaterial} • {clase.archivos?.length || 0} archivos
+                                              </p>
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg"
-                                              onClick={() => openEditMaterial(mat)}>
-                                              <Pencil className="h-4 w-4" />
+                                            <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-8 px-3 font-bold gap-1 text-xs" onClick={() => openAddArchivo(clase.idMaterial)}>
+                                              <PlusCircle className="h-3 w-3" /> Agregar Archivo
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary rounded-lg"  onClick={() => openMaterial(mat.urlMaterial)}>
-                                                <LinkIcon className="h-4 w-4" />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg"
+                                              onClick={() => openEditMaterial(clase)}>
+                                              <Pencil className="h-4 w-4" />
                                             </Button>
                                             
                                             <AlertDialog>
                                               <AlertDialogTrigger asChild>
-                                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg group-hover/mat:opacity-100 transition-opacity">
+                                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg">
                                                     <Trash2 className="h-4 w-4" />
                                                   </Button>
                                               </AlertDialogTrigger>
                                               <AlertDialogContent className="rounded-3xl">
                                                   <AlertDialogHeader>
-                                                    <AlertDialogTitle className="font-black">Borrar Recurso</AlertDialogTitle>
-                                                    <AlertDialogDescription>¿Deseas quitar <b>{mat.titulo}</b> de este curso?</AlertDialogDescription>
+                                                    <AlertDialogTitle className="font-black">Eliminar Clase</AlertDialogTitle>
+                                                    <AlertDialogDescription>¿Deseas eliminar la clase <b>{clase.titulo}</b> y todos sus archivos?</AlertDialogDescription>
                                                   </AlertDialogHeader>
                                                   <AlertDialogFooter>
-                                                    <AlertDialogCancel className="rounded-xl">Mejor no</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => deleteMaterial(mat.idMaterial)} className="rounded-xl bg-destructive font-bold">Sí, borrar</AlertDialogAction>
+                                                    <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => deleteMaterial(clase.idMaterial)} className="rounded-xl bg-destructive font-bold">Eliminar</AlertDialogAction>
                                                   </AlertDialogFooter>
                                               </AlertDialogContent>
                                             </AlertDialog>
-
                                           </div>
+                                        </div>
+                                        
+                                        {/* Archivos dentro de la clase */}
+                                        <div className="p-4">
+                                          {clase.archivos && clase.archivos.length > 0 ? (
+                                            <div className="grid gap-2">
+                                              {clase.archivos.map((archivo: any) => (
+                                                <div key={archivo.idArchivo} className="flex items-center justify-between p-3 bg-muted/20 rounded-xl border border-border/30 group/archivo">
+                                                  <div className="flex items-center gap-3">
+                                                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                                                      archivo.tipoArchivo === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 
+                                                      archivo.tipoArchivo === 'PDF' ? 'bg-red-500/10 text-red-600' :
+                                                      archivo.tipoArchivo === 'DOC' ? 'bg-amber-500/10 text-amber-600' :
+                                                      'bg-purple-500/10 text-purple-600'
+                                                    }`}>
+                                                      {archivo.tipoArchivo === 'VIDEO' ? <Video className="h-4 w-4" /> : 
+                                                       archivo.tipoArchivo === 'PDF' ? <File className="h-4 w-4" /> :
+                                                       archivo.tipoArchivo === 'DOC' ? <FileText className="h-4 w-4" /> :
+                                                       <LinkIcon className="h-4 w-4" />}
+                                                    </div>
+                                                    <div>
+                                                      <p className="font-medium text-xs text-foreground">{archivo.titulo}</p>
+                                                      <p className="text-[9px] text-muted-foreground uppercase">{archivo.tipoArchivo}</p>
+                                                    </div>
+                                                  </div>
+                                                  <div className="flex items-center gap-1">
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary rounded-lg" onClick={() => openMaterial(archivo.urlArchivo.startsWith('http') ? archivo.urlArchivo : `http://localhost:3000${archivo.urlArchivo}`)}>
+                                                      <LinkIcon className="h-3 w-3" />
+                                                    </Button>
+                                                    <AlertDialog>
+                                                      <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-rose-300 hover:text-rose-600 rounded-lg opacity-0 group-hover/archivo:opacity-100 transition-opacity">
+                                                          <Trash2 className="h-3 w-3" />
+                                                        </Button>
+                                                      </AlertDialogTrigger>
+                                                      <AlertDialogContent className="rounded-3xl">
+                                                        <AlertDialogHeader>
+                                                          <AlertDialogTitle className="font-black">Eliminar Archivo</AlertDialogTitle>
+                                                          <AlertDialogDescription>¿Deseas eliminar <b>{archivo.titulo}</b>?</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                          <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+                                                          <AlertDialogAction onClick={() => deleteArchivo(archivo.idArchivo)} className="rounded-xl bg-destructive font-bold">Eliminar</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                      </AlertDialogContent>
+                                                    </AlertDialog>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            <div className="text-center py-4 border-2 border-dashed border-border/30 rounded-xl">
+                                              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Sin archivos en esta clase</p>
+                                              <p className="text-[10px] text-muted-foreground mt-1">Agrega PDFs, documentos o enlaces</p>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
@@ -849,8 +1190,8 @@ export default function CoursesPage() {
                        ))}
 
                        {contentForos.length === 0 && (
-                          <div className="text-center py-20 opacity-30 italic">
-                             <MessageSquare className="h-20 w-20 mx-auto mb-4 opacity-10" />
+                          <div className="text-center py-20 opacity-50 italic">
+                             <MessageSquare className="h-20 w-20 mx-auto mb-4" />
                              <p className="font-bold text-sm">Aún no hay discusiones iniciadas en este curso</p>
                           </div>
                        )}
@@ -979,6 +1320,43 @@ export default function CoursesPage() {
             </DialogHeader>
 
             <div className="space-y-5 mt-4">
+              {/* Material Count Info */}
+              {!editingMaterialId && materialModuloId && (
+                <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
+                  <p className="text-sm font-bold text-foreground mb-2">Materiales actuales en este módulo:</p>
+                  <div className="flex gap-4 text-xs">
+                    {(() => {
+                      const modulo = contentModules.find(m => m.idModulo === materialModuloId)
+                      if (!modulo?.materiales) return null
+                      
+                      const videoCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
+                      const pdfCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'PDF').length
+                      const docCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'DOC').length
+                      const linkCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'LINK').length
+                      
+                      return (
+                        <>
+                          <span className={`px-2 py-1 rounded-lg ${videoCount > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                            📹 Video: {videoCount}/1
+                          </span>
+                          <span className="px-2 py-1 rounded-lg bg-red-100 text-red-700">
+                            📄 PDF: {pdfCount} (∞)
+                          </span>
+                          <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-700">
+                            📝 Doc: {docCount} (∞)
+                          </span>
+                          <span className="px-2 py-1 rounded-lg bg-purple-100 text-purple-700">
+                            🔗 Link: {linkCount} (∞)
+                          </span>
+                        </>
+                      )
+                    })()}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    📹 Video limitado a 1 por módulo | 📄 PDF, 📝 Documentos, 🔗 Enlaces sin límite
+                  </p>
+                </div>
+              )}
 
               {/* Título */}
               <div className="space-y-2">
@@ -1223,6 +1601,197 @@ export default function CoursesPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* ── Modal Agregar Archivo a Clase ─────────────────────────────────── */}
+        <Dialog open={isArchivoDialogOpen} onOpenChange={(open) => { setIsArchivoDialogOpen(open); if (!open) setSelectedClaseId(null) }}>
+          <DialogContent className="sm:max-w-lg rounded-[32px] p-8 border border-border/40 shadow-2xl bg-card">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black">
+                Agregar Archivo a la Clase
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-5 mt-4">
+              {/* Info de archivos actuales en la clase */}
+              {selectedClaseId && (
+                <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
+                  <p className="text-sm font-bold text-foreground mb-2">Archivos en esta clase:</p>
+                  <div className="flex gap-4 text-xs">
+                    {(() => {
+                      // Buscar la clase seleccionada
+                      let claseEncontrada = null
+                      for (const modulo of contentModules) {
+                        if (modulo.materiales) {
+                          claseEncontrada = modulo.materiales.find((m: any) => m.idMaterial === selectedClaseId)
+                          if (claseEncontrada) break
+                        }
+                      }
+                      
+                      if (!claseEncontrada?.archivos) {
+                        return <span className="text-gray-500">Sin archivos</span>
+                      }
+                      
+                      const videoCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'VIDEO').length
+                      const pdfCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'PDF').length
+                      const docCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'DOC').length
+                      const linkCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'LINK').length
+                      
+                      return (
+                        <>
+                          <span className={`px-2 py-1 rounded-lg ${videoCount > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                            📹 Video: {videoCount}/1
+                          </span>
+                          <span className="px-2 py-1 rounded-lg bg-red-100 text-red-700">
+                            📄 PDF: {pdfCount} (∞)
+                          </span>
+                          <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-700">
+                            📝 Doc: {docCount} (∞)
+                          </span>
+                          <span className="px-2 py-1 rounded-lg bg-purple-100 text-purple-700">
+                            🔗 Link: {linkCount} (∞)
+                          </span>
+                        </>
+                      )
+                    })()}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    📹 Video limitado a 1 por clase | 📄 PDF, 📝 Documentos, 🔗 Enlaces sin límite
+                  </p>
+                </div>
+              )}
+
+              {/* Título */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                  Título del archivo
+                </label>
+                <Input
+                  placeholder="Ej. Guía de ejercicios"
+                  className="h-12 rounded-2xl bg-muted/30 border-0 font-bold"
+                  value={archivoForm.titulo}
+                  onChange={e => setArchivoForm(p => ({ ...p, titulo: e.target.value }))}
+                />
+              </div>
+
+              {/* Tipo */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                  Tipo de archivo
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { key: "PDF",   icon: <File  className="h-4 w-4" />,    label: "PDF"      },
+                    { key: "DOC",   icon: <FileText className="h-4 w-4" />, label: "Doc"      },
+                    { key: "LINK",  icon: <LinkIcon  className="h-4 w-4" />, label: "Link"   },
+                  ].map(({ key, icon, label }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setArchivoForm(p => ({ ...p, tipoArchivo: key, file: null, urlArchivo: "" }))}
+                      className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all text-xs font-bold
+                        ${archivoForm.tipoArchivo === key
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
+                    >
+                      {icon}
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contenido según tipo */}
+              {archivoForm.tipoArchivo === "LINK" && (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    URL del enlace
+                  </label>
+                  <Input
+                    placeholder="https://ejemplo.com/recurso"
+                    className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
+                    value={archivoForm.urlArchivo}
+                    onChange={e => setArchivoForm(p => ({ ...p, urlArchivo: e.target.value, file: null }))}
+                  />
+                </div>
+              )}
+
+              {(archivoForm.tipoArchivo === "PDF" || archivoForm.tipoArchivo === "DOC") && (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                    Subir archivo ({archivoForm.tipoArchivo})
+                  </label>
+                  <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all group bg-muted/20">
+                    <input
+                      type="file"
+                      accept={archivoForm.tipoArchivo === "PDF" ? ".pdf" : ".doc,.docx,.ppt,.pptx,.xls,.xlsx"}
+                      className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                      onChange={e => {
+                        const f = e.target.files?.[0] || null
+                        setArchivoForm(p => ({ ...p, file: f, urlArchivo: f ? f.name : "" }))
+                      }}
+                    />
+                    {archivoForm.file ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <File className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-bold text-sm text-foreground truncate max-w-[220px]">
+                            {archivoForm.file.name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {(archivoForm.file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); setArchivoForm(p => ({ ...p, file: null, urlArchivo: "" })) }}
+                          className="ml-auto text-rose-400 hover:text-rose-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto group-hover:bg-primary/10 transition-colors">
+                          <Paperclip className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Arrastra o haz clic para subir</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          {archivoForm.tipoArchivo === "PDF" ? "Solo archivos PDF" : "DOC, DOCX, PPT, XLS"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="flex-1 h-12 rounded-2xl font-bold border-2"
+                onClick={() => setIsArchivoDialogOpen(false)}
+                disabled={isUploadingArchivo}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1 h-12 rounded-2xl font-black shadow-lg"
+                onClick={submitArchivo}
+                disabled={isUploadingArchivo}
+              >
+                {isUploadingArchivo ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Subiendo...
+                  </span>
+                ) : "Agregar Archivo"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   }
@@ -1237,7 +1806,7 @@ export default function CoursesPage() {
           Gestión de Cursos
         </h4>
         <p className="text-muted-foreground">
-          Aqui podras añadir contenido a los modulos de los Cursos
+          Diseña, edita y publica cursos académicos
         </p>
       </div>
       
@@ -1315,7 +1884,7 @@ export default function CoursesPage() {
                 </div>
 
                 {/* Header */}
-                <CardHeader className="py-2 px-6 pb-0">
+                <CardHeader className="pt-1 px-6 pb-0">
                   <div className="flex gap-2 mb-2">
                     <Badge variant="outline" className="text-[10px]">ID: {course.idCurso}</Badge>
                     <Badge
@@ -1336,7 +1905,9 @@ export default function CoursesPage() {
                 </CardHeader>
 
                 {/* Footer */}
-                <CardFooter className="px-6 pb-6 flex justify-end items-center bg-slate-50/50 rounded-b-3xl mt-2 pt-4">
+                <CardFooter className="px-6 pb-6 flex justify-between items-center bg-slate-50/50 rounded-b-3xl mt-2 pt-4">
+                  <div>
+                  </div>
 
                   <Button
                     size="icon"
@@ -1389,7 +1960,6 @@ export default function CoursesPage() {
           )}
 
         </TabsContent>
-
       </Tabs>
     </div>
   )

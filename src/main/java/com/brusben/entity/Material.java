@@ -1,9 +1,13 @@
 package com.brusben.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "materiales", schema = "sc_sistema")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Material {
 
     @Id
@@ -13,6 +17,8 @@ public class Material {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_modulo", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     private Modulo modulo;
 
     @Column(name = "tipo_archivo", length = 50)

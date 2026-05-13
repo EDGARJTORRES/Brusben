@@ -1,5 +1,8 @@
 package com.brusben.dto;
 
+import com.brusben.entity.Archivo;
+import java.util.List;
+
 public class MaterialDTO {
     private Integer idMaterial;
     private Integer idModulo;
@@ -9,6 +12,7 @@ public class MaterialDTO {
     private String urlMaterial;
     private String urlRecurso;
     private String matEstado;
+    private List<Archivo> archivos;
 
     public MaterialDTO() {}
 
@@ -35,4 +39,7 @@ public class MaterialDTO {
 
     public String getMatEstado() { return matEstado; }
     public void setMatEstado(String matEstado) { this.matEstado = matEstado; }
+
+    public List<Archivo> getArchivos() { return archivos; }
+    public void setArchivos(List<Archivo> archivos) { this.archivos = archivos; }
 }

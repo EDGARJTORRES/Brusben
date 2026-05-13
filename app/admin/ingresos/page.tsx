@@ -19,6 +19,8 @@ import {
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { logSystemAction } from "@/lib/logging"
+import { useAuth } from "@/lib/auth-context"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -53,6 +55,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 export default function PagosPage() {
+  const { user } = useAuth()
   const [payments, setPayments] = useState<any[]>([])
   const [students, setStudents] = useState<any[]>([])
   const [courses, setCourses] = useState<any[]>([])
@@ -63,6 +66,7 @@ export default function PagosPage() {
 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+  const [statusFilter, setStatusFilter] = useState("")
   
   const [formData, setFormData] = useState({
     idUsuario: "",
@@ -76,13 +80,20 @@ export default function PagosPage() {
     fetchData()
   }, [])
 
+  // Filter payments based on status
+  const filteredPayments = payments.filter(payment => {
+    if (!statusFilter) return true
+    return payment.status === statusFilter
+  })
+
+
   const fetchData = async () => {
     setIsLoading(true)
     try {
       const [payRes, stuRes, curRes] = await Promise.all([
-        fetch("http://localhost:8081/api/pagos"),
-        fetch("http://localhost:8081/api/usuarios"),
-        fetch("http://localhost:8081/api/cursos")
+        fetch("http://localhost:8083/api/pagos"),
+        fetch("http://localhost:8083/api/usuarios"),
+        fetch("http://localhost:8083/api/cursos")
       ])
       setPayments(await payRes.json())
       
@@ -117,6 +128,13 @@ export default function PagosPage() {
       })
 
       if (res.ok) {
+        // Get student and course names for logging
+        const student = students.find(s => s.idUsuario === parseInt(formData.idUsuario))
+        const course = courses.find(c => c.idCurso === parseInt(formData.idCurso))
+        
+        // Log the action
+        await logSystemAction('PAGO_REGISTRADO', [formData.monto, `${student?.nombres || 'Estudiante'} - ${course?.titulo || 'Curso'}`], user?.id)
+        
         toast.success("¡Pago registrado e inscripción realizada!")
         setIsModalOpen(false)
         setFormData({ idUsuario: "", idCurso: "", monto: "", metodoPago: "TRANSFERENCIA", nroOperacion: "" })
@@ -145,6 +163,9 @@ export default function PagosPage() {
       })
 
       if (res.ok) {
+        // Log the action
+        await logSystemAction('PAGO_ACTUALIZADO', [idPago.toString()], user?.id)
+        
         toast.success(`Pago #${idPago} marcado como ${nuevoEstado}`)
         await fetchData()
       } else {
@@ -526,8 +547,8 @@ export default function PagosPage() {
 
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentPayments = payments.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(payments.length / itemsPerPage)
+  const currentPayments = filteredPayments.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage)
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -849,6 +870,18 @@ export default function PagosPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50  px-6 py-4">
           <h2 className="text-lg font-bold text-foreground">Listado de Pagos</h2>
           <div className="flex items-center gap-4 flex-1 max-w-xl justify-end">
+            <div className="flex items-center gap-2">
+              <select 
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-10 rounded-xl bg-background border-border/50 focus:ring-primary/20 font-medium text-sm px-4 border"
+              >
+                <option value="">Todos</option>
+                <option value="PAGADO">Pagados</option>
+                <option value="PENDIENTE">Pendientes</option>
+                <option value="ANULADO">Anulados</option>
+              </select>
+            </div>  
             <div className="relative w-full md:w-80 group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input 
@@ -866,6 +899,7 @@ export default function PagosPage() {
               <TableHead className="font-bold text-xs">Estudiante / Curso</TableHead>
               <TableHead className="font-bold text-center">Monto</TableHead>
               <TableHead className="font-bold text-center">Estado</TableHead>
+              <TableHead className="font-bold text-center">Fecha</TableHead>
               <TableHead className="font-bold text-center">Método</TableHead>
               <TableHead className="text-right font-bold pr-8 text-xs">Acciones</TableHead>
             </TableRow>
@@ -877,7 +911,7 @@ export default function PagosPage() {
                   Cargando transacciones bancarias...
                 </TableCell>
               </TableRow>
-            ) : payments.length === 0 ? (
+            ) : filteredPayments.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-20 text-center">
                   <div className="flex flex-col items-center opacity-30">
@@ -892,17 +926,21 @@ export default function PagosPage() {
                   <span className="font-mono text-sm font-bold text-muted-foreground">#{p.idPago}</span>
                 </TableCell>
                 <TableCell className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-black text-foreground leading-none">{p.student}</span>
-                      <span className="text-xs font-bold text-chart-1 mt-1 leading-none">{p.course}</span>
-                    </div>
+                  <div className="flex flex-col max-w-[240px]">
+                    <span className="text-sm font-black text-foreground leading-none truncate">
+                      {p.student}
+                    </span>
+                    <span className="text-xs font-bold text-chart-3 mt-1 leading-none truncate">
+                      {p.course}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell className="px-6 py-4">
-                  <span className="text-sm font-black text-foreground">{p.amount}</span>
+                  <span className="text-sm text-muted-foreground uppercase tracking-tighter">{p.amount}</span>
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <Badge className={cn(
-                    "text-[10px] font-black rounded-full px-4 py-1 border-0 shadow-sm",
+                    "text-[10px] font-black rounded-full px-3 py-1 border-0 shadow-sm",
                     p.status === "PAGADO" && "bg-emerald-500/10 text-emerald-600",
                     p.status === "PENDIENTE" && "bg-amber-500/10 text-amber-600",
                     p.status === "ANULADO" && "bg-rose-500/10 text-rose-600",
@@ -915,6 +953,11 @@ export default function PagosPage() {
                       <CreditCard className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">{p.method}</span>
+                </TableCell>
+                <TableCell className="px-6 py-4">
+                  <span className="text-sm text-muted-foreground uppercase tracking-tighter">
+                    {new Date(p.date).toLocaleDateString('es-PE')}
+                  </span>
                 </TableCell>
                 <TableCell className="px-6 py-4 text-right">
                   <DropdownMenu>

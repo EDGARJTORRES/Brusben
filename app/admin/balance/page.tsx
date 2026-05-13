@@ -199,8 +199,8 @@ export default function BalancePage() {
               <TableRow className="border-b border-border/40 hover:bg-transparent">
                 <TableHead className="px-8 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Curso</TableHead>
                 <TableHead className="py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-center">Alumnos</TableHead>
-                <TableHead className="py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-right">Precio</TableHead>
-                <TableHead className="py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-right">Ingresos</TableHead>
+                <TableHead className="py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-center">Precio</TableHead>
+                <TableHead className="py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-center">Ingresos</TableHead>
                 <TableHead className="py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-right">Inversión (Pago)</TableHead>
                 <TableHead className="py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-right">Balance Neto</TableHead>
                 <TableHead className="px-8 py-4 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-center">Estado</TableHead>
@@ -229,7 +229,7 @@ export default function BalancePage() {
                         <BookOpen className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="font-bold text-sm group-hover:text-primary transition-colors">{curso.titulo}</p>
+                        <p className="font-bold text-sm group-hover:text-primary transition-colors max-w-[240px] truncate">{curso.titulo}</p>
                         <p className="text-[11px] font-medium text-muted-foreground">ID: #{curso.idCurso}</p>
                       </div>
                     </div>
@@ -241,19 +241,36 @@ export default function BalancePage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-black text-sm text-muted-foreground">
-                    S/ {curso.precioCurso.toLocaleString()}
+                    S/ {curso.precioCurso.toLocaleString('es-PE', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
                   </TableCell>
+
                   <TableCell className="text-right font-black text-sm text-emerald-600">
-                    S/ {curso.ingresos.toLocaleString()}
+                    S/ {curso.ingresos.toLocaleString('es-PE', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
                   </TableCell>
+
                   <TableCell className="text-center font-black text-sm text-rose-600">
-                    - S/ {curso.egresos.toLocaleString()}
+                    - S/ {curso.egresos.toLocaleString('es-PE', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
                   </TableCell>
-                  <TableCell className={cn(
-                    "text-center font-black text-sm ",
-                    curso.balance >= 0 ? "text-chart-4" : "text-rose-600"
-                  )}>
-                    S/ {curso.balance.toLocaleString()}
+
+                  <TableCell
+                    className={cn(
+                      "text-center font-black text-sm",
+                      curso.balance >= 0 ? "text-chart-4" : "text-rose-600"
+                    )}
+                  >
+                    S/ {curso.balance.toLocaleString('es-PE', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
                   </TableCell>
                   <TableCell className="px-8 text-center">
                     <Badge className={cn(

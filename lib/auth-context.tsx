@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from "react"
+import { logSystemAction } from "@/lib/logging"
 
 interface User {
   id: number
@@ -49,6 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const logout = () => {
+    // Log logout action before clearing user data
+    if (user) {
+      logSystemAction('SISTEMA_LOGOUT', [user.nombre, user.id])
+    }
+    
     sessionStorage.removeItem("user")
     localStorage.removeItem("token")
     setUser(null)

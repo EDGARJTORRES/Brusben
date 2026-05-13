@@ -2,14 +2,17 @@ package com.brusben.service;
 
 import com.brusben.dto.MaterialDTO;
 import com.brusben.dto.ModuloDTO;
+import com.brusben.entity.Archivo;
 import com.brusben.entity.Curso;
 import com.brusben.entity.Material;
 import com.brusben.entity.Modulo;
+import com.brusben.repository.ArchivoRepository;
 import com.brusben.repository.CursoRepository;
 import com.brusben.repository.MaterialRepository;
 import com.brusben.repository.ModuloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,12 +27,14 @@ public class ModuloMaterialService {
     @Autowired private ModuloRepository moduloRepository;
     @Autowired private MaterialRepository materialRepository;
     @Autowired private CursoRepository cursoRepository;
+    @Autowired private ArchivoRepository archivoRepository;
 
     private static final String UPLOAD_DIR_VIDEOS = "public/materiales/videos/";
     private static final String UPLOAD_DIR_DOCS   = "public/materiales/docs/";
 
     // ─── MÓDULOS ────────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public List<ModuloDTO> getModulosByCurso(Integer idCurso) {
         return moduloRepository.findByCursoIdCursoOrderByOrdenAsc(idCurso)
                 .stream().map(this::toModuloDTO).collect(Collectors.toList());
@@ -181,6 +186,11 @@ public class ModuloMaterialService {
         dto.setUrlMaterial(m.getUrlMaterial());
         dto.setUrlRecurso(m.getUrlRecurso());
         dto.setMatEstado(m.getMatEstado());
+        
+        // Temporalmente comentado para aislar el problema
+        // List<Archivo> archivos = archivoRepository.findByMaterialIdMaterial(m.getIdMaterial());
+        // dto.setArchivos(archivos);
+        
         return dto;
     }
 }

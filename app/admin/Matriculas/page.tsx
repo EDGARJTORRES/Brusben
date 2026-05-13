@@ -15,6 +15,8 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { logSystemAction } from "@/lib/logging"
+import { useAuth } from "@/lib/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -39,6 +41,7 @@ function getImageUrl(img: string | null) {
 }
 
 export default function MatriculasPage() {
+  const { user } = useAuth()
   const router = useRouter()
   const [data, setData] = useState<CursoMatricula[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -123,13 +126,13 @@ export default function MatriculasPage() {
 
         </div>
         {/* Cabecera de tabla */}
-        <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-2 bg-muted/50 border-b border-border text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+        <div className="hidden md:grid grid-cols-12 gap-4 px-3 py-2 bg-muted/50 border-b border-border text-[11px] font-black uppercase tracking-widest text-muted-foreground">
           <div className="col-span-4">Curso</div>
           <div className="col-span-2">Categoría</div>
           <div className="col-span-2">Docente</div>
           <div className="col-span-2 text-center">Precio</div>
           <div className="col-span-1 text-center">Alumnos</div>
-          <div className="col-span-1" />
+          <div className="col-span-1"/>
         </div>
 
         <div className="divide-y divide-border">
@@ -145,7 +148,7 @@ export default function MatriculasPage() {
               return (
                 <div
                   key={curso.idCurso}
-                  className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-3 items-center hover:bg-muted/30 transition-colors group"
+                  className="grid grid-cols-1 md:grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors group"
                 >
                   {/* Curso */}
                   <div className="col-span-4 flex items-center gap-4 min-w-0">
@@ -221,7 +224,7 @@ export default function MatriculasPage() {
                       className={cn(
                         "rounded-xl h-9 px-4 font-bold text-xs gap-1.5 transition-all border-1",
                         curso.totalEstudiantes > 0
-                          ? "bg-card text-card hover:bg-card/90 text-black"
+                          ? "bg-card text-card hover:bg-card text-foreground "
                           : "bg-muted text-muted-foreground cursor-not-allowed"
                       )}
                     >
