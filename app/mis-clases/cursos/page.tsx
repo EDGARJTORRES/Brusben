@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { 
   PlayCircle, 
   Search, 
@@ -48,7 +48,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
-import { useEffect } from "react"
 import { toast } from "sonner"
 
 export default function StudentCoursesPage() {
@@ -57,6 +56,8 @@ export default function StudentCoursesPage() {
   const [courses, setCourses] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [activeTab, setActiveTab] = useState("progress")
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     if (user?.id) {
@@ -77,6 +78,18 @@ export default function StudentCoursesPage() {
       setIsLoading(false)
     }
   }
+
+  const filteredCourses = useMemo(() => {
+    return courses.filter(course => {
+      const matchesSearch = course.titulo.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      if (activeTab === "all") return matchesSearch
+      if (activeTab === "completed") return matchesSearch && course.status === "Completado"
+      if (activeTab === "progress") return matchesSearch && course.status !== "Completado"
+      
+      return matchesSearch
+    })
+  }, [courses, activeTab, searchQuery])
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -99,7 +112,7 @@ export default function StudentCoursesPage() {
 
       <Card className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-card backdrop-blur-xl p-2 px-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between py-4">
-          <Tabs defaultValue="progress" className="w-full md:w-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
             <TabsList className="bg-card p-1 rounded-xl h-12">
               <TabsTrigger value="all" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">TODOS</TabsTrigger>
               <TabsTrigger value="progress" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">EN PROGRESO</TabsTrigger>
@@ -110,7 +123,12 @@ export default function StudentCoursesPage() {
           <div className="flex items-center gap-4">
             <div className="relative w-full md:w-80 group">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-              <Input placeholder="Buscar entre mis clases..." className="pl-12 h-12 w-full bg-slate-100/50 border-0 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all rounded-xl text-sm" />
+              <Input 
+                placeholder="Buscar entre mis clases..." 
+                className="pl-12 h-12 w-full bg-slate-100/50 border-0 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all rounded-xl text-sm" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             <div className="flex items-center bg-slate-100/50 rounded-xl p-1 h-12 ring-1 ring-slate-100">
                <Button 
@@ -140,22 +158,24 @@ export default function StudentCoursesPage() {
               <BookOpen className="h-12 w-12 mx-auto mb-4 text-slate-200" />
               <p className="font-bold text-slate-400">Verificando tus inscripciones...</p>
            </div>
-        ) : courses.length === 0 ? (
+        ) : filteredCourses.length === 0 ? (
           <div className="col-span-full py-20 text-center">
              <div className="h-24 w-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="h-10 w-10 text-slate-300" />
              </div>
-             <h3 className="text-xl font-bold text-slate-800">No tienes cursos todavía</h3>
-             <p className="text-slate-500 mt-2 mb-8">Debes completar el pago de un curso para poder acceder aquí.</p>
-             <Button className="rounded-2xl" onClick={() => router.push("/mis-clases/catalogo")}>
-                Ir al Catálogo
-             </Button>
+             <h3 className="text-xl font-bold text-slate-800">No hay cursos coincidentes</h3>
+             <p className="text-slate-500 mt-2 mb-8">{searchQuery ? "No encontramos cursos con ese nombre." : "No tienes cursos en esta categoría."}</p>
+             {courses.length === 0 && (
+               <Button className="rounded-2xl" onClick={() => router.push("/mis-clases/catalogo")}>
+                  Ir al Catálogo
+               </Button>
+             )}
           </div>
-        ) : courses.map((course) => (
+        ) : filteredCourses.map((course) => (
           <Card 
             key={course.idPago || course.idCurso} 
             className="p-0 overflow-hidden border border-border/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group rounded-[2rem] bg-card cursor-pointer flex flex-col h-full"
-            onClick={() => router.push(`/clase/${course.idCurso}`)}
+            onClick={() => router.push(`/mis-clases/clase/${course.idCurso}`)}
           >
             
             {/* Imagen con overlay */}
@@ -246,7 +266,7 @@ export default function StudentCoursesPage() {
                     ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 shadow-emerald-100" 
                     : "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
                 )}
-                onClick={(e) => { e.stopPropagation(); router.push(`/clase/${course.idCurso}`) }}
+                onClick={(e) => { e.stopPropagation(); router.push(`/mis-clases/clase/${course.idCurso}`) }}
               >
                 {course.status === "Completado" ? (
                   <>Ver Certificado <Award className="h-4 w-4 group-hover/btn:rotate-12 transition-transform" /></>

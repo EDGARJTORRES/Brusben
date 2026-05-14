@@ -13,7 +13,9 @@ import {
   GraduationCap,
   Search,
   Settings,
-  Receipt
+  Receipt,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 
 import { useState, useEffect } from "react"
@@ -91,9 +93,9 @@ export default function PagosPage() {
     setIsLoading(true)
     try {
       const [payRes, stuRes, curRes] = await Promise.all([
-        fetch("http://localhost:8083/api/pagos"),
-        fetch("http://localhost:8083/api/usuarios"),
-        fetch("http://localhost:8083/api/cursos")
+        fetch("http://localhost:8081/api/pagos"),
+        fetch("http://localhost:8081/api/usuarios"),
+        fetch("http://localhost:8081/api/cursos")
       ])
       setPayments(await payRes.json())
       
@@ -1025,48 +1027,71 @@ export default function PagosPage() {
           </TableBody>
         </Table>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border/40 bg-muted/10">
-           <p className="text-xs text-muted-foreground font-medium">
-             Mostrando {" "}
-             <span className="font-bold text-foreground">{payments.length === 0 ? 0 : indexOfFirstItem + 1}</span> a {" "}
-             <span className="font-bold text-foreground">{Math.min(indexOfLastItem, payments.length)}</span> de {" "}
-             <span className="font-bold text-foreground">{payments.length}</span> pagos
-           </p>
-           <div className="flex gap-2 flex-wrap justify-center">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-9 rounded-xl border-border/50 font-bold px-4"
+        {/* Controles de Paginación */}
+        {!isLoading && filteredPayments.length > 0 && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-border/30">
+            <div className="text-sm text-muted-foreground font-medium">
+              Mostrando{" "}
+              <span className="font-bold text-foreground">{indexOfFirstItem + 1}</span>
+              {" "}–{" "}
+              <span className="font-bold text-foreground">{Math.min(indexOfLastItem, filteredPayments.length)}</span>
+              {" "}de{" "}
+              <span className="font-bold text-foreground">{filteredPayments.length}</span>
+              {" "}pagos
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
               >
+                <ChevronLeft className="h-4 w-4 mr-1" />
                 Anterior
               </Button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <Button 
-                  key={i + 1}
-                  variant="outline" 
-                  size="sm" 
-                  className={cn(
-                    "h-9 rounded-xl border-border/50 font-bold px-4",
-                    currentPage === i + 1 ? "bg-background shadow-sm ring-1 ring-primary/5 text-primary transition-none" : "hover:bg-background"
-                  )}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-9 rounded-xl border-border/50 font-bold px-4 hover:bg-background"
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) pageNum = i + 1;
+                  else if (currentPage <= 3) pageNum = i + 1;
+                  else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                  else pageNum = currentPage - 2 + i;
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={cn(
+                        "w-10 h-10 rounded-xl font-bold transition-all",
+                        currentPage === pageNum 
+                          ? "bg-primary text-primary-foreground shadow-md border-primary" 
+                          : "border-border/50 bg-card hover:bg-muted/50"
+                      )}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages || totalPages === 0}
+                disabled={currentPage === totalPages}
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
               >
                 Siguiente
+                <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
-           </div>
-        </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -13,7 +13,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Filter,
-  Search
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -37,6 +39,10 @@ export default function BalancePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("TODOS")
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,6 +101,17 @@ export default function BalancePage() {
     
     return matchesSearch && matchesStatus
   })
+
+  // Lógica de paginación
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedData = filteredData.slice(startIndex, endIndex)
+
+  // Resetear página al filtrar
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter])
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -221,7 +238,7 @@ export default function BalancePage() {
                       : "Ningún curso coincide con los filtros aplicados."}
                   </TableCell>
                 </TableRow>
-              ) : filteredData.map((curso) => (
+              ) : paginatedData.map((curso) => (
                 <TableRow key={curso.idCurso} className="border-b border-border/30 hover:bg-muted/30 transition-colors group">
                   <TableCell className="px-8 py-3">
                     <div className="flex items-center gap-3">
@@ -289,6 +306,72 @@ export default function BalancePage() {
             </TableBody>
           </Table>
         </div>
+
+        {/* Controles de Paginación */}
+        {!isLoading && filteredData.length > 0 && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-border/30">
+            <div className="text-sm text-muted-foreground font-medium">
+              Mostrando{" "}
+              <span className="font-bold text-foreground">{startIndex + 1}</span>
+              {" "}–{" "}
+              <span className="font-bold text-foreground">{Math.min(endIndex, filteredData.length)}</span>
+              {" "}de{" "}
+              <span className="font-bold text-foreground">{filteredData.length}</span>
+              {" "}cursos
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Anterior
+              </Button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) pageNum = i + 1;
+                  else if (currentPage <= 3) pageNum = i + 1;
+                  else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                  else pageNum = currentPage - 2 + i;
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={cn(
+                        "w-10 h-10 rounded-xl font-bold transition-all",
+                        currentPage === pageNum 
+                          ? "bg-primary text-white shadow-md border-primary" 
+                          : "border-border/50 bg-card hover:bg-muted/50"
+                      )}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

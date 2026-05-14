@@ -3,7 +3,7 @@
 
 
 import React, { useState, useEffect } from "react"
-
+import { Button } from "@/components/ui/button"
 import { Search, History, Clock, Activity, FileText, ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -82,9 +82,9 @@ export default function BitacoraPage() {
 
       const [logsResponse, usersResponse] = await Promise.all([
 
-        fetch("http://localhost:8083/api/auditoria"),
+        fetch("http://localhost:8081/api/auditoria"),
 
-        fetch("http://localhost:8083/api/usuarios")
+        fetch("http://localhost:8081/api/usuarios")
 
       ])
 
@@ -462,13 +462,11 @@ export default function BitacoraPage() {
 
           </Table>
 
-        
-
-        {/* Pagination Controls */}
+         {/* Pagination Controls */}
 
         {!isLoading && filteredLogs.length > 0 && totalPages > 1 && (
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-border/30">
 
             <div className="text-sm text-muted-foreground font-medium">
 
@@ -491,22 +489,22 @@ export default function BitacoraPage() {
             
 
             <div className="flex items-center gap-2">
-
-              <button
-
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
 
                 disabled={currentPage === 1}
 
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
 
               >
 
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 mr-1" />
 
                 Anterior
 
-              </button>
+              </Button>
 
               
 
@@ -514,45 +512,39 @@ export default function BitacoraPage() {
 
                 {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
 
-                  let pageNum
+                  let pageNum;
 
-                  if (totalPages <= 5) {
+                  if (totalPages <= 5) pageNum = i + 1;
 
-                    pageNum = i + 1
+                  else if (currentPage <= 3) pageNum = i + 1;
 
-                  } else if (currentPage <= 3) {
+                  else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
 
-                    pageNum = i + 1
-
-                  } else if (currentPage >= totalPages - 2) {
-
-                    pageNum = totalPages - 4 + i
-
-                  } else {
-
-                    pageNum = currentPage - 2 + i
-
-                  }
+                  else pageNum = currentPage - 2 + i;
 
                   
 
                   return (
 
-                    <button
+                    <Button
 
                       key={pageNum}
+
+                      variant={currentPage === pageNum ? "default" : "outline"}
+
+                      size="sm"
 
                       onClick={() => setCurrentPage(pageNum)}
 
                       className={cn(
 
-                        "w-8 h-8 text-sm font-medium rounded-lg border transition-colors",
+                        "w-10 h-10 rounded-xl font-bold transition-all",
 
-                        currentPage === pageNum
+                        currentPage === pageNum 
 
-                          ? "bg-primary text-primary-foreground border-primary"
+                          ? "bg-primary text-primary-foreground shadow-md border-primary" 
 
-                          : "border-border/50 bg-background hover:bg-muted/50"
+                          : "border-border/50 bg-card hover:bg-muted/50"
 
                       )}
 
@@ -560,9 +552,9 @@ export default function BitacoraPage() {
 
                       {pageNum}
 
-                    </button>
+                    </Button>
 
-                  )
+                  );
 
                 })}
 
@@ -570,21 +562,25 @@ export default function BitacoraPage() {
 
               
 
-              <button
+              <Button
+
+                variant="outline"
+
+                size="sm"
 
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
 
                 disabled={currentPage === totalPages}
 
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
 
               >
 
                 Siguiente
 
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 ml-1" />
 
-              </button>
+              </Button>
 
             </div>
 

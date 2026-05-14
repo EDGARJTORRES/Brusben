@@ -103,18 +103,19 @@ export default function LoginPage() {
           </div>
 
           <div className="flex justify-center lg:justify-start">
-            <Image
-              src={
-                resolvedTheme === "dark"
-                  ? "/images/logo_brusben_dark.png"
-                  : "/images/logo_brusben_light.png"
-              }
-              alt="Logo Brusben"
-              width={180}
-              height={180}
-              className="object-contain"
-              priority
-            />
+              <Image
+                src={
+                  resolvedTheme === "dark"
+                    ? "/images/logo_brusben_dark.png"
+                    : "/images/logo_brusben_light.png"
+                }
+                alt="Logo Brusben"
+                width={180}
+                height={180}
+                className="object-contain"
+                style={{ height: 'auto' }}
+                priority
+              />
           </div>
 
           {/* Login Form (Titles are INSIDE this component now) */}

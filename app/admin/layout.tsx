@@ -208,7 +208,7 @@ export default function AdminLayout({
   useEffect(() => {
     const fetchPendingPayments = async () => {
       try {
-        const res = await fetch("http://localhost:8083/api/pagos")
+        const res = await fetch("http://localhost:8081/api/pagos")
         if (res.ok) {
           const data = await res.json()
           const pending = data.filter((p: any) => p.status === 'PENDIENTE')

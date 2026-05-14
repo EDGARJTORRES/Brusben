@@ -488,68 +488,75 @@ export default function UsuariosPage() {
               )}
             </TableBody>
           </Table>
-        </div>
-
-        {/* Pagination Footer */}
-        {!loading && filteredUsers.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border/40 bg-muted/10">
-            <p className="text-xs text-muted-foreground font-medium">
+          
+        {!loading && filteredUsers.length > 0 && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-border/30">
+            <div className="text-sm text-muted-foreground font-medium">
               Mostrando{" "}
               <span className="font-bold text-foreground">
-                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}
-              </span>{" "}
-              de <span className="font-bold text-foreground">{filteredUsers.length}</span> usuarios
-            </p>
-
-            <div className="flex items-center gap-1">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+              </span>
+              {" "}–{" "}
+              <span className="font-bold text-foreground">
+                {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}
+              </span>
+              {" "}de{" "}
+              <span className="font-bold text-foreground">{filteredUsers.length}</span>
+              {" "}usuarios
+            </div>
+            
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                size="icon"
-                className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Anterior
               </Button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
-                .reduce<(number | string)[]>((acc, p, idx, arr) => {
-                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...")
-                  acc.push(p)
-                  return acc
-                }, [])
-                .map((p, i) =>
-                  p === "..." ? (
-                    <span key={`dots-${i}`} className="px-2 text-muted-foreground text-sm">…</span>
-                  ) : (
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) pageNum = i + 1;
+                  else if (currentPage <= 3) pageNum = i + 1;
+                  else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                  else pageNum = currentPage - 2 + i;
+                  
+                  return (
                     <Button
-                      key={p}
-                      variant={currentPage === p ? "default" : "outline"}
-                      size="icon"
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
                       className={cn(
-                        "h-9 w-9 rounded-xl border-border/50 text-sm font-bold",
-                        currentPage === p ? "shadow-sm" : "hover:bg-muted"
+                        "w-10 h-10 rounded-xl font-bold transition-all",
+                        currentPage === pageNum 
+                          ? "bg-primary text-primary-foreground shadow-md border-primary" 
+                          : "border-border/50 bg-card hover:bg-muted/50"
                       )}
-                      onClick={() => setCurrentPage(p as number)}
                     >
-                      {p}
+                      {pageNum}
                     </Button>
-                  )
-                )}
-
+                  );
+                })}
+              </div>
+              
               <Button
                 variant="outline"
-                size="icon"
-                className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
+                className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
               >
-                <ChevronRight className="h-4 w-4" />
+                Siguiente
+                <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </div>
-        )}
+        )}  </div>
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

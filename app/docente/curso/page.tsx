@@ -127,7 +127,7 @@ export default function CoursesPage() {
         return
       }
       
-      const res = await fetch(`http://localhost:8083/api/cursos/docente/${user.id}`)
+      const res = await fetch(`http://localhost:8081/api/cursos/docente/${user.id}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
       setCourses(data)
@@ -138,7 +138,7 @@ export default function CoursesPage() {
 
   const fetchDocentes = async () => {
     try {
-      const res = await fetch("http://localhost:8083/api/cursos/docentes")
+      const res = await fetch("http://localhost:8081/api/cursos/docentes")
       const data = await res.json()
       setDocentes(data)
     } catch (e) {
@@ -148,7 +148,7 @@ export default function CoursesPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await fetch("http://localhost:8083/api/categorias")
+      const res = await fetch("http://localhost:8081/api/categorias")
       const data = await res.json()
       setCategorias(data)
     } catch (e) {
@@ -179,7 +179,7 @@ export default function CoursesPage() {
     formDataUpload.append("file", file)
 
     try {
-      const res = await fetch("http://localhost:8083/api/cursos/upload", {
+      const res = await fetch("http://localhost:8081/api/cursos/upload", {
         method: "POST",
         body: formDataUpload
       })
@@ -208,8 +208,8 @@ export default function CoursesPage() {
 
     try {
       const url = isEditing 
-        ? `http://localhost:8083/api/cursos/${formData.idCurso}`
-        : "http://localhost:8083/api/cursos"
+        ? `http://localhost:8081/api/cursos/${formData.idCurso}`
+        : "http://localhost:8081/api/cursos"
       
       const method = isEditing ? "PUT" : "POST"
 
@@ -268,7 +268,7 @@ export default function CoursesPage() {
 
   const toggleStatus = async (course: any) => {
     try {
-      const res = await fetch(`http://localhost:8083/api/cursos/${course.idCurso}/toggle-estado`, {
+      const res = await fetch(`http://localhost:8081/api/cursos/${course.idCurso}/toggle-estado`, {
         method: "PUT"
       })
       if (res.ok) {
@@ -285,7 +285,7 @@ export default function CoursesPage() {
       // Find course title for logging
       const courseToDelete = courses.find(c => c.idCurso === id)
       
-      const res = await fetch(`http://localhost:8083/api/cursos/${id}`, {
+      const res = await fetch(`http://localhost:8081/api/cursos/${id}`, {
         method: "DELETE"
       })
       if (res.ok) {
@@ -332,8 +332,8 @@ export default function CoursesPage() {
     setIsLoadingContent(true)
     try {
       const [modRes, foroRes] = await Promise.all([
-        fetch(`http://localhost:8083/api/cursos-materiales/${course.idCurso}/modulos`),
-        fetch(`http://localhost:8083/api/cursos-contenido/${course.idCurso}/foros`)
+        fetch(`http://localhost:8081/api/cursos-materiales/${course.idCurso}/modulos`),
+        fetch(`http://localhost:8081/api/cursos-contenido/${course.idCurso}/foros`)
       ])
       
       // Validar respuestas y asegurar que sean arrays
@@ -346,7 +346,7 @@ export default function CoursesPage() {
           const materialesWithArchivos = await Promise.all(
             (modulo.materiales || []).map(async (material: any) => {
               try {
-                const archivosRes = await fetch(`http://localhost:8083/api/cursos-materiales/materiales/${material.idMaterial}/archivos`)
+                const archivosRes = await fetch(`http://localhost:8081/api/cursos-materiales/materiales/${material.idMaterial}/archivos`)
                 if (archivosRes.ok) {
                   const archivosData = await archivosRes.json()
                   return {
@@ -385,7 +385,7 @@ export default function CoursesPage() {
   const addModule = async () => {
     if (!newModuleName.trim()) return
     try {
-      const res = await fetch(`http://localhost:8083/api/cursos-materiales/${selectedCourseContent?.idCurso}/modulos`, {
+      const res = await fetch(`http://localhost:8081/api/cursos-materiales/${selectedCourseContent?.idCurso}/modulos`, {
         method: "POST",
         headers: { "Content-Type" : "application/json" },
         body: JSON.stringify({ nombre: newModuleName })
@@ -402,7 +402,7 @@ export default function CoursesPage() {
 
   const deleteModulo = async (id: number) => {
      try {
-       await fetch(`http://localhost:8083/api/cursos-materiales/modulos/${id}`, { method: "DELETE" })
+       await fetch(`http://localhost:8081/api/cursos-materiales/modulos/${id}`, { method: "DELETE" })
        openContentManager(selectedCourseContent!)
        toast.success("Módulo eliminado")
      } catch { toast.error("Error al eliminar") }
@@ -456,7 +456,7 @@ export default function CoursesPage() {
     console.log("idMaterial:", idMaterial);
     
     try {
-      const url = `http://localhost:8083/api/cursos-materiales/materiales/${idMaterial}/archivos`;
+      const url = `http://localhost:8081/api/cursos-materiales/materiales/${idMaterial}/archivos`;
       console.log("URL:", url);
       
       const res = await fetch(url);
@@ -572,7 +572,7 @@ export default function CoursesPage() {
         formData.append("file", archivoForm.file)
       }
 
-      const url = `http://localhost:8083/api/cursos-materiales/materiales/${selectedClaseId}/archivos/upload`;
+      const url = `http://localhost:8081/api/cursos-materiales/materiales/${selectedClaseId}/archivos/upload`;
       console.log("=== SUBIENDO ARCHIVO ===");
       console.log("URL:", url);
       console.log("selectedClaseId:", selectedClaseId);
@@ -611,7 +611,7 @@ export default function CoursesPage() {
 
   const deleteArchivo = async (idArchivo: number) => {
     try {
-      await fetch(`http://localhost:8083/api/cursos-materiales/archivos/${idArchivo}`, { method: "DELETE" })
+      await fetch(`http://localhost:8081/api/cursos-materiales/archivos/${idArchivo}`, { method: "DELETE" })
       openContentManager(selectedCourseContent!)
       toast.success("Archivo eliminado")
     } catch { toast.error("Error al eliminar") }
@@ -666,7 +666,7 @@ export default function CoursesPage() {
       // ── MODO EDICIÓN: solo actualiza título / URL (sin reemplazar archivo) ──
       if (editingMaterialId) {
         res = await fetch(
-          `http://localhost:8083/api/cursos-materiales/materiales/${editingMaterialId}`,
+          `http://localhost:8081/api/cursos-materiales/materiales/${editingMaterialId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -686,7 +686,7 @@ export default function CoursesPage() {
         fd.append("tipoMaterial", materialForm.tipoMaterial)
 
         res = await fetch(
-          `http://localhost:8083/api/cursos-materiales/modulos/${materialModuloId}/materiales/upload`,
+          `http://localhost:8081/api/cursos-materiales/modulos/${materialModuloId}/materiales/upload`,
           { method: "POST", body: fd }
         )
       }
@@ -698,7 +698,7 @@ export default function CoursesPage() {
           return
         }
         res = await fetch(
-          `http://localhost:8083/api/cursos-materiales/modulos/${materialModuloId}/materiales`,
+          `http://localhost:8081/api/cursos-materiales/modulos/${materialModuloId}/materiales`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -728,7 +728,7 @@ export default function CoursesPage() {
 
   const deleteMaterial = async (id: number) => {
     try {
-      await fetch(`http://localhost:8083/api/cursos-materiales/materiales/${id}`, { method: "DELETE" })
+      await fetch(`http://localhost:8081/api/cursos-materiales/materiales/${id}`, { method: "DELETE" })
       openContentManager(selectedCourseContent!)
       toast.success("Material eliminado")
     } catch { toast.error("Error al eliminar") }
@@ -741,8 +741,8 @@ export default function CoursesPage() {
     }
     try {
       const url = isEditingForo 
-        ? `http://localhost:8083/api/cursos-contenido/foros/${currentForoId}`
-        : `http://localhost:8083/api/cursos-contenido/${selectedCourseContent?.idCurso}/foros`
+        ? `http://localhost:8081/api/cursos-contenido/foros/${currentForoId}`
+        : `http://localhost:8081/api/cursos-contenido/${selectedCourseContent?.idCurso}/foros`
       
       const res = await fetch(url, {
         method: isEditingForo ? "PUT" : "POST",
@@ -772,7 +772,7 @@ export default function CoursesPage() {
 
   const deleteForo = async (id: number) => {
     try {
-      await fetch(`http://localhost:8083/api/cursos-contenido/foros/${id}`, { method: "DELETE" })
+      await fetch(`http://localhost:8081/api/cursos-contenido/foros/${id}`, { method: "DELETE" })
       openContentManager(selectedCourseContent!)
       toast.success("Foro desactivado")
     } catch { toast.error("Error al eliminar") }
@@ -786,7 +786,7 @@ export default function CoursesPage() {
 
   const fetchAportes = async (idForo: number) => {
     try {
-      const res = await fetch(`http://localhost:8083/api/cursos-contenido/foros/${idForo}/aportes`)
+      const res = await fetch(`http://localhost:8081/api/cursos-contenido/foros/${idForo}/aportes`)
       if (res.ok) {
          setAportes(await res.json())
       } else {
@@ -801,7 +801,7 @@ export default function CoursesPage() {
     if(!newAporte.trim() || !activeForoId) return
     try {
       // Usaremos idUsuario 1 por defecto al simular que somos el admin
-      const res = await fetch(`http://localhost:8083/api/cursos-contenido/foros/${activeForoId}/aportes`, {
+      const res = await fetch(`http://localhost:8081/api/cursos-contenido/foros/${activeForoId}/aportes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mensaje: newAporte, usuario: { idUsuario: 1 } })
@@ -820,7 +820,7 @@ export default function CoursesPage() {
   
   const handleDeleteAporte = async (idAporte: number) => {
      try {
-        const res = await fetch(`http://localhost:8083/api/cursos-contenido/aportes/${idAporte}`, { method: "DELETE" })
+        const res = await fetch(`http://localhost:8081/api/cursos-contenido/aportes/${idAporte}`, { method: "DELETE" })
         if(res.ok && activeForoId) {
            fetchAportes(activeForoId)
            toast.success("Aporte eliminado")

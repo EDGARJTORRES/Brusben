@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { logSystemAction } from "@/lib/logging"
+import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { 
   Plus, Search, MoreVertical, BookOpen, LayoutGrid,
@@ -2020,39 +2021,71 @@ export default function CoursesPage() {
 
           {/* Pagination UI */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 pb-10">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="rounded-xl"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              
-              <div className="flex gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    onClick={() => setCurrentPage(page)}
-                    className="h-10 w-10 rounded-xl font-bold"
-                  >
-                    {page}
-                  </Button>
-                ))}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-border/30 bg-card/50 rounded-b-3xl mb-10">
+              <div className="text-sm text-muted-foreground font-medium">
+                Mostrando{" "}
+                <span className="font-bold text-foreground">
+                  {(currentPage - 1) * itemsPerPage + 1}
+                </span>
+                {" "}–{" "}
+                <span className="font-bold text-foreground">
+                  {Math.min(currentPage * itemsPerPage, filteredCourses.length)}
+                </span>
+                {" "}de{" "}
+                <span className="font-bold text-foreground">{filteredCourses.length}</span>
+                {" "}cursos
               </div>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="rounded-xl"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) pageNum = i + 1;
+                    else if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                    else pageNum = currentPage - 2 + i;
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={cn(
+                          "w-10 h-10 rounded-xl font-bold transition-all",
+                          currentPage === pageNum 
+                            ? "bg-primary text-primary-foreground shadow-md border-primary" 
+                            : "border-border/50 bg-card hover:bg-muted/50"
+                        )}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
           )}
 

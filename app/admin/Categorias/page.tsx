@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit2, Trash2, X, Check, Tag, Loader2, Search } from "lucide-react"
+import { Plus, Edit2, Trash2, X, Check, Tag, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +50,10 @@ export default function CategoriasPage() {
     catDescripcion: "",
     catColor: "#3b82f6",
   })
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   // Cargar categorías del backend
   useEffect(() => {
@@ -108,6 +112,22 @@ export default function CategoriasPage() {
       catColor: "#3b82f6",
     })
   }
+
+  // Lógica de filtrado y paginación
+  const filteredCategorias = categorias.filter((c) =>
+    c.catNombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.catDescripcion?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+  )
+
+  const totalPages = Math.ceil(filteredCategorias.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedCategorias = filteredCategorias.slice(startIndex, endIndex)
+
+  // Resetear página al buscar
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
 
   const handleSave = async () => {
     if (!formData.catNombre.trim()) {
@@ -274,12 +294,7 @@ export default function CategoriasPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {categorias
-              .filter((c) => 
-                c.catNombre.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                (c.catDescripcion?.toLowerCase() || "").includes(searchQuery.toLowerCase())
-              )
-              .map((categoria) => (
+            {paginatedCategorias.map((categoria) => (
               <div 
                 key={categoria.catId} 
                 className="group flex flex-col md:flex-row md:items-center justify-between gap-4 py-3 px-4 rounded-xl bg-card border hover:border-primary/20 hover:shadow-sm hover:bg-muted/30 transition-all duration-300"
@@ -396,6 +411,72 @@ export default function CategoriasPage() {
               </div>
             ))}
           </div>
+
+          {/* Controles de Paginación */}
+          {!loading && filteredCategorias.length > 0 && totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-border/30 mt-4">
+              <div className="text-sm text-muted-foreground font-medium">
+                Mostrando{" "}
+                <span className="font-bold text-foreground">{startIndex + 1}</span>
+                {" "}–{" "}
+                <span className="font-bold text-foreground">{Math.min(endIndex, filteredCategorias.length)}</span>
+                {" "}de{" "}
+                <span className="font-bold text-foreground">{filteredCategorias.length}</span>
+                {" "}categorías
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) pageNum = i + 1;
+                    else if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                    else pageNum = currentPage - 2 + i;
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={cn(
+                          "w-10 h-10 rounded-xl font-bold transition-all",
+                          currentPage === pageNum 
+                            ? "bg-primary text-white shadow-md border-primary" 
+                            : "border-border/50 bg-card hover:bg-muted/50"
+                        )}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
 
           {categorias.length > 0 && categorias.filter(c => c.catNombre.toLowerCase().includes(searchQuery.toLowerCase()) || (c.catDescripcion?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 && (
             <Card className="border-0 shadow-sm rounded-2xl bg-card">
