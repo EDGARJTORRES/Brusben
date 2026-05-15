@@ -891,7 +891,7 @@ export default function CoursesPage() {
                           value={newModuleName}
                           onChange={(e) => setNewModuleName(e.target.value)}
                         />
-                        <Button className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20 group" onClick={addModule}>
+                        <Button className="w-full h-14 rounded-2xl font-black text-lg  group" onClick={addModule}>
                           Añadir Módulo
                           <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                         </Button>

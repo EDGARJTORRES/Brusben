@@ -92,14 +92,17 @@ export default function StudentCoursesPage() {
   }, [courses, activeTab, searchQuery])
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between items-start">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">Mis Cursos</h1>
-          <p className="text-muted-foreground font-medium">Continúa tu aprendizaje y desarrolla nuevas habilidades estratégicas.</p>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h4 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-3">
+              <BookOpen className="h-6 w-6 text-primary" />
+              Mis Cursos
+          </h4>
+          <p className="text-muted-foreground mt-1 font-medium text-sm">Continúa tu aprendizaje y desarrolla nuevas habilidades estratégicas.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button 
+        <div className="flex gap-4">
+            <Button 
             variant="outline" 
             className="gap-2 h-11 px-6 rounded-xl border-slate-200 hover:bg-slate-50 transition-all duration-200 font-bold"
             onClick={() => router.push("/mis-clases/catalogo")}
@@ -110,47 +113,27 @@ export default function StudentCoursesPage() {
         </div>
       </div>
 
-      <Card className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-card backdrop-blur-xl p-2 px-6">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between py-4">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between py-2">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-            <TabsList className="bg-card p-1 rounded-xl h-12">
-              <TabsTrigger value="all" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">TODOS</TabsTrigger>
-              <TabsTrigger value="progress" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">EN PROGRESO</TabsTrigger>
-              <TabsTrigger value="completed" className="rounded-lg font-bold text-xs h-10 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all tracking-wide text-slate-400 data-[state=active]:text-primary">COMPLETADOS</TabsTrigger>
+            <TabsList className="bg-card p-1 rounded-xl h-12 border-1 border-gray-200">
+              <TabsTrigger value="all" className="px-6 font-bold">TODOS</TabsTrigger>
+              <TabsTrigger value="progress" className="px-6 font-bold">EN PROGRESO</TabsTrigger>
+              <TabsTrigger value="completed" className="px-6 font-bold">COMPLETADOS</TabsTrigger>
             </TabsList>
           </Tabs>
           
           <div className="flex items-center gap-4">
             <div className="relative w-full md:w-80 group">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors bg-card" />
               <Input 
                 placeholder="Buscar entre mis clases..." 
-                className="pl-12 h-12 w-full bg-slate-100/50 border-0 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all rounded-xl text-sm" 
+                className="pl-12 h-12 w-full bg-card border-1 border-gray-200 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/10 transition-all rounded-xl text-sm" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex items-center bg-slate-100/50 rounded-xl p-1 h-12 ring-1 ring-slate-100">
-               <Button 
-                variant={viewMode === "grid" ? "secondary" : "ghost"} 
-                size="icon" 
-                className={`h-10 w-10 rounded-lg ${viewMode === "grid" ? 'shadow-sm bg-white' : 'text-slate-400'}`}
-                onClick={() => setViewMode("grid")}
-              >
-                <LayoutGrid className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant={viewMode === "list" ? "secondary" : "ghost"} 
-                size="icon" 
-                className={`h-10 w-10 rounded-lg ${viewMode === "list" ? 'shadow-sm bg-white' : 'text-slate-400'}`}
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-5 w-5" />
-              </Button>
-            </div>
           </div>
         </div>
-      </Card>
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 pb-20">
         {isLoading ? (

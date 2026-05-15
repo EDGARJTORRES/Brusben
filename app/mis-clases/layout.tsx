@@ -268,7 +268,7 @@ function StudentSidebar({ pathname, user, onLogout }: { pathname: string; user: 
               )
             }
 
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || (item.label === "Mis Cursos" && pathname.startsWith("/mis-clases/clase"))
 
             return (
               <SidebarMenuItem key={item.label} className="flex justify-center relative">
