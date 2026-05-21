@@ -402,7 +402,7 @@ export default function PerfilPage() {
                       setEditData(perfil)
                     }}
                     variant="ghost"
-                    className="h-12 px-6 font-bold rounded-2xl"
+                    className="h-12 px-6 font-bold rounded-2xl bg-card border"
                   >
                     <X className="h-5 w-5 mr-2" />
                     Cancelar
@@ -523,7 +523,7 @@ export default function PerfilPage() {
                       setPasswordForm({ passwordActual: "", passwordNueva: "", passwordConfirmar: "" })
                     }}
                     variant="ghost"
-                    className="flex-1 h-10 px-4 font-bold rounded-xl"
+                    className="flex-1 h-10 px-4 rounded-xl bg-card border"
                   >
                     <X className="h-4 w-4 mr-1" />
                     Cancelar

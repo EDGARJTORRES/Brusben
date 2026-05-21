@@ -262,7 +262,7 @@ export default function MatriculaDetallePage() {
       </div>
 
       {/* TABLA DE ESTUDIANTES */}
-      <div className="border-none shadow-sm rounded-2xl overflow-hidden">
+      <div className="border-none shadow-sm rounded-2xl overflow-hidden bg-card">
         {/* Cabecera */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-muted/50 border-b border-border text-[11px] font-black uppercase tracking-widest text-muted-foreground">
           <div className="col-span-5">Estudiante</div>

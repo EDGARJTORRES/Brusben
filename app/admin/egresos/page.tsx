@@ -1381,7 +1381,7 @@ export default function EgresosPage() {
           { title: "PAGOS REALIZADOS", value: egresos.length.toString(), icon: Receipt, color: "text-blue-600", bg: "bg-blue-400/10" },
           { title: "DOCENTES PAGADOS", value: new Set(egresos.map(e => e.docente)).size.toString(), icon: User, color: "text-violet-600", bg: "bg-violet-400/10" },
         ].map((stat) => (
-          <Card key={stat.title}>
+          <Card key={stat.title} className="bg-card shadow-md dark:border border-0">
             <CardContent className="px-4 py-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -1398,7 +1398,7 @@ export default function EgresosPage() {
       </div>
 
       {/* TABLA */}
-      <div className="rounded-2xl  bg-card backdrop-blur-sm overflow-hidden border border-border/30">
+      <div className="rounded-2xl  bg-card shadow-md dark:border border-0">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50  px-6 py-4">
           {/* DERECHA: título */}

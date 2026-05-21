@@ -852,7 +852,7 @@ export default function PagosPage() {
            { title: "MATRÍCULAS MES", value: matriculasMes.toString(), icon: GraduationCap, color: "text-rose-600", bg: "bg-rose-400/10" },
            { title: "NUEVOS ABONOS", value: payments.length > 0 ? "RECIENTE" : "0", icon: Plus, color: "text-emerald-600", bg: "bg-emerald-400/10" },
          ].map((stat) => (
-           <Card key={stat.title}>
+           <Card key={stat.title} className="bg-card shadow-md dark:border border-0">
               <CardContent className="px-4 py-2">
                  <div className="flex items-center justify-between">
                     <div>
@@ -868,7 +868,7 @@ export default function PagosPage() {
          ))}
       </div>
 
-      <div className="rounded-2xl shadow-sm bg-card border border-border/50 overflow-hidden">
+      <div className="rounded-2xl bg-card shadow-md dark:border border-0 overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/50  px-6 py-4">
           <h2 className="text-lg font-bold text-foreground">Listado de Pagos</h2>
           <div className="flex items-center gap-4 flex-1 max-w-xl justify-end">

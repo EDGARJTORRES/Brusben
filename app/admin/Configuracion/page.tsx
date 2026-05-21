@@ -64,7 +64,7 @@ export default function ConfiguracionPage() {
             </div>
           </div>
 
-          <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-8">
+          <Card className="bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden p-8 space-y-8">
 
             {/* 🔥 2FA REAL (SIN CAMBIAR DISEÑO) */}
             <div className="space-y-4 border-b border-slate-50 pb-6">
@@ -104,7 +104,7 @@ export default function ConfiguracionPage() {
             </div>
           </div>
           <div className="grid gap-12 lg:grid-cols-1 lg:items-start">
-            <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-8">
+            <Card className="bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden p-8">
               <div className="space-y-4">
                 <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
                   Color Primario Institucional
@@ -117,7 +117,7 @@ export default function ConfiguracionPage() {
               </div>
             </Card>
 
-            <Card className="border-slate-100 shadow-sm rounded-3xl overflow-hidden p-8 space-y-4">
+            <Card className="bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden p-8 ">
               <p className="text-sm text-slate-400 font-medium">
                 Última copia de seguridad: <span className="font-bold text-slate-900">Hoy, 09:12 AM</span>
               </p>

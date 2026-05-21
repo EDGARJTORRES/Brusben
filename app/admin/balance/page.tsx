@@ -182,7 +182,7 @@ export default function BalancePage() {
       </div>
 
       {/* TABLE SECTION */}
-      <div className="border-none shadow-sm rounded-2xl overflow-hidden bg-card">
+      <div className="rounded-2xl overflow-hidden bg-card shadow-md dark:border border-0">
         <div className="border-b border-border/50  px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="text-xl font-black">Análisis por Curso</div>
@@ -379,7 +379,7 @@ export default function BalancePage() {
 
 function KPICard({ title, value, icon: Icon, description, trend, trendUp, color, bg }: any) {
   return (
-    <Card className="rounded-2xl bg-card transition-all">
+    <Card className="rounded-2xl bg-card shadow-md dark:border border-0 transition-all">
       <CardContent className="px-6 py-0 flex flex-col items-center">
         <div className="flex flex-col items-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>

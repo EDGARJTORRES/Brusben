@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { logSystemAction } from "@/lib/logging"
+import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { 
   Plus, Search, MoreVertical, BookOpen, LayoutGrid,
@@ -41,6 +42,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
@@ -107,9 +109,7 @@ export default function CoursesPage() {
   const itemsPerPage = 9
 
   useEffect(() => {
-    if (user?.id) {
-      fetchCourses()
-    }
+    fetchCourses()
     fetchDocentes()
     fetchCategorias()
   }, [user?.id])
@@ -121,18 +121,12 @@ export default function CoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      // Obtener cursos solo del docente autenticado
-      if (!user?.id) {
-        toast.error("No se pudo identificar al docente")
-        return
-      }
-      
-      const res = await fetch(`http://localhost:8081/api/cursos/docente/${user.id}`)
+      const res = await fetch("http://localhost:8081/api/cursos")
       if (!res.ok) throw new Error()
       const data = await res.json()
       setCourses(data)
     } catch {
-      toast.error("Error al cargar cursos del docente")
+      toast.error("Error al cargar cursos")
     }
   }
 
@@ -304,7 +298,8 @@ export default function CoursesPage() {
 
   const filteredCourses = (courses || []).filter(c =>
     (c.titulo || "").toLowerCase().includes(search.toLowerCase()) &&
-    (categoriaFilter === "all" || c.catNombre === categoriaFilter)
+    (categoriaFilter === "all" || c.catNombre === categoriaFilter) &&
+    c.idDocente === user?.id
   )
 
   const getImageUrl = (img?: string) => {
@@ -432,23 +427,6 @@ export default function CoursesPage() {
   const [isUploadingArchivo, setIsUploadingArchivo] = useState(false)
   const [currentArchivos, setCurrentArchivos] = useState<any[]>([])
 
-  // Function to check material limits (para clases principales)
-  const checkMaterialLimits = (moduloId: number, tipoMaterial: string) => {
-    const modulo = contentModules.find(m => m.idModulo === moduloId)
-    if (!modulo?.materiales) return { canAdd: true }
-    
-    const materiales = modulo.materiales
-    const videoCount = materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
-    
-    if (tipoMaterial === 'VIDEO' && videoCount >= 1) {
-      return { 
-        canAdd: false, 
-        message: 'Solo se permite 1 video por clase. Elimina el video actual para agregar uno nuevo.' 
-      }
-    }
-    
-    return { canAdd: true }
-  }
 
   // Function to load files for a specific material
   const loadArchivosForMaterial = async (idMaterial: number) => {
@@ -650,18 +628,16 @@ export default function CoursesPage() {
       return
     }
 
-    // Validar límites solo para nuevos materiales
-    if (!editingMaterialId && materialModuloId) {
-      const limitCheck = checkMaterialLimits(materialModuloId, materialForm.tipoMaterial)
-      if (!limitCheck.canAdd) {
-        toast.error(limitCheck.message)
-        return
-      }
-    }
 
     setIsUploadingMaterial(true)
     try {
-      let res: Response
+      if (!editingMaterialId && !materialModuloId) {
+        toast.error("Error: Módulo no identificado")
+        setIsUploadingMaterial(false)
+        return
+      }
+
+      let res: Response | null = null
 
       // ── MODO EDICIÓN: solo actualiza título / URL (sin reemplazar archivo) ──
       if (editingMaterialId) {
@@ -711,15 +687,16 @@ export default function CoursesPage() {
         )
       }
 
-      if (res!.ok) {
+      if (res && res.ok) {
         toast.success(editingMaterialId ? "Material actualizado" : "Material añadido")
         setIsMaterialDialogOpen(false)
         openContentManager(selectedCourseContent!)
-      } else {
-        const err = await res!.json()
+      } else if (res) {
+        const err = await res.json()
         toast.error(err.error || "Error al guardar")
       }
-    } catch {
+    } catch (error) {
+      console.error("Error in submitMaterial:", error)
       toast.error("Error de conexión")
     } finally {
       setIsUploadingMaterial(false)
@@ -877,6 +854,9 @@ export default function CoursesPage() {
                 <TabsTrigger value="foros" className="px-8 font-black data-[state=active]:bg-primary data-[state=active]:text-white rounded-xl transition-all">
                   Foros Académicos
                 </TabsTrigger>
+                 <TabsTrigger value="evaluaciones" className="px-8 font-black data-[state=active]:bg-primary data-[state=active]:text-white rounded-xl transition-all">
+                  Evaluaciones
+                </TabsTrigger>
               </TabsList>
            </div>
 
@@ -898,7 +878,7 @@ export default function CoursesPage() {
                           value={newModuleName}
                           onChange={(e) => setNewModuleName(e.target.value)}
                         />
-                        <Button className="w-full h-14 rounded-2xl font-black text-lg group" onClick={addModule}>
+                        <Button className="w-full h-14 rounded-2xl font-black text-lg  group" onClick={addModule}>
                           Añadir Módulo
                           <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                         </Button>
@@ -1015,7 +995,7 @@ export default function CoursesPage() {
                                               <PlusCircle className="h-3 w-3" /> Agregar Archivo
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg"
-                                              onClick={() => openEditMaterial(clase)}>
+                                              onClick={() => openEditMaterial({ ...clase, idModulo: modulo.idModulo })}>
                                               <Pencil className="h-4 w-4" />
                                             </Button>
                                             
@@ -1211,7 +1191,7 @@ export default function CoursesPage() {
                        
                        <div className="space-y-5">
                           {isEditingForo && (
-                            <Button variant="outline" className="w-full rounded-xl border-dashed h-10 text-xs font-bold" onClick={() => { setIsEditingForo(false); setNewForo({titulo:"", temaDiscusion:"", descripcion:""}); }}>
+                            <Button variant="outline" className="w-full rounded-xl border-dashed h-10 text-xs bg-card border" onClick={() => { setIsEditingForo(false); setNewForo({titulo:"", temaDiscusion:"", descripcion:""}); }}>
                               Cancelar Edición
                             </Button>
                           )}
@@ -1251,6 +1231,11 @@ export default function CoursesPage() {
 
               </div>
            </TabsContent>
+           <TabsContent value="evaluaciones" className="space-y-8 mt-0 animate-in slide-in-from-right-4 duration-500">
+              <div className="grid lg:grid-cols-12 gap-10">
+              </div>
+           </TabsContent>
+
         </Tabs>
 
         {/* Modal de Aportes */}
@@ -1258,6 +1243,7 @@ export default function CoursesPage() {
           <DialogContent className="sm:max-w-xl bg-card rounded-[32px] p-6 shadow-2xl border border-border/40">
             <DialogHeader>
               <DialogTitle className="text-2xl font-black text-foreground">Aportes del Foro</DialogTitle>
+              <DialogDescription className="text-xs font-medium text-slate-500">Visualiza y gestiona las participaciones en este foro</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 my-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                {aportes.length === 0 ? (
@@ -1312,292 +1298,294 @@ export default function CoursesPage() {
         </Dialog>
         {/* ── Modal Añadir Material ───────────────────────────────────────────── */}
         <Dialog open={isMaterialDialogOpen} onOpenChange={(open) => { setIsMaterialDialogOpen(open); if (!open) setEditingMaterialId(null) }}>
-          <DialogContent className="sm:max-w-lg rounded-[32px] p-8 border border-border/40 shadow-2xl bg-card">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-black">
-                {editingMaterialId ? "Editar Material" : "Añadir Material"}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-5 mt-4">
-              {/* Material Count Info */}
-              {!editingMaterialId && materialModuloId && (
-                <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
-                  <p className="text-sm font-bold text-foreground mb-2">Materiales actuales en este módulo:</p>
-                  <div className="flex gap-4 text-xs">
-                    {(() => {
-                      const modulo = contentModules.find(m => m.idModulo === materialModuloId)
-                      if (!modulo?.materiales) return null
-                      
-                      const videoCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
-                      const pdfCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'PDF').length
-                      const docCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'DOC').length
-                      const linkCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'LINK').length
-                      
-                      return (
-                        <>
-                          <span className={`px-2 py-1 rounded-lg ${videoCount > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
-                            📹 Video: {videoCount}/1
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-red-100 text-red-700">
-                            📄 PDF: {pdfCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-700">
-                            📝 Doc: {docCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-purple-100 text-purple-700">
-                            🔗 Link: {linkCount} (∞)
-                          </span>
-                        </>
-                      )
-                    })()}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">
-                    📹 Video limitado a 1 por módulo | 📄 PDF, 📝 Documentos, 🔗 Enlaces sin límite
-                  </p>
-                </div>
-              )}
-
-              {/* Título */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                  Título del recurso
-                </label>
-                <Input
-                  placeholder="Ej. Introducción a React Hooks"
-                  className="h-12 rounded-2xl bg-muted/30 border-0 font-bold"
-                  value={materialForm.titulo}
-                  onChange={e => setMaterialForm(p => ({ ...p, titulo: e.target.value }))}
-                />
-              </div>
-
-              {/* Tipo */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                  Tipo de material
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { key: "VIDEO", icon: <Video className="h-4 w-4" />,    label: "Video"    },
-                    { key: "PDF",   icon: <File  className="h-4 w-4" />,    label: "PDF"      },
-                    { key: "DOC",   icon: <FileText className="h-4 w-4" />, label: "Doc"      },
-                    { key: "LINK",  icon: <LinkIcon  className="h-4 w-4" />, label: "Link"   },
-                  ].map(({ key, icon, label }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      disabled={!!editingMaterialId}
-                      onClick={() => setMaterialForm(p => ({ ...p, tipoMaterial: key, file: null, urlMaterial: "", videoMode: "file" as "file" | "link" }))}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all text-xs font-bold
-                        ${materialForm.tipoMaterial === key
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}
-                        ${editingMaterialId ? "opacity-60 cursor-not-allowed" : ""}`}
-                    >
-                      {icon}
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                {editingMaterialId && (
-                  <p className="text-[10px] text-muted-foreground font-medium mt-1">
-                    El tipo no se puede cambiar al editar. Para cambiar el archivo, elimina y crea uno nuevo.
-                  </p>
-                )}
-              </div>
-
-              {/* Contenido según tipo */}
-              {materialForm.tipoMaterial === "VIDEO" && (
-                <div className="space-y-3">
-                  {/* Selector de modo */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "file" }))}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all text-xs font-bold
-                        ${(materialForm as any).videoMode !== "link"
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
-                    >
-                      <Video className="h-4 w-4" /> Subir archivo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "link" }))}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all text-xs font-bold
-                        ${(materialForm as any).videoMode === "link"
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
-                    >
-                      <LinkIcon className="h-4 w-4" /> Link externo
-                    </button>
-                  </div>
-
-                  {/* Subir archivo de video — solo en modo CREAR */}
-                  {(materialForm as any).videoMode !== "link" && !editingMaterialId && (
-                    <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all group bg-muted/20">
-                      <input
-                        type="file"
-                        accept="video/mp4,video/webm,video/ogg,video/avi,video/mov,.mp4,.webm,.ogg,.avi,.mov"
-                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                        onChange={e => {
-                          const f = e.target.files?.[0] || null
-                          setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
-                        }}
-                      />
-                      {materialForm.file ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                            <Video className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-bold text-sm text-foreground truncate max-w-[200px]">
-                              {materialForm.file.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {(materialForm.file.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={e => { e.stopPropagation(); setMaterialForm(p => ({ ...p, file: null, urlMaterial: "" })) }}
-                            className="ml-auto text-rose-400 hover:text-rose-600"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto group-hover:bg-blue-500/10 transition-colors">
-                            <Video className="h-5 w-5 text-muted-foreground group-hover:text-blue-600" />
-                          </div>
-                          <p className="text-sm font-bold text-foreground">Arrastra o haz clic para subir</p>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                            MP4, WEBM, OGG, AVI, MOV
-                          </p>
-                        </div>
-                      )}
+          <DialogContent className="sm:max-w-3xl  p-0 border-none shadow-2xl bg-card overflow-hidden">
+            <div className="bg-slate-900 px-6 py-4  text-white flex items-center justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-2xl opacity-50" />
+                <div className="relative z-10 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
+                        <PlusCircle className="h-6 w-6 text-primary" />
                     </div>
-                  )}
-
-                  {/* En modo edición con archivo físico: solo muestra aviso */}
-                  {(materialForm as any).videoMode !== "link" && editingMaterialId && (
-                    <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
-                      <div className="h-9 w-9 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                        <Video className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">Archivo de video guardado</p>
-                        <p className="text-[11px] text-muted-foreground">Solo puedes editar el título. Para cambiar el archivo, elimina y crea uno nuevo.</p>
-                      </div>
+                    <div>
+                        <DialogTitle asChild>
+                            <h2 className="text-xl font-black tracking-tight">
+                                {!!editingMaterialId ? "Editar Recurso Académico" : "Nuevo Recurso Académico"}
+                            </h2>
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-400 text-xs font-medium">
+                            Configura el material de estudio para este módulo
+                        </DialogDescription>
                     </div>
-                  )}
-
-                  {/* Link externo (YouTube, Vimeo, etc.) */}
-                  {(materialForm as any).videoMode === "link" && (
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                        URL de YouTube / Vimeo / otro
-                      </label>
-                      <Input
-                        placeholder="https://youtube.com/watch?v=..."
-                        className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
-                        value={materialForm.urlMaterial}
-                        onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
-                      />
-                    </div>
-                  )}
                 </div>
-              )}
-
-              {materialForm.tipoMaterial === "LINK" && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                    URL del enlace
-                  </label>
-                  <Input
-                    placeholder="https://ejemplo.com/recurso"
-                    className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
-                    value={materialForm.urlMaterial}
-                    onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
-                  />
-                </div>
-              )}
-
-              {(materialForm.tipoMaterial === "PDF" || materialForm.tipoMaterial === "DOC") && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                    Subir archivo ({materialForm.tipoMaterial})
-                  </label>
-                  <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all group bg-muted/20">
-                    <input
-                      type="file"
-                      accept={materialForm.tipoMaterial === "PDF" ? ".pdf" : ".doc,.docx,.ppt,.pptx,.xls,.xlsx"}
-                      className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                      onChange={e => {
-                        const f = e.target.files?.[0] || null
-                        setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
-                      }}
-                    />
-                    {materialForm.file ? (
-                      <div className="flex items-center justify-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <File className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="text-left">
-                          <p className="font-bold text-sm text-foreground truncate max-w-[220px]">
-                            {materialForm.file.name}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {(materialForm.file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={e => { e.stopPropagation(); setMaterialForm(p => ({ ...p, file: null, urlMaterial: "" })) }}
-                          className="ml-auto text-rose-400 hover:text-rose-600"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto group-hover:bg-primary/10 transition-colors">
-                          <Paperclip className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
-                        </div>
-                        <p className="text-sm font-bold text-foreground">Arrastra o haz clic para subir</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          {materialForm.tipoMaterial === "PDF" ? "Solo archivos PDF" : "DOC, DOCX, PPT, XLS"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={() => setIsMaterialDialogOpen(false)}>
+                    <X className="h-5 w-5" />
+                </Button>
             </div>
 
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                className="flex-1 h-12 rounded-2xl font-bold border-2"
-                onClick={() => setIsMaterialDialogOpen(false)}
-                disabled={isUploadingMaterial}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="flex-1 h-12 rounded-2xl font-black shadow-lg"
-                onClick={submitMaterial}
-                disabled={isUploadingMaterial}
-              >
-                {isUploadingMaterial ? (
-                  <span className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {editingMaterialId ? "Guardando..." : "Subiendo..."}
-                  </span>
-                ) : editingMaterialId ? "Guardar Cambios" : "Guardar Material"}
-              </Button>
+            <div className="p-8">
+                <div className="grid md:grid-cols-2 gap-5">
+                    {/* COLUMNA IZQUIERDA: CONFIGURACIÓN Y TIPO */}
+                    <div className="space-y-4">
+                        {/* Info de Límites */}
+                        {!editingMaterialId && materialModuloId && (
+                            <div className="bg-primary/5 rounded-3xl p-5 border border-primary/10 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform">
+                                    <LayoutGrid className="h-12 w-12" />
+                                </div>
+                                <h4 className="text-[11px] font-black uppercase tracking-widest text-primary mb-3">Estado del Módulo</h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {(() => {
+                                        const modulo = contentModules.find(m => m.idModulo === materialModuloId)
+                                        if (!modulo?.materiales) return null
+                                        const videoCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
+                                        const otherCount = modulo.materiales.filter((m: any) => m.tipoMaterial !== 'VIDEO').length
+                                        
+                                        return (
+                                            <>
+                                                <div className={`p-3 rounded-2xl flex flex-col gap-1 ${videoCount > 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-100'}`}>
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Videos</span>
+                                                    <span className={`text-sm font-black ${videoCount > 0 ? 'text-amber-600' : 'text-slate-700'}`}>{videoCount} / 1</span>
+                                                </div>
+                                                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-1">
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Otros</span>
+                                                    <span className="text-sm font-black text-emerald-600">{otherCount} / ∞</span>
+                                                </div>
+                                            </>
+                                        )
+                                    })()}
+                                </div>
+                                <p className="text-[9px] text-slate-500 mt-3 font-medium leading-tight">
+                                    Recuerda: Solo se permite <b className="text-slate-900">1 video principal</b> por módulo. PDFs y enlaces son ilimitados.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Selección de Tipo */}
+                        <div className="space-y-4">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                Tipo de Recurso
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { key: "VIDEO", icon: <Video className="h-5 w-5" />, label: "Video", color: "blue" },
+                                    { key: "PDF", icon: <File className="h-5 w-5" />, label: "PDF", color: "red" },
+                                    { key: "DOC", icon: <FileText className="h-5 w-5" />, label: "Documento", color: "amber" },
+                                    { key: "LINK", icon: <LinkIcon className="h-5 w-5" />, label: "Enlace", color: "purple" },
+                                ].map(({ key, icon, label, color }) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        disabled={!!editingMaterialId}
+                                        onClick={() => setMaterialForm(p => ({ ...p, tipoMaterial: key, file: null, urlMaterial: "", videoMode: "file" }))}
+                                        className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left group
+                                            ${materialForm.tipoMaterial === key
+                                                ? `border-primary bg-primary/5 ring-4 ring-primary/5`
+                                                : "border-slate-100 bg-slate-50/50 text-slate-500 hover:border-slate-200 hover:bg-slate-50"}
+                                            ${editingMaterialId ? "opacity-50 cursor-not-allowed" : ""}`}
+                                    >
+                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors
+                                            ${materialForm.tipoMaterial === key ? 'bg-primary text-white' : 'bg-white text-slate-400 group-hover:text-slate-600 shadow-sm'}`}>
+                                            {icon}
+                                        </div>
+                                        <div>
+                                            <p className={`text-xs font-black ${materialForm.tipoMaterial === key ? 'text-primary' : 'text-slate-600'}`}>{label}</p>
+                                            <p className="text-[9px] font-medium opacity-60">Seleccionar</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* COLUMNA DERECHA: DATOS Y CONTENIDO */}
+                    <div className="space-y-4">
+                        {/* Título Input */}
+                        <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                Título del Recurso
+                            </label>
+                            <Input
+                                placeholder="Ej: Fundamentos de Arquitectura"
+                                className="h-14 rounded-2xl bg-slate-50 border-0 focus-visible:ring-primary/20 focus-visible:bg-white text-lg px-5 shadow-inner"
+                                value={materialForm.titulo}
+                                onChange={e => setMaterialForm(p => ({ ...p, titulo: e.target.value }))}
+                            />
+                        </div>
+
+                        {/* Área de Carga / Input */}
+                        <div className="space-y-4 pt-2">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                {materialForm.tipoMaterial === "LINK" ? "Enlace Externo" : "Contenido del Archivo"}
+                            </label>
+
+                            {/* Especial para VIDEO: Subida o Link */}
+                            {materialForm.tipoMaterial === "VIDEO" && (
+                                <div className="space-y-4">
+                                    <div className="flex bg-slate-100 p-1.5 rounded-2xl">
+                                        <button
+                                            type="button"
+                                            onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "file" }))}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                                                ${(materialForm as any).videoMode !== "link" ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                        >
+                                            <Video className="h-3 w-3" /> Subir MP4
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "link" }))}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                                                ${(materialForm as any).videoMode === "link" ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                        >
+                                            <LinkIcon className="h-3 w-3" /> YouTube/Link
+                                        </button>
+                                    </div>
+
+                                    {materialForm.videoMode !== "link" && !!!editingMaterialId && (
+                                        <div className="relative border-2 border-dashed border-slate-200 hover:border-primary/50 rounded-3xl p-8 text-center transition-all bg-slate-50/50 group">
+                                            <input
+                                                type="file"
+                                                accept="video/*"
+                                                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                onChange={e => {
+                                                    const f = e.target.files?.[0] || null
+                                                    setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
+                                                }}
+                                            />
+                                            {materialForm.file ? (
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                                        <Video className="h-8 w-8 text-primary" />
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <p className="font-bold text-sm text-slate-900 truncate max-w-[240px]">{materialForm.file.name}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{(materialForm.file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    <div className="h-14 w-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                                        <Video className="h-6 w-6 text-slate-400 group-hover:text-primary" />
+                                                    </div>
+                                                    <p className="text-xs font-bold text-slate-600">Arrastra tu video aquí</p>
+                                                    <p className="text-[9px] text-slate-400 uppercase tracking-widest">MP4, WEBM (Max 50MB)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {(materialForm.videoMode === "link" || !!editingMaterialId) && (
+                                        <div className="space-y-3">
+                                            <Input
+                                                placeholder="https://youtube.com/watch?v=..."
+                                                className="h-14 rounded-2xl bg-slate-50 border-0 font-medium px-5 shadow-inner"
+                                                value={materialForm.urlMaterial}
+                                                onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
+                                                disabled={!!editingMaterialId && materialForm.videoMode !== "link"}
+                                            />
+                                            {!!editingMaterialId && materialForm.videoMode !== "link" && (
+                                                <div className="flex items-center gap-2 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                                                    <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                                                    <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Archivo de video protegido (Solo lectura)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Otros Tipos: PDF, DOC, LINK */}
+                            {materialForm.tipoMaterial !== "VIDEO" && (
+                                <div className="space-y-4">
+                                    {materialForm.tipoMaterial === "LINK" ? (
+                                        <Input
+                                            placeholder="https://ejemplo.com/recurso-extra"
+                                            className="h-14 rounded-2xl bg-slate-50 border-0 font-medium px-5 shadow-inner"
+                                            value={materialForm.urlMaterial}
+                                            onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
+                                        />
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className={`relative border-2 border-dashed rounded-3xl p-10 text-center transition-all bg-slate-50/50 group
+                                                ${editingMaterialId ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:border-primary/50'}`}>
+                                                {!editingMaterialId && (
+                                                    <input
+                                                        type="file"
+                                                        accept={materialForm.tipoMaterial === "PDF" ? ".pdf" : ".doc,.docx,.ppt,.xls"}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                        onChange={e => {
+                                                            const f = e.target.files?.[0] || null
+                                                            setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
+                                                        }}
+                                                    />
+                                                )}
+                                                {materialForm.file || (editingMaterialId && materialForm.urlMaterial) ? (
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        <div className={`h-16 w-16 rounded-2xl flex items-center justify-center
+                                                            ${materialForm.tipoMaterial === 'PDF' ? 'bg-red-100 text-red-500' : 'bg-blue-100 text-blue-500'}`}>
+                                                            <File className="h-8 w-8" />
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="font-bold text-sm text-slate-900 truncate max-w-[240px]">
+                                                                {materialForm.file ? materialForm.file.name : materialForm.urlMaterial}
+                                                            </p>
+                                                            <p className="text-[10px] font-black text-slate-400 mt-1 uppercase">
+                                                                {materialForm.file ? `${(materialForm.file.size / 1024 / 1024).toFixed(2)} MB` : 'Archivo Guardado'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        <div className="h-16 w-16 rounded-3xl bg-white shadow-md border border-slate-100 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                                            <Paperclip className="h-7 w-7 text-slate-400 group-hover:text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-black text-slate-700">Subir {materialForm.tipoMaterial}</p>
+                                                            <p className="text-[10px] text-slate-400 mt-1 font-medium tracking-wide">Haz clic o arrastra para cargar</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {editingMaterialId && (
+                                                <div className="flex items-center gap-2 p-4 bg-slate-100 rounded-2xl border border-slate-200">
+                                                    <div className="h-2 w-2 rounded-full bg-slate-400" />
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">El archivo no se puede cambiar en edición</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* FOOTER ACCIONES */}
+                <div className="flex items-center gap-4 pt-8  border-slate-100">
+                    <Button
+                        variant="ghost"
+                        className="h-14 px-8 rounded-2xl bg-card font-bold border text-slate-500 "
+                        onClick={() => setIsMaterialDialogOpen(false)}
+                        disabled={isUploadingMaterial}
+                    >
+                        Descartar
+                    </Button>
+                    <Button
+                        className="flex-1 h-14 rounded-2xl font-black text-lg group relative overflow-hidden"
+                        onClick={submitMaterial}
+                        disabled={isUploadingMaterial}
+                    >
+                        {isUploadingMaterial ? (
+                            <span className="flex items-center gap-3">
+                                <div className="h-5 w-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                                {editingMaterialId ? "Procesando..." : "Subiendo recurso..."}
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                {editingMaterialId ? "Guardar Cambios" : "Confirmar y Añadir"}
+                                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </span>
+                        )}
+                    </Button>
+                </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -1609,56 +1597,12 @@ export default function CoursesPage() {
               <DialogTitle className="text-2xl font-black">
                 Agregar Archivo a la Clase
               </DialogTitle>
+              <DialogDescription className="text-xs font-medium text-slate-500">
+                Añade recursos complementarios a esta lección
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-5 mt-4">
-              {/* Info de archivos actuales en la clase */}
-              {selectedClaseId && (
-                <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
-                  <p className="text-sm font-bold text-foreground mb-2">Archivos en esta clase:</p>
-                  <div className="flex gap-4 text-xs">
-                    {(() => {
-                      // Buscar la clase seleccionada
-                      let claseEncontrada = null
-                      for (const modulo of contentModules) {
-                        if (modulo.materiales) {
-                          claseEncontrada = modulo.materiales.find((m: any) => m.idMaterial === selectedClaseId)
-                          if (claseEncontrada) break
-                        }
-                      }
-                      
-                      if (!claseEncontrada?.archivos) {
-                        return <span className="text-gray-500">Sin archivos</span>
-                      }
-                      
-                      const videoCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'VIDEO').length
-                      const pdfCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'PDF').length
-                      const docCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'DOC').length
-                      const linkCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'LINK').length
-                      
-                      return (
-                        <>
-                          <span className={`px-2 py-1 rounded-lg ${videoCount > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
-                            📹 Video: {videoCount}/1
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-red-100 text-red-700">
-                            📄 PDF: {pdfCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-700">
-                            📝 Doc: {docCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-purple-100 text-purple-700">
-                            🔗 Link: {linkCount} (∞)
-                          </span>
-                        </>
-                      )
-                    })()}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">
-                    📹 Video limitado a 1 por clase | 📄 PDF, 📝 Documentos, 🔗 Enlaces sin límite
-                  </p>
-                </div>
-              )}
 
               {/* Título */}
               <div className="space-y-2">
@@ -1667,7 +1611,7 @@ export default function CoursesPage() {
                 </label>
                 <Input
                   placeholder="Ej. Guía de ejercicios"
-                  className="h-12 rounded-2xl bg-muted/30 border-0 font-bold"
+                  className="h-12 rounded-2xl bg-muted/30 border-0"
                   value={archivoForm.titulo}
                   onChange={e => setArchivoForm(p => ({ ...p, titulo: e.target.value }))}
                 />
@@ -1771,7 +1715,7 @@ export default function CoursesPage() {
             <div className="flex gap-3 mt-6">
               <Button
                 variant="outline"
-                className="flex-1 h-12 rounded-2xl font-bold border-2"
+                className="flex-1 h-12 rounded-2xl border  bg-card"
                 onClick={() => setIsArchivoDialogOpen(false)}
                 disabled={isUploadingArchivo}
               >
@@ -1881,10 +1825,11 @@ export default function CoursesPage() {
                       {course.estCurso === "A" || course.estCurso === true ? "ACTIVO" : "INACTIVO"}
                     </Badge>
                   </div>
+
                 </div>
 
                 {/* Header */}
-                <CardHeader className="pt-1 px-6 pb-0">
+                <CardHeader className="py-2 px-6 pb-0">
                   <div className="flex gap-2 mb-2">
                     <Badge variant="outline" className="text-[10px]">ID: {course.idCurso}</Badge>
                     <Badge
@@ -1903,6 +1848,7 @@ export default function CoursesPage() {
                     {course.descripcion || "Sin descripción"}
                   </CardDescription>
                 </CardHeader>
+
 
                 {/* Footer */}
                 <CardFooter className="px-6 pb-6 flex justify-between items-center bg-slate-50/50 rounded-b-3xl mt-2 pt-4">
@@ -1923,39 +1869,71 @@ export default function CoursesPage() {
 
           {/* Pagination UI */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 pb-10">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="rounded-xl"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              
-              <div className="flex gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    onClick={() => setCurrentPage(page)}
-                    className="h-10 w-10 rounded-xl font-bold"
-                  >
-                    {page}
-                  </Button>
-                ))}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-border/30 bg-card/50 rounded-b-3xl mb-10">
+              <div className="text-sm text-muted-foreground font-medium">
+                Mostrando{" "}
+                <span className="font-bold text-foreground">
+                  {(currentPage - 1) * itemsPerPage + 1}
+                </span>
+                {" "}–{" "}
+                <span className="font-bold text-foreground">
+                  {Math.min(currentPage * itemsPerPage, filteredCourses.length)}
+                </span>
+                {" "}de{" "}
+                <span className="font-bold text-foreground">{filteredCourses.length}</span>
+                {" "}cursos
               </div>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="rounded-xl"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) pageNum = i + 1;
+                    else if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                    else pageNum = currentPage - 2 + i;
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={cn(
+                          "w-10 h-10 rounded-xl font-bold transition-all",
+                          currentPage === pageNum 
+                            ? "bg-primary text-primary-foreground shadow-md border-primary" 
+                            : "border-border/50 bg-card hover:bg-muted/50"
+                        )}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-xl font-bold h-10 border-border/50 bg-card hover:bg-muted/50 disabled:opacity-50 transition-all"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
           )}
 

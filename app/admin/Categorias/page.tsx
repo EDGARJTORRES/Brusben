@@ -297,7 +297,7 @@ export default function CategoriasPage() {
             {paginatedCategorias.map((categoria) => (
               <div 
                 key={categoria.catId} 
-                className="group flex flex-col md:flex-row md:items-center justify-between gap-4 py-3 px-4 rounded-xl bg-card border hover:border-primary/20 hover:shadow-sm hover:bg-muted/30 transition-all duration-300"
+                className="group flex flex-col md:flex-row md:items-center justify-between gap-4 py-3 px-4 rounded-xl bg-card shadow-md dark:border border-0"
               >
                 {/* Info Izquierda */}
                 <div className="flex items-center gap-4 flex-1">
@@ -594,7 +594,7 @@ export default function CategoriasPage() {
               <Button
                 onClick={handleCloseModal}
                 variant="outline"
-                className="flex-1 rounded-xl h-11 font-bold"
+                className="h-11 px-8 rounded-2xl bg-card font-bold border text-slate-500 "
                 disabled={saving}
               >
                 Cancelar

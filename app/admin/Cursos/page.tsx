@@ -41,6 +41,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
@@ -425,23 +426,6 @@ export default function CoursesPage() {
   const [isUploadingArchivo, setIsUploadingArchivo] = useState(false)
   const [currentArchivos, setCurrentArchivos] = useState<any[]>([])
 
-  // Function to check material limits (para clases principales)
-  const checkMaterialLimits = (moduloId: number, tipoMaterial: string) => {
-    const modulo = contentModules.find(m => m.idModulo === moduloId)
-    if (!modulo?.materiales) return { canAdd: true }
-    
-    const materiales = modulo.materiales
-    const videoCount = materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
-    
-    if (tipoMaterial === 'VIDEO' && videoCount >= 1) {
-      return { 
-        canAdd: false, 
-        message: 'Solo se permite 1 video por clase. Elimina el video actual para agregar uno nuevo.' 
-      }
-    }
-    
-    return { canAdd: true }
-  }
 
   // Function to load files for a specific material
   const loadArchivosForMaterial = async (idMaterial: number) => {
@@ -643,14 +627,6 @@ export default function CoursesPage() {
       return
     }
 
-    // Validar límites solo para nuevos materiales
-    if (!editingMaterialId && materialModuloId) {
-      const limitCheck = checkMaterialLimits(materialModuloId, materialForm.tipoMaterial)
-      if (!limitCheck.canAdd) {
-        toast.error(limitCheck.message)
-        return
-      }
-    }
 
     setIsUploadingMaterial(true)
     try {
@@ -870,380 +846,387 @@ export default function CoursesPage() {
                 <TabsTrigger value="foros" className="px-8 font-black data-[state=active]:bg-primary data-[state=active]:text-white rounded-xl transition-all">
                   Foros Académicos
                 </TabsTrigger>
+                <TabsTrigger value="evaluaciones" className="px-8 font-black data-[state=active]:bg-primary data-[state=active]:text-white rounded-xl transition-all">
+                  Evaluaciones
+                </TabsTrigger>
               </TabsList>
            </div>
 
-           <TabsContent value="curricula" className="space-y-10 mt-0 animate-in slide-in-from-bottom-4 duration-500">
-              
-              <div className="grid lg:grid-cols-12 gap-10">
-                {/* Lado Derecho: Acciones y Sidebar */}
-                <div className="lg:col-span-4 space-y-8">
-                  <Card className="border-0 shadow-2xl rounded-[32px] overflow-hidden bg-slate-900 text-white p-8 relative">
-                      <div className="absolute top-0 right-0 p-6 opacity-10">
-                        <PlusCircle className="h-12 w-12" />
-                      </div>
-                      <h4 className="text-xl font-black mb-6 relative z-10 underline decoration-primary decoration-4 underline-offset-8">Nuevo Módulo</h4>
-                      <div className="space-y-4 relative z-10">
-                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nombre del Módulo</p>
-                        <Input 
-                          placeholder="Ej: Fundamentos Avanzados" 
-                          className="bg-white/10 border-white/10 text-white placeholder:text-slate-500 h-14 rounded-2xl focus:ring-primary"
-                          value={newModuleName}
-                          onChange={(e) => setNewModuleName(e.target.value)}
-                        />
-                        <Button className="w-full h-14 rounded-2xl font-black text-lg  group" onClick={addModule}>
-                          Añadir Módulo
-                          <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      </div>
-                  </Card>
-
-                  <div className="bg-primary/5 rounded-[32px] p-8 border border-primary/10">
-                      <h4 className="font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-tight text-sm">
-                        <BookOpen className="h-4 w-4" /> Tips del Administrador
-                      </h4>
-                      <ul className="space-y-4">
-                        <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
-                            <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">1</div>
-                            Organiza por orden lógico para mejorar la experiencia del estudiante.
-                        </li>
-                        <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
-                            <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">2</div>
-                            Combina videos y lecturas (PDF) para un aprendizaje interactivo.
-                        </li>
-                      </ul>
-                  </div>
-                </div>
-                {/* Lado Izquierdo: Lista de Módulos (Scrollable) */}
-                <div className="lg:col-span-8 space-y-6">
-                  <div className="flex items-center justify-between mb-2 pl-2">
-                      <h3 className="text-xl font-black text-foreground flex items-center gap-3">
-                        <LayoutGrid className="h-5 w-5 text-primary" />
-                        Módulos Estructurados
-                      </h3>
-                      <Badge variant="outline" className="font-bold">{contentModules.length} Módulos</Badge>
-                  </div>
-
-                  {isLoadingContent ? (
-                    <div className="grid gap-6">
-                        {[1,2].map(i => <div key={i} className="h-32 bg-card animate-pulse rounded-[32px] border" />)}
-                    </div>
-                  ) : (
-                    <div className="grid gap-6">
-                      {contentModules.map((modulo: any) => (
-                          <Card key={modulo.idModulo} className="border-border/40 shadow-xl   overflow-hidden group  transition-all">
-                            <div 
-                                  className="bg-card px-4 pb-2 flex items-center justify-between border-b border-border/40 cursor-pointer"
-                                  onClick={() => toggleModulo(modulo.idModulo)}
-                                >
-                                <div className="flex items-center gap-4">
-                                  <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors">
-                                      <GripVertical className="h-5 w-5" />
-                                  </div>
-                                  <h4 className="text-lg font-black text-foreground">{modulo.nombre}</h4>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex items-center gap-2">
-                                  <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-10 px-4 font-bold gap-2" onClick={() => openAddMaterial(modulo.idModulo)}>
-                                      <PlusCircle className="h-4 w-4" /> Clase
-                                  </Button>
-                                  {modulo.materiales && modulo.materiales.length > 0 && (
-                                    <Badge variant="secondary" className="text-xs font-bold">
-                                      {modulo.materiales.length} {modulo.materiales.length === 1 ? 'material' : 'materiales'}
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                  <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl">
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle className="text-2xl font-black">Eliminar Módulo</AlertDialogTitle>
-                                            <AlertDialogDescription className="text-slate-500 font-medium">
-                                              ¿Seguro que deseas eliminar <b>"{modulo.nombre}"</b>? Se borrarán todos los materiales contenidos en él.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel className="rounded-2xl font-bold">Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => deleteModulo(modulo.idModulo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Eliminar Módulo</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                  </AlertDialog>
-
-                                </div>
-                            </div>
-                            {openModuloId === modulo.idModulo && (
-                              <CardContent className="p-6 bg-muted/10">
-                                {modulo.materiales?.length > 0 ? (
-                                  <div className="grid gap-4">
-                                    {modulo.materiales.map((clase: any) => (
-                                      <div key={clase.idMaterial} className="bg-background rounded-2xl border border-border/40 overflow-hidden">
-                                        {/* Header de la clase */}
-                                        <div className="flex items-center justify-between p-4 bg-muted/30 border-b border-border/40">
-                                          <div className="flex items-center gap-3">
-                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                                                clase.tipoMaterial === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 
-                                                clase.tipoMaterial === 'PDF' ? 'bg-red-500/10 text-red-600' :
-                                                clase.tipoMaterial === 'DOC' ? 'bg-amber-500/10 text-amber-600' :
-                                                'bg-purple-500/10 text-purple-600'
-                                              }`}>
-                                              {clase.tipoMaterial === 'VIDEO' ? <Video className="h-5 w-5" /> : 
-                                               clase.tipoMaterial === 'PDF' ? <File className="h-5 w-5" /> :
-                                               clase.tipoMaterial === 'DOC' ? <FileText className="h-5 w-5" /> :
-                                               <LinkIcon className="h-5 w-5" />}
-                                            </div>
-                                            <div>
-                                              <p className="font-bold text-sm text-foreground">{clase.titulo}</p>
-                                              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                                                {clase.tipoMaterial} • {clase.archivos?.length || 0} archivos
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-8 px-3 font-bold gap-1 text-xs" onClick={() => openAddArchivo(clase.idMaterial)}>
-                                              <PlusCircle className="h-3 w-3" /> Agregar Archivo
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg"
-                                              onClick={() => openEditMaterial(clase)}>
-                                              <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            
-                                            <AlertDialog>
-                                              <AlertDialogTrigger asChild>
-                                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg">
-                                                    <Trash2 className="h-4 w-4" />
-                                                  </Button>
-                                              </AlertDialogTrigger>
-                                              <AlertDialogContent className="rounded-3xl">
-                                                  <AlertDialogHeader>
-                                                    <AlertDialogTitle className="font-black">Eliminar Clase</AlertDialogTitle>
-                                                    <AlertDialogDescription>¿Deseas eliminar la clase <b>{clase.titulo}</b> y todos sus archivos?</AlertDialogDescription>
-                                                  </AlertDialogHeader>
-                                                  <AlertDialogFooter>
-                                                    <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => deleteMaterial(clase.idMaterial)} className="rounded-xl bg-destructive font-bold">Eliminar</AlertDialogAction>
-                                                  </AlertDialogFooter>
-                                              </AlertDialogContent>
-                                            </AlertDialog>
-                                          </div>
-                                        </div>
-                                        
-                                        {/* Archivos dentro de la clase */}
-                                        <div className="p-4">
-                                          {clase.archivos && clase.archivos.length > 0 ? (
-                                            <div className="grid gap-2">
-                                              {clase.archivos.map((archivo: any) => (
-                                                <div key={archivo.idArchivo} className="flex items-center justify-between p-3 bg-muted/20 rounded-xl border border-border/30 group/archivo">
-                                                  <div className="flex items-center gap-3">
-                                                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                                                      archivo.tipoArchivo === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 
-                                                      archivo.tipoArchivo === 'PDF' ? 'bg-red-500/10 text-red-600' :
-                                                      archivo.tipoArchivo === 'DOC' ? 'bg-amber-500/10 text-amber-600' :
-                                                      'bg-purple-500/10 text-purple-600'
-                                                    }`}>
-                                                      {archivo.tipoArchivo === 'VIDEO' ? <Video className="h-4 w-4" /> : 
-                                                       archivo.tipoArchivo === 'PDF' ? <File className="h-4 w-4" /> :
-                                                       archivo.tipoArchivo === 'DOC' ? <FileText className="h-4 w-4" /> :
-                                                       <LinkIcon className="h-4 w-4" />}
-                                                    </div>
-                                                    <div>
-                                                      <p className="font-medium text-xs text-foreground">{archivo.titulo}</p>
-                                                      <p className="text-[9px] text-muted-foreground uppercase">{archivo.tipoArchivo}</p>
-                                                    </div>
-                                                  </div>
-                                                  <div className="flex items-center gap-1">
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary rounded-lg" onClick={() => openMaterial(archivo.urlArchivo.startsWith('http') ? archivo.urlArchivo : `http://localhost:3000${archivo.urlArchivo}`)}>
-                                                      <LinkIcon className="h-3 w-3" />
-                                                    </Button>
-                                                    <AlertDialog>
-                                                      <AlertDialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-rose-300 hover:text-rose-600 rounded-lg opacity-0 group-hover/archivo:opacity-100 transition-opacity">
-                                                          <Trash2 className="h-3 w-3" />
-                                                        </Button>
-                                                      </AlertDialogTrigger>
-                                                      <AlertDialogContent className="rounded-3xl">
-                                                        <AlertDialogHeader>
-                                                          <AlertDialogTitle className="font-black">Eliminar Archivo</AlertDialogTitle>
-                                                          <AlertDialogDescription>¿Deseas eliminar <b>{archivo.titulo}</b>?</AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                          <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
-                                                          <AlertDialogAction onClick={() => deleteArchivo(archivo.idArchivo)} className="rounded-xl bg-destructive font-bold">Eliminar</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                      </AlertDialogContent>
-                                                    </AlertDialog>
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          ) : (
-                                            <div className="text-center py-4 border-2 border-dashed border-border/30 rounded-xl">
-                                              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Sin archivos en esta clase</p>
-                                              <p className="text-[10px] text-muted-foreground mt-1">Agrega PDFs, documentos o enlaces</p>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="text-center py-6 border-2 border-dashed border-border/50 rounded-2xl bg-background/50">
-                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aún no hay materiales en este módulo</p>
-                                  </div>
-                                )}
-                            </CardContent>
-                            )}
-                          </Card>
-                      ))}
-
-                      {contentModules.length === 0 && (
-                        <div className="bg-card rounded-[40px] p-20 text-center border-2 border-dashed border-border shadow-inner">
-                            <div className="h-24 w-24 bg-muted rounded-[32px] flex items-center justify-center mx-auto mb-6">
-                              <PlusCircle className="h-10 w-10 text-muted-foreground" />
-                            </div>
-                            <h4 className="text-xl font-bold text-foreground mb-2">Comienza tu currícula</h4>
-                            <p className="text-muted-foreground max-w-sm mx-auto">Añade tu primer módulo a la derecha para empezar a organizar el contenido del curso.</p>
+            <TabsContent value="curricula" className="space-y-10 mt-0 animate-in slide-in-from-bottom-4 duration-500">
+                
+                <div className="grid lg:grid-cols-12 gap-10">
+                  {/* Lado Derecho: Acciones y Sidebar */}
+                  <div className="lg:col-span-4 space-y-8">
+                    <Card className="border-0 shadow-2xl rounded-[32px] overflow-hidden bg-slate-900 text-white p-8 relative">
+                        <div className="absolute top-0 right-0 p-6 opacity-10">
+                          <PlusCircle className="h-12 w-12" />
                         </div>
-                      )}
+                        <h4 className="text-xl font-black mb-6 relative z-10 underline decoration-primary decoration-4 underline-offset-8">Nuevo Módulo</h4>
+                        <div className="space-y-4 relative z-10">
+                          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Nombre del Módulo</p>
+                          <Input 
+                            placeholder="Ej: Fundamentos Avanzados" 
+                            className="bg-white/10 border-white/10 text-white placeholder:text-slate-500 h-14 rounded-2xl focus:ring-primary"
+                            value={newModuleName}
+                            onChange={(e) => setNewModuleName(e.target.value)}
+                          />
+                          <Button className="w-full h-14 rounded-2xl font-black text-lg  group" onClick={addModule}>
+                            Añadir Módulo
+                            <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          </Button>
+                        </div>
+                    </Card>
+
+                    <div className="bg-primary/5 rounded-[32px] p-8 border border-primary/10">
+                        <h4 className="font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-tight text-sm">
+                          <BookOpen className="h-4 w-4" /> Tips del Administrador
+                        </h4>
+                        <ul className="space-y-4">
+                          <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
+                              <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">1</div>
+                              Organiza por orden lógico para mejorar la experiencia del estudiante.
+                          </li>
+                          <li className="flex gap-3 text-xs font-medium text-slate-600 leading-relaxed">
+                              <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">2</div>
+                              Combina videos y lecturas (PDF) para un aprendizaje interactivo.
+                          </li>
+                        </ul>
                     </div>
-                  )}
+                  </div>
+                  {/* Lado Izquierdo: Lista de Módulos (Scrollable) */}
+                  <div className="lg:col-span-8 space-y-6">
+                    <div className="flex items-center justify-between mb-2 pl-2">
+                        <h3 className="text-xl font-black text-foreground flex items-center gap-3">
+                          <LayoutGrid className="h-5 w-5 text-primary" />
+                          Módulos Estructurados
+                        </h3>
+                        <Badge variant="outline" className="font-bold">{contentModules.length} Módulos</Badge>
+                    </div>
+
+                    {isLoadingContent ? (
+                      <div className="grid gap-6">
+                          {[1,2].map(i => <div key={i} className="h-32 bg-card animate-pulse rounded-[32px] border" />)}
+                      </div>
+                    ) : (
+                      <div className="grid gap-6">
+                        {contentModules.map((modulo: any) => (
+                            <Card key={modulo.idModulo} className="border-border/40 shadow-xl   overflow-hidden group  transition-all">
+                              <div 
+                                    className="bg-card px-4 pb-2 flex items-center justify-between border-b border-border/40 cursor-pointer"
+                                    onClick={() => toggleModulo(modulo.idModulo)}
+                                  >
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground group-hover:text-primary transition-colors">
+                                        <GripVertical className="h-5 w-5" />
+                                    </div>
+                                    <h4 className="text-lg font-black text-foreground">{modulo.nombre}</h4>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-10 px-4 font-bold gap-2" onClick={() => openAddMaterial(modulo.idModulo)}>
+                                        <PlusCircle className="h-4 w-4" /> Clase
+                                    </Button>
+                                    {modulo.materiales && modulo.materiales.length > 0 && (
+                                      <Badge variant="secondary" className="text-xs font-bold">
+                                        {modulo.materiales.length} {modulo.materiales.length === 1 ? 'material' : 'materiales'}
+                                      </Badge>
+                                    )}
+                                  </div>
+
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl">
+                                              <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
+                                          <AlertDialogHeader>
+                                              <AlertDialogTitle className="text-2xl font-black">Eliminar Módulo</AlertDialogTitle>
+                                              <AlertDialogDescription className="text-slate-500 font-medium">
+                                                ¿Seguro que deseas eliminar <b>"{modulo.nombre}"</b>? Se borrarán todos los materiales contenidos en él.
+                                              </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                              <AlertDialogCancel className="rounded-2xl font-bold">Cancelar</AlertDialogCancel>
+                                              <AlertDialogAction onClick={() => deleteModulo(modulo.idModulo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Eliminar Módulo</AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+
+                                  </div>
+                              </div>
+                              {openModuloId === modulo.idModulo && (
+                                <CardContent className="p-6 bg-muted/10">
+                                  {modulo.materiales?.length > 0 ? (
+                                    <div className="grid gap-4">
+                                      {modulo.materiales.map((clase: any) => (
+                                        <div key={clase.idMaterial} className="bg-background rounded-2xl border border-border/40 overflow-hidden">
+                                          {/* Header de la clase */}
+                                          <div className="flex items-center justify-between p-4 bg-muted/30 border-b border-border/40">
+                                            <div className="flex items-center gap-3">
+                                              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                                                  clase.tipoMaterial === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 
+                                                  clase.tipoMaterial === 'PDF' ? 'bg-red-500/10 text-red-600' :
+                                                  clase.tipoMaterial === 'DOC' ? 'bg-amber-500/10 text-amber-600' :
+                                                  'bg-purple-500/10 text-purple-600'
+                                                }`}>
+                                                {clase.tipoMaterial === 'VIDEO' ? <Video className="h-5 w-5" /> : 
+                                                clase.tipoMaterial === 'PDF' ? <File className="h-5 w-5" /> :
+                                                clase.tipoMaterial === 'DOC' ? <FileText className="h-5 w-5" /> :
+                                                <LinkIcon className="h-5 w-5" />}
+                                              </div>
+                                              <div>
+                                                <p className="font-bold text-sm text-foreground">{clase.titulo}</p>
+                                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                                                  {clase.tipoMaterial} • {clase.archivos?.length || 0} archivos
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <Button variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 text-primary h-8 px-3 font-bold gap-1 text-xs" onClick={() => openAddArchivo(clase.idMaterial)}>
+                                                <PlusCircle className="h-3 w-3" /> Agregar Archivo
+                                              </Button>
+                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-chart-3 hover:bg-chart-3/10 rounded-lg"
+                                                onClick={() => openEditMaterial(clase)}>
+                                                <Pencil className="h-4 w-4" />
+                                              </Button>
+                                              
+                                              <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-300 hover:text-rose-600 rounded-lg">
+                                                      <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="rounded-3xl">
+                                                    <AlertDialogHeader>
+                                                      <AlertDialogTitle className="font-black">Eliminar Clase</AlertDialogTitle>
+                                                      <AlertDialogDescription>¿Deseas eliminar la clase <b>{clase.titulo}</b> y todos sus archivos?</AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                      <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+                                                      <AlertDialogAction onClick={() => deleteMaterial(clase.idMaterial)} className="rounded-xl bg-destructive font-bold">Eliminar</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                              </AlertDialog>
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Archivos dentro de la clase */}
+                                          <div className="p-4">
+                                            {clase.archivos && clase.archivos.length > 0 ? (
+                                              <div className="grid gap-2">
+                                                {clase.archivos.map((archivo: any) => (
+                                                  <div key={archivo.idArchivo} className="flex items-center justify-between p-3 bg-muted/20 rounded-xl border border-border/30 group/archivo">
+                                                    <div className="flex items-center gap-3">
+                                                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                                                        archivo.tipoArchivo === 'VIDEO' ? 'bg-blue-500/10 text-blue-600' : 
+                                                        archivo.tipoArchivo === 'PDF' ? 'bg-red-500/10 text-red-600' :
+                                                        archivo.tipoArchivo === 'DOC' ? 'bg-amber-500/10 text-amber-600' :
+                                                        'bg-purple-500/10 text-purple-600'
+                                                      }`}>
+                                                        {archivo.tipoArchivo === 'VIDEO' ? <Video className="h-4 w-4" /> : 
+                                                        archivo.tipoArchivo === 'PDF' ? <File className="h-4 w-4" /> :
+                                                        archivo.tipoArchivo === 'DOC' ? <FileText className="h-4 w-4" /> :
+                                                        <LinkIcon className="h-4 w-4" />}
+                                                      </div>
+                                                      <div>
+                                                        <p className="font-medium text-xs text-foreground">{archivo.titulo}</p>
+                                                        <p className="text-[9px] text-muted-foreground uppercase">{archivo.tipoArchivo}</p>
+                                                      </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary rounded-lg" onClick={() => openMaterial(archivo.urlArchivo.startsWith('http') ? archivo.urlArchivo : `http://localhost:3000${archivo.urlArchivo}`)}>
+                                                        <LinkIcon className="h-3 w-3" />
+                                                      </Button>
+                                                      <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-rose-300 hover:text-rose-600 rounded-lg opacity-0 group-hover/archivo:opacity-100 transition-opacity">
+                                                            <Trash2 className="h-3 w-3" />
+                                                          </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent className="rounded-3xl">
+                                                          <AlertDialogHeader>
+                                                            <AlertDialogTitle className="font-black">Eliminar Archivo</AlertDialogTitle>
+                                                            <AlertDialogDescription>¿Deseas eliminar <b>{archivo.titulo}</b>?</AlertDialogDescription>
+                                                          </AlertDialogHeader>
+                                                          <AlertDialogFooter>
+                                                            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => deleteArchivo(archivo.idArchivo)} className="rounded-xl bg-destructive font-bold">Eliminar</AlertDialogAction>
+                                                          </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                      </AlertDialog>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <div className="text-center py-4 border-2 border-dashed border-border/30 rounded-xl">
+                                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Sin archivos en esta clase</p>
+                                                <p className="text-[10px] text-muted-foreground mt-1">Agrega PDFs, documentos o enlaces</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-6 border-2 border-dashed border-border/50 rounded-2xl bg-background/50">
+                                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aún no hay materiales en este módulo</p>
+                                    </div>
+                                  )}
+                              </CardContent>
+                              )}
+                            </Card>
+                        ))}
+
+                        {contentModules.length === 0 && (
+                          <div className="bg-card rounded-[40px] p-20 text-center border-2 border-dashed border-border shadow-inner">
+                              <div className="h-24 w-24 bg-muted rounded-[32px] flex items-center justify-center mx-auto mb-6">
+                                <PlusCircle className="h-10 w-10 text-muted-foreground" />
+                              </div>
+                              <h4 className="text-xl font-bold text-foreground mb-2">Comienza tu currícula</h4>
+                              <p className="text-muted-foreground max-w-sm mx-auto">Añade tu primer módulo a la derecha para empezar a organizar el contenido del curso.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                 </div>
 
-              </div>
+            </TabsContent>
 
-           </TabsContent>
+            <TabsContent value="foros" className="space-y-8 mt-0 animate-in slide-in-from-right-4 duration-500">
+                <div className="grid lg:grid-cols-12 gap-10">
+                  
+                  <div className="lg:col-span-8 space-y-6">
+                      <div className="flex items-center justify-between pl-2">
+                        <h3 className="text-xl font-black text-foreground flex items-center gap-3">
+                            <MessageSquare className="h-5 w-5 text-primary" />
+                            Hilos de Discusión
+                        </h3>
+                        <Badge className="bg-emerald-500">{contentForos.length} Activos</Badge>
+                      </div>
 
-           <TabsContent value="foros" className="space-y-8 mt-0 animate-in slide-in-from-right-4 duration-500">
-              <div className="grid lg:grid-cols-12 gap-10">
-                 
-                 <div className="lg:col-span-8 space-y-6">
-                    <div className="flex items-center justify-between pl-2">
-                       <h3 className="text-xl font-black text-foreground flex items-center gap-3">
-                          <MessageSquare className="h-5 w-5 text-primary" />
-                          Hilos de Discusión
-                       </h3>
-                       <Badge className="bg-emerald-500">{contentForos.length} Activos</Badge>
-                    </div>
+                      <div className="grid gap-6">
+                        {contentForos.map((foro: any) => (
+                          <Card key={foro.idForo} className="border-border/40  rounded-[32px] p-8 bg-card  transition-all group border ">
+                              <div className="flex justify-between items-start mb-4">
+                                <div className="space-y-1">
+                                    <h4 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{foro.titulo}</h4>
+                                    <div className="flex items-center gap-3">
+                                      <Badge variant="outline" className="text-primary border-primary/30 text-[9px] uppercase font-black">{foro.temaDiscusion}</Badge>
+                                      <span className="text-[10px] text-muted-foreground font-bold">{new Date(foro.fechaCreacion).toLocaleDateString(undefined, { day:'2-digit', month:'long' })}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-primary rounded-xl" onClick={() => startEditForo(foro)}>
+                                      <Edit className="h-5 w-5" />
+                                    </Button>
+                                    
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-rose-500 rounded-xl">
+                                            <Trash2 className="h-5 w-5" />
+                                          </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="rounded-3xl shadow-2xl border-none">
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle className="text-xl font-black">Cerrar Discusión</AlertDialogTitle>
+                                            <AlertDialogDescription className="font-medium">
+                                                ¿Estás seguro de desactivar el foro <b>"{foro.titulo}"</b>? Ya no será visible para los estudiantes.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel className="rounded-2xl font-bold">Mantener abierto</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => deleteForo(foro.idForo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Desactivar Foro</AlertDialogAction>
+                                          </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
 
-                    <div className="grid gap-6">
-                       {contentForos.map((foro: any) => (
-                         <Card key={foro.idForo} className="border-border/40  rounded-[32px] p-8 bg-card  transition-all group border ">
-                            <div className="flex justify-between items-start mb-4">
-                               <div className="space-y-1">
-                                  <h4 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{foro.titulo}</h4>
-                                  <div className="flex items-center gap-3">
-                                     <Badge variant="outline" className="text-primary border-primary/30 text-[9px] uppercase font-black">{foro.temaDiscusion}</Badge>
-                                     <span className="text-[10px] text-muted-foreground font-bold">{new Date(foro.fechaCreacion).toLocaleDateString(undefined, { day:'2-digit', month:'long' })}</span>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground leading-relaxed mb-6">{foro.descripcion}</p>
+                              <div className="flex items-center justify-between pt-6 border-t border-border/40">
+                                <div className="flex items-center gap-4">
+                                  <div className="flex -space-x-2">
+                                      {[1,2,3].map(i => <div key={i} className="h-7 w-7 rounded-full border-2 border-background bg-muted text-[8px] flex items-center justify-center font-bold">U</div>)}
                                   </div>
-                               </div>
-                               <div className="flex items-center gap-1">
-                                  <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-primary rounded-xl" onClick={() => startEditForo(foro)}>
-                                     <Edit className="h-5 w-5" />
-                                  </Button>
-                                  
-                                  <AlertDialog>
-                                     <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-rose-500 rounded-xl">
-                                           <Trash2 className="h-5 w-5" />
-                                        </Button>
-                                     </AlertDialogTrigger>
-                                     <AlertDialogContent className="rounded-3xl shadow-2xl border-none">
-                                        <AlertDialogHeader>
-                                           <AlertDialogTitle className="text-xl font-black">Cerrar Discusión</AlertDialogTitle>
-                                           <AlertDialogDescription className="font-medium">
-                                              ¿Estás seguro de desactivar el foro <b>"{foro.titulo}"</b>? Ya no será visible para los estudiantes.
-                                           </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                           <AlertDialogCancel className="rounded-2xl font-bold">Mantener abierto</AlertDialogCancel>
-                                           <AlertDialogAction onClick={() => deleteForo(foro.idForo)} className="rounded-2xl font-black bg-rose-500 hover:bg-rose-600">Desactivar Foro</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                     </AlertDialogContent>
-                                  </AlertDialog>
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estudiantes activos</span>
+                                </div>
+                                <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 bg-card hover:bg-primary/10 hover:text-primary transition-colors text-xs" onClick={() => openAportes(foro)}>
+                                    Ver Aportes
+                                </Button>
+                              </div>
+                          </Card>
+                        ))}
 
-                               </div>
+                        {contentForos.length === 0 && (
+                            <div className="text-center py-20 opacity-50 italic">
+                              <MessageSquare className="h-20 w-20 mx-auto mb-4" />
+                              <p className="font-bold text-sm">Aún no hay discusiones iniciadas en este curso</p>
                             </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed mb-6">{foro.descripcion}</p>
-                            <div className="flex items-center justify-between pt-6 border-t border-border/40">
-                               <div className="flex items-center gap-4">
-                                 <div className="flex -space-x-2">
-                                    {[1,2,3].map(i => <div key={i} className="h-7 w-7 rounded-full border-2 border-background bg-muted text-[8px] flex items-center justify-center font-bold">U</div>)}
-                                 </div>
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estudiantes activos</span>
-                               </div>
-                               <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 bg-card hover:bg-primary/10 hover:text-primary transition-colors text-xs" onClick={() => openAportes(foro)}>
-                                  Ver Aportes
-                               </Button>
+                        )}
+                      </div>
+                  </div>
+
+                  <div className="lg:col-span-4">
+                      <Card className="bg-card border-border/40  rounded-[40px] p-10 space-y-8 sticky top-24">
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-black text-foreground">
+                              {isEditingForo ? "Editar Debate" : "Iniciar Debate"}
+                            </h3>
+                            <p className="text-muted-foreground text-sm font-medium">
+                              {isEditingForo ? "Actualiza los detalles de esta discusión académica." : "Crea un espacio para resolver dudas y compartir ideas."}
+                            </p>
+                        </div>
+                        
+                        <div className="space-y-5">
+                            {isEditingForo && (
+                              <Button variant="outline" className="w-full rounded-xl border-dashed h-10 text-xs font-bold" onClick={() => { setIsEditingForo(false); setNewForo({titulo:"", temaDiscusion:"", descripcion:""}); }}>
+                                Cancelar Edición
+                              </Button>
+                            )}
+                            <div className="space-y-2">
+                              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Título de la Discusión</label>
+                              <Input 
+                                placeholder="Ej. Dudas sobre responsive design" 
+                                className="h-14 rounded-2xl bg-muted/30 border-0 focus:ring-primary font-bold" 
+                                value={newForo.titulo}
+                                onChange={(e) => setNewForo({...newForo, titulo: e.target.value})}
+                              />
                             </div>
-                         </Card>
-                       ))}
-
-                       {contentForos.length === 0 && (
-                          <div className="text-center py-20 opacity-50 italic">
-                             <MessageSquare className="h-20 w-20 mx-auto mb-4" />
-                             <p className="font-bold text-sm">Aún no hay discusiones iniciadas en este curso</p>
-                          </div>
-                       )}
-                    </div>
-                 </div>
-
-                 <div className="lg:col-span-4">
-                    <Card className="bg-card border-border/40  rounded-[40px] p-10 space-y-8 sticky top-24">
-                       <div className="space-y-2">
-                          <h3 className="text-2xl font-black text-foreground">
-                            {isEditingForo ? "Editar Debate" : "Iniciar Debate"}
-                          </h3>
-                          <p className="text-muted-foreground text-sm font-medium">
-                            {isEditingForo ? "Actualiza los detalles de esta discusión académica." : "Crea un espacio para resolver dudas y compartir ideas."}
-                          </p>
-                       </div>
-                       
-                       <div className="space-y-5">
-                          {isEditingForo && (
-                            <Button variant="outline" className="w-full rounded-xl border-dashed h-10 text-xs font-bold" onClick={() => { setIsEditingForo(false); setNewForo({titulo:"", temaDiscusion:"", descripcion:""}); }}>
-                              Cancelar Edición
+                            <div className="space-y-2">
+                              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Tema Clave</label>
+                              <Input 
+                                placeholder="Ej. Mobile First" 
+                                className="h-14 rounded-2xl bg-muted/30 border-0 focus:ring-primary font-bold" 
+                                value={newForo.temaDiscusion}
+                                onChange={(e) => setNewForo({...newForo, temaDiscusion: e.target.value})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Contexto Extra</label>
+                              <Textarea 
+                                placeholder="Escribe aquí los puntos principales a debatir..." 
+                                className="rounded-2xl bg-muted/30 border-0 focus:ring-primary min-h-[120px] font-medium" 
+                                value={newForo.descripcion}
+                                onChange={(e) => setNewForo({...newForo, descripcion: e.target.value})}
+                              />
+                            </div>
+                            <Button className={`w-full h-15 rounded-2xl font-black text-lg shadow-xl ${isEditingForo ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/10' : 'shadow-primary/10'}`} onClick={addForo}>
+                              {isEditingForo ? "Actualizar Foro" : "Publicar Foro"}
                             </Button>
-                          )}
-                          <div className="space-y-2">
-                             <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Título de la Discusión</label>
-                             <Input 
-                               placeholder="Ej. Dudas sobre responsive design" 
-                               className="h-14 rounded-2xl bg-muted/30 border-0 focus:ring-primary font-bold" 
-                               value={newForo.titulo}
-                               onChange={(e) => setNewForo({...newForo, titulo: e.target.value})}
-                             />
-                          </div>
-                          <div className="space-y-2">
-                             <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Tema Clave</label>
-                             <Input 
-                               placeholder="Ej. Mobile First" 
-                               className="h-14 rounded-2xl bg-muted/30 border-0 focus:ring-primary font-bold" 
-                               value={newForo.temaDiscusion}
-                               onChange={(e) => setNewForo({...newForo, temaDiscusion: e.target.value})}
-                             />
-                          </div>
-                          <div className="space-y-2">
-                             <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-2">Contexto Extra</label>
-                             <Textarea 
-                               placeholder="Escribe aquí los puntos principales a debatir..." 
-                               className="rounded-2xl bg-muted/30 border-0 focus:ring-primary min-h-[120px] font-medium" 
-                               value={newForo.descripcion}
-                               onChange={(e) => setNewForo({...newForo, descripcion: e.target.value})}
-                             />
-                          </div>
-                          <Button className={`w-full h-15 rounded-2xl font-black text-lg shadow-xl ${isEditingForo ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/10' : 'shadow-primary/10'}`} onClick={addForo}>
-                             {isEditingForo ? "Actualizar Foro" : "Publicar Foro"}
-                          </Button>
-                       </div>
-                    </Card>
-                 </div>
+                        </div>
+                      </Card>
+                  </div>
 
-              </div>
-           </TabsContent>
+                </div>
+            </TabsContent>
+            <TabsContent value="evaluaciones" className="space-y-8 mt-0 animate-in slide-in-from-right-4 duration-500">
+                <div className="grid lg:grid-cols-12 gap-10">
+                </div>
+            </TabsContent>
         </Tabs>
 
         {/* Modal de Aportes */}
@@ -1305,292 +1288,294 @@ export default function CoursesPage() {
         </Dialog>
         {/* ── Modal Añadir Material ───────────────────────────────────────────── */}
         <Dialog open={isMaterialDialogOpen} onOpenChange={(open) => { setIsMaterialDialogOpen(open); if (!open) setEditingMaterialId(null) }}>
-          <DialogContent className="sm:max-w-lg rounded-[32px] p-8 border border-border/40 shadow-2xl bg-card">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-black">
-                {editingMaterialId ? "Editar Material" : "Añadir Material"}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-5 mt-4">
-              {/* Material Count Info */}
-              {!editingMaterialId && materialModuloId && (
-                <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
-                  <p className="text-sm font-bold text-foreground mb-2">Materiales actuales en este módulo:</p>
-                  <div className="flex gap-4 text-xs">
-                    {(() => {
-                      const modulo = contentModules.find(m => m.idModulo === materialModuloId)
-                      if (!modulo?.materiales) return null
-                      
-                      const videoCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
-                      const pdfCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'PDF').length
-                      const docCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'DOC').length
-                      const linkCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'LINK').length
-                      
-                      return (
-                        <>
-                          <span className={`px-2 py-1 rounded-lg ${videoCount > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
-                            📹 Video: {videoCount}/1
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-red-100 text-red-700">
-                            📄 PDF: {pdfCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-700">
-                            📝 Doc: {docCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-purple-100 text-purple-700">
-                            🔗 Link: {linkCount} (∞)
-                          </span>
-                        </>
-                      )
-                    })()}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">
-                    📹 Video limitado a 1 por módulo | 📄 PDF, 📝 Documentos, 🔗 Enlaces sin límite
-                  </p>
-                </div>
-              )}
-
-              {/* Título */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                  Título del recurso
-                </label>
-                <Input
-                  placeholder="Ej. Introducción a React Hooks"
-                  className="h-12 rounded-2xl bg-muted/30 border-0 font-bold"
-                  value={materialForm.titulo}
-                  onChange={e => setMaterialForm(p => ({ ...p, titulo: e.target.value }))}
-                />
-              </div>
-
-              {/* Tipo */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                  Tipo de material
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { key: "VIDEO", icon: <Video className="h-4 w-4" />,    label: "Video"    },
-                    { key: "PDF",   icon: <File  className="h-4 w-4" />,    label: "PDF"      },
-                    { key: "DOC",   icon: <FileText className="h-4 w-4" />, label: "Doc"      },
-                    { key: "LINK",  icon: <LinkIcon  className="h-4 w-4" />, label: "Link"   },
-                  ].map(({ key, icon, label }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      disabled={!!editingMaterialId}
-                      onClick={() => setMaterialForm(p => ({ ...p, tipoMaterial: key, file: null, urlMaterial: "", videoMode: "file" as "file" | "link" }))}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all text-xs font-bold
-                        ${materialForm.tipoMaterial === key
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}
-                        ${editingMaterialId ? "opacity-60 cursor-not-allowed" : ""}`}
-                    >
-                      {icon}
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                {editingMaterialId && (
-                  <p className="text-[10px] text-muted-foreground font-medium mt-1">
-                    El tipo no se puede cambiar al editar. Para cambiar el archivo, elimina y crea uno nuevo.
-                  </p>
-                )}
-              </div>
-
-              {/* Contenido según tipo */}
-              {materialForm.tipoMaterial === "VIDEO" && (
-                <div className="space-y-3">
-                  {/* Selector de modo */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "file" }))}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all text-xs font-bold
-                        ${(materialForm as any).videoMode !== "link"
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
-                    >
-                      <Video className="h-4 w-4" /> Subir archivo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "link" }))}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all text-xs font-bold
-                        ${(materialForm as any).videoMode === "link"
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"}`}
-                    >
-                      <LinkIcon className="h-4 w-4" /> Link externo
-                    </button>
-                  </div>
-
-                  {/* Subir archivo de video — solo en modo CREAR */}
-                  {(materialForm as any).videoMode !== "link" && !editingMaterialId && (
-                    <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all group bg-muted/20">
-                      <input
-                        type="file"
-                        accept="video/mp4,video/webm,video/ogg,video/avi,video/mov,.mp4,.webm,.ogg,.avi,.mov"
-                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                        onChange={e => {
-                          const f = e.target.files?.[0] || null
-                          setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
-                        }}
-                      />
-                      {materialForm.file ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                            <Video className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-bold text-sm text-foreground truncate max-w-[200px]">
-                              {materialForm.file.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {(materialForm.file.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={e => { e.stopPropagation(); setMaterialForm(p => ({ ...p, file: null, urlMaterial: "" })) }}
-                            className="ml-auto text-rose-400 hover:text-rose-600"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto group-hover:bg-blue-500/10 transition-colors">
-                            <Video className="h-5 w-5 text-muted-foreground group-hover:text-blue-600" />
-                          </div>
-                          <p className="text-sm font-bold text-foreground">Arrastra o haz clic para subir</p>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                            MP4, WEBM, OGG, AVI, MOV
-                          </p>
-                        </div>
-                      )}
+          <DialogContent className="sm:max-w-3xl  p-0 border-none shadow-2xl bg-card overflow-hidden">
+            <div className="bg-slate-900 px-6 py-4 text-white flex items-center justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-2xl opacity-50" />
+                <div className="relative z-10 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
+                        <PlusCircle className="h-6 w-6 text-primary" />
                     </div>
-                  )}
-
-                  {/* En modo edición con archivo físico: solo muestra aviso */}
-                  {(materialForm as any).videoMode !== "link" && editingMaterialId && (
-                    <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-2xl border border-border/50">
-                      <div className="h-9 w-9 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                        <Video className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">Archivo de video guardado</p>
-                        <p className="text-[11px] text-muted-foreground">Solo puedes editar el título. Para cambiar el archivo, elimina y crea uno nuevo.</p>
-                      </div>
+                    <div>
+                        <DialogTitle asChild>
+                            <h2 className="text-xl font-black tracking-tight">
+                                {!!editingMaterialId ? "Editar Recurso Académico" : "Nuevo Recurso Académico"}
+                            </h2>
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-400 text-xs font-medium">
+                            Configura el material de estudio para este módulo
+                        </DialogDescription>
                     </div>
-                  )}
-
-                  {/* Link externo (YouTube, Vimeo, etc.) */}
-                  {(materialForm as any).videoMode === "link" && (
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                        URL de YouTube / Vimeo / otro
-                      </label>
-                      <Input
-                        placeholder="https://youtube.com/watch?v=..."
-                        className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
-                        value={materialForm.urlMaterial}
-                        onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
-                      />
-                    </div>
-                  )}
                 </div>
-              )}
-
-              {materialForm.tipoMaterial === "LINK" && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                    URL del enlace
-                  </label>
-                  <Input
-                    placeholder="https://ejemplo.com/recurso"
-                    className="h-12 rounded-2xl bg-muted/30 border-0 font-medium"
-                    value={materialForm.urlMaterial}
-                    onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
-                  />
-                </div>
-              )}
-
-              {(materialForm.tipoMaterial === "PDF" || materialForm.tipoMaterial === "DOC") && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
-                    Subir archivo ({materialForm.tipoMaterial})
-                  </label>
-                  <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all group bg-muted/20">
-                    <input
-                      type="file"
-                      accept={materialForm.tipoMaterial === "PDF" ? ".pdf" : ".doc,.docx,.ppt,.pptx,.xls,.xlsx"}
-                      className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                      onChange={e => {
-                        const f = e.target.files?.[0] || null
-                        setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
-                      }}
-                    />
-                    {materialForm.file ? (
-                      <div className="flex items-center justify-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <File className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="text-left">
-                          <p className="font-bold text-sm text-foreground truncate max-w-[220px]">
-                            {materialForm.file.name}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {(materialForm.file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={e => { e.stopPropagation(); setMaterialForm(p => ({ ...p, file: null, urlMaterial: "" })) }}
-                          className="ml-auto text-rose-400 hover:text-rose-600"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mx-auto group-hover:bg-primary/10 transition-colors">
-                          <Paperclip className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
-                        </div>
-                        <p className="text-sm font-bold text-foreground">Arrastra o haz clic para subir</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          {materialForm.tipoMaterial === "PDF" ? "Solo archivos PDF" : "DOC, DOCX, PPT, XLS"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={() => setIsMaterialDialogOpen(false)}>
+                    <X className="h-5 w-5" />
+                </Button>
             </div>
 
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                className="flex-1 h-12 rounded-2xl font-bold border-2"
-                onClick={() => setIsMaterialDialogOpen(false)}
-                disabled={isUploadingMaterial}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="flex-1 h-12 rounded-2xl font-black shadow-lg"
-                onClick={submitMaterial}
-                disabled={isUploadingMaterial}
-              >
-                {isUploadingMaterial ? (
-                  <span className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {editingMaterialId ? "Guardando..." : "Subiendo..."}
-                  </span>
-                ) : editingMaterialId ? "Guardar Cambios" : "Guardar Material"}
-              </Button>
+            <div className="p-8">
+                <div className="grid md:grid-cols-2 gap-5">
+                    {/* COLUMNA IZQUIERDA: CONFIGURACIÓN Y TIPO */}
+                    <div className="space-y-4">
+                        {/* Info de Límites */}
+                        {!editingMaterialId && materialModuloId && (
+                            <div className="bg-primary/5 rounded-3xl p-5 border border-primary/10 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform">
+                                    <LayoutGrid className="h-12 w-12" />
+                                </div>
+                                <h4 className="text-[11px] font-black uppercase tracking-widest text-primary mb-1">Estado del Módulo</h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {(() => {
+                                        const modulo = contentModules.find(m => m.idModulo === materialModuloId)
+                                        if (!modulo?.materiales) return null
+                                        const videoCount = modulo.materiales.filter((m: any) => m.tipoMaterial === 'VIDEO').length
+                                        const otherCount = modulo.materiales.filter((m: any) => m.tipoMaterial !== 'VIDEO').length
+                                        
+                                        return (
+                                            <>
+                                                <div className={`p-3 rounded-2xl flex flex-col gap-1 ${videoCount > 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-100'}`}>
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Videos</span>
+                                                    <span className={`text-sm font-black ${videoCount > 0 ? 'text-amber-600' : 'text-slate-700'}`}>{videoCount} / 1</span>
+                                                </div>
+                                                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-1">
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Otros</span>
+                                                    <span className="text-sm font-black text-emerald-600">{otherCount} / ∞</span>
+                                                </div>
+                                            </>
+                                        )
+                                    })()}
+                                </div>
+                                <p className="text-[9px] text-slate-500 mt-3 font-medium leading-tight">
+                                    Recuerda: Solo se permite <b className="text-slate-900">1 video principal</b> por módulo. PDFs y enlaces son ilimitados.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Selección de Tipo */}
+                        <div className="space-y-4">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                Tipo de Recurso
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { key: "VIDEO", icon: <Video className="h-5 w-5" />, label: "Video", color: "blue" },
+                                    { key: "PDF", icon: <File className="h-5 w-5" />, label: "PDF", color: "red" },
+                                    { key: "DOC", icon: <FileText className="h-5 w-5" />, label: "Documento", color: "amber" },
+                                    { key: "LINK", icon: <LinkIcon className="h-5 w-5" />, label: "Enlace", color: "purple" },
+                                ].map(({ key, icon, label, color }) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        disabled={!!editingMaterialId}
+                                        onClick={() => setMaterialForm(p => ({ ...p, tipoMaterial: key, file: null, urlMaterial: "", videoMode: "file" }))}
+                                        className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left group
+                                            ${materialForm.tipoMaterial === key
+                                                ? `border-primary bg-primary/5 ring-4 ring-primary/5`
+                                                : "border-slate-100 bg-slate-50/50 text-slate-500 hover:border-slate-200 hover:bg-slate-50"}
+                                            ${editingMaterialId ? "opacity-50 cursor-not-allowed" : ""}`}
+                                    >
+                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-colors
+                                            ${materialForm.tipoMaterial === key ? 'bg-primary text-white' : 'bg-white text-slate-400 group-hover:text-slate-600 shadow-sm'}`}>
+                                            {icon}
+                                        </div>
+                                        <div>
+                                            <p className={`text-xs font-black ${materialForm.tipoMaterial === key ? 'text-primary' : 'text-slate-600'}`}>{label}</p>
+                                            <p className="text-[9px] font-medium opacity-60">Seleccionar</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* COLUMNA DERECHA: DATOS Y CONTENIDO */}
+                    <div className="space-y-4">
+                        {/* Título Input */}
+                        <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                Título del Recurso
+                            </label>
+                            <Input
+                                placeholder="Ej: Fundamentos de Arquitectura"
+                                className="h-14 rounded-2xl bg-slate-50 border-0 focus-visible:ring-primary/20 focus-visible:bg-white text-lg px-5 shadow-inner"
+                                value={materialForm.titulo}
+                                onChange={e => setMaterialForm(p => ({ ...p, titulo: e.target.value }))}
+                            />
+                        </div>
+
+                        {/* Área de Carga / Input */}
+                        <div className="space-y-4 pt-2">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                {materialForm.tipoMaterial === "LINK" ? "Enlace Externo" : "Contenido del Archivo"}
+                            </label>
+
+                            {/* Especial para VIDEO: Subida o Link */}
+                            {materialForm.tipoMaterial === "VIDEO" && (
+                                <div className="space-y-4">
+                                    <div className="flex bg-slate-100 p-1.5 rounded-2xl">
+                                        <button
+                                            type="button"
+                                            onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "file" }))}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                                                ${(materialForm as any).videoMode !== "link" ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                        >
+                                            <Video className="h-3 w-3" /> Subir MP4
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMaterialForm(p => ({ ...p, file: null, urlMaterial: "", videoMode: "link" }))}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                                                ${(materialForm as any).videoMode === "link" ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                                        >
+                                            <LinkIcon className="h-3 w-3" /> YouTube/Link
+                                        </button>
+                                    </div>
+
+                                    {materialForm.videoMode !== "link" && !!!editingMaterialId && (
+                                        <div className="relative border-2 border-dashed border-slate-200 hover:border-primary/50 rounded-3xl p-8 text-center transition-all bg-slate-50/50 group">
+                                            <input
+                                                type="file"
+                                                accept="video/*"
+                                                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                onChange={e => {
+                                                    const f = e.target.files?.[0] || null
+                                                    setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
+                                                }}
+                                            />
+                                            {materialForm.file ? (
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                                        <Video className="h-8 w-8 text-primary" />
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <p className="font-bold text-sm text-slate-900 truncate max-w-[240px]">{materialForm.file.name}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{(materialForm.file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    <div className="h-14 w-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                                        <Video className="h-6 w-6 text-slate-400 group-hover:text-primary" />
+                                                    </div>
+                                                    <p className="text-xs font-bold text-slate-600">Arrastra tu video aquí</p>
+                                                    <p className="text-[9px] text-slate-400 uppercase tracking-widest">MP4, WEBM (Max 50MB)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {(materialForm.videoMode === "link" || !!editingMaterialId) && (
+                                        <div className="space-y-3">
+                                            <Input
+                                                placeholder="https://youtube.com/watch?v=..."
+                                                className="h-14 rounded-2xl bg-slate-50 border-0 font-medium px-5 shadow-inner"
+                                                value={materialForm.urlMaterial}
+                                                onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
+                                                disabled={!!editingMaterialId && materialForm.videoMode !== "link"}
+                                            />
+                                            {!!editingMaterialId && materialForm.videoMode !== "link" && (
+                                                <div className="flex items-center gap-2 p-4 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                                                    <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                                                    <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Archivo de video protegido (Solo lectura)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Otros Tipos: PDF, DOC, LINK */}
+                            {materialForm.tipoMaterial !== "VIDEO" && (
+                                <div className="space-y-4">
+                                    {materialForm.tipoMaterial === "LINK" ? (
+                                        <Input
+                                            placeholder="https://ejemplo.com/recurso-extra"
+                                            className="h-14 rounded-2xl bg-slate-50 border-0 font-medium px-5 shadow-inner"
+                                            value={materialForm.urlMaterial}
+                                            onChange={e => setMaterialForm(p => ({ ...p, urlMaterial: e.target.value, file: null }))}
+                                        />
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className={`relative border-2 border-dashed rounded-3xl p-10 text-center transition-all bg-slate-50/50 group
+                                                ${editingMaterialId ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:border-primary/50'}`}>
+                                                {!editingMaterialId && (
+                                                    <input
+                                                        type="file"
+                                                        accept={materialForm.tipoMaterial === "PDF" ? ".pdf" : ".doc,.docx,.ppt,.xls"}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                        onChange={e => {
+                                                            const f = e.target.files?.[0] || null
+                                                            setMaterialForm(p => ({ ...p, file: f, urlMaterial: f ? f.name : "" }))
+                                                        }}
+                                                    />
+                                                )}
+                                                {materialForm.file || (editingMaterialId && materialForm.urlMaterial) ? (
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        <div className={`h-16 w-16 rounded-2xl flex items-center justify-center
+                                                            ${materialForm.tipoMaterial === 'PDF' ? 'bg-red-100 text-red-500' : 'bg-blue-100 text-blue-500'}`}>
+                                                            <File className="h-8 w-8" />
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="font-bold text-sm text-slate-900 truncate max-w-[240px]">
+                                                                {materialForm.file ? materialForm.file.name : materialForm.urlMaterial}
+                                                            </p>
+                                                            <p className="text-[10px] font-black text-slate-400 mt-1 uppercase">
+                                                                {materialForm.file ? `${(materialForm.file.size / 1024 / 1024).toFixed(2)} MB` : 'Archivo Guardado'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        <div className="h-16 w-16 rounded-3xl bg-white shadow-md border border-slate-100 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                                            <Paperclip className="h-7 w-7 text-slate-400 group-hover:text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-black text-slate-700">Subir {materialForm.tipoMaterial}</p>
+                                                            <p className="text-[10px] text-slate-400 mt-1 font-medium tracking-wide">Haz clic o arrastra para cargar</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {editingMaterialId && (
+                                                <div className="flex items-center gap-2 p-4 bg-slate-100 rounded-2xl border border-slate-200">
+                                                    <div className="h-2 w-2 rounded-full bg-slate-400" />
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">El archivo no se puede cambiar en edición</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* FOOTER ACCIONES */}
+                <div className="flex items-center gap-4 pt-8  border-slate-100">
+                    <Button
+                        variant="ghost"
+                        className="h-14 px-8 rounded-2xl bg-card font-bold border text-slate-500 "
+                        onClick={() => setIsMaterialDialogOpen(false)}
+                        disabled={isUploadingMaterial}
+                    >
+                        Descartar
+                    </Button>
+                    <Button
+                        className="flex-1 h-14 rounded-2xl font-black text-lg group relative overflow-hidden"
+                        onClick={submitMaterial}
+                        disabled={isUploadingMaterial}
+                    >
+                        {isUploadingMaterial ? (
+                            <span className="flex items-center gap-3">
+                                <div className="h-5 w-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                                {editingMaterialId ? "Procesando..." : "Subiendo recurso..."}
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                {editingMaterialId ? "Guardar Cambios" : "Confirmar y Añadir"}
+                                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </span>
+                        )}
+                    </Button>
+                </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -1605,53 +1590,6 @@ export default function CoursesPage() {
             </DialogHeader>
 
             <div className="space-y-5 mt-4">
-              {/* Info de archivos actuales en la clase */}
-              {selectedClaseId && (
-                <div className="bg-muted/30 rounded-2xl p-4 border border-border/50">
-                  <p className="text-sm font-bold text-foreground mb-2">Archivos en esta clase:</p>
-                  <div className="flex gap-4 text-xs">
-                    {(() => {
-                      // Buscar la clase seleccionada
-                      let claseEncontrada = null
-                      for (const modulo of contentModules) {
-                        if (modulo.materiales) {
-                          claseEncontrada = modulo.materiales.find((m: any) => m.idMaterial === selectedClaseId)
-                          if (claseEncontrada) break
-                        }
-                      }
-                      
-                      if (!claseEncontrada?.archivos) {
-                        return <span className="text-gray-500">Sin archivos</span>
-                      }
-                      
-                      const videoCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'VIDEO').length
-                      const pdfCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'PDF').length
-                      const docCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'DOC').length
-                      const linkCount = claseEncontrada.archivos.filter((a: any) => a.tipoArchivo === 'LINK').length
-                      
-                      return (
-                        <>
-                          <span className={`px-2 py-1 rounded-lg ${videoCount > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
-                            📹 Video: {videoCount}/1
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-red-100 text-red-700">
-                            📄 PDF: {pdfCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-700">
-                            📝 Doc: {docCount} (∞)
-                          </span>
-                          <span className="px-2 py-1 rounded-lg bg-purple-100 text-purple-700">
-                            🔗 Link: {linkCount} (∞)
-                          </span>
-                        </>
-                      )
-                    })()}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">
-                    📹 Video limitado a 1 por clase | 📄 PDF, 📝 Documentos, 🔗 Enlaces sin límite
-                  </p>
-                </div>
-              )}
 
               {/* Título */}
               <div className="space-y-2">
@@ -1660,7 +1598,7 @@ export default function CoursesPage() {
                 </label>
                 <Input
                   placeholder="Ej. Guía de ejercicios"
-                  className="h-12 rounded-2xl bg-muted/30 border-0 font-bold"
+                  className="h-12 rounded-2xl bg-muted/30 border-0"
                   value={archivoForm.titulo}
                   onChange={e => setArchivoForm(p => ({ ...p, titulo: e.target.value }))}
                 />
@@ -1764,7 +1702,7 @@ export default function CoursesPage() {
             <div className="flex gap-3 mt-6">
               <Button
                 variant="outline"
-                className="flex-1 h-12 rounded-2xl font-bold border-2"
+                className="flex-1 h-12 rounded-2xl font-bold border"
                 onClick={() => setIsArchivoDialogOpen(false)}
                 disabled={isUploadingArchivo}
               >
@@ -2131,7 +2069,7 @@ export default function CoursesPage() {
                            <Input 
                             name="titulo" 
                             placeholder="Ej. Arquitectura Frontend Pro" 
-                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-semibold px-4 mt-4"
+                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all  px-4 mt-4"
                             value={formData.titulo}
                             onChange={handleChange}
                             required
@@ -2147,7 +2085,7 @@ export default function CoursesPage() {
                             type="number" 
                             step="0.01" 
                             placeholder="0.00" 
-                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all font-bold px-4 text-lg mt-4"
+                            className="h-14 rounded-2xl bg-muted/40 border-0 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 transition-all px-4 text-lg mt-4"
                             value={formData.precioCurso}
                             onChange={handleChange}
                             required
@@ -2161,7 +2099,7 @@ export default function CoursesPage() {
                       <textarea 
                         name="descripcion" 
                         placeholder="Define los objetivos, temario y beneficios..." 
-                        className="w-full h-32 p-5 rounded-2xl bg-muted/40 border-0 focus:ring-2 ring-primary/20 outline-none resize-none transition-all focus:bg-background font-medium leading-relaxed shadow-inner text-foreground mt-4"
+                        className="w-full h-32 p-5 rounded-2xl bg-muted/40 border-0 focus:ring-2 ring-primary/20 outline-none resize-none transition-all focus:bg-background  leading-relaxed shadow-inner text-foreground mt-4"
                         value={formData.descripcion}
                         onChange={handleChange}
                         required
@@ -2183,7 +2121,7 @@ export default function CoursesPage() {
                         <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1 mb-4">Categoría Académica</label>
                         <select
                           name="catId"
-                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors mt-4"
+                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors mt-4"
                           value={formData.catId || ""}
                           onChange={handleChange}
                           required
@@ -2202,7 +2140,7 @@ export default function CoursesPage() {
                         <label className="text-sm font-black text-muted-foreground uppercase tracking-widest ml-1 mb-4">Especialista / Docente</label>
                         <select
                           name="idDocente"
-                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none font-bold text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors mt-4"
+                          className="w-full h-14 rounded-2xl bg-muted/40 border-0 px-6 focus:ring-2 ring-primary/20 outline-none text-muted-foreground appearance-none cursor-pointer hover:bg-muted/60 transition-colors mt-4"
                           value={formData.idDocente || ""}
                           onChange={handleChange}
                           required

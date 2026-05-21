@@ -81,7 +81,7 @@ const menuGroups: MenuItem[] = [
   { type: "single", icon: LayoutGrid, label: "Inicio", href: "/docente" },
   { type: "label", label: "Gestión" },
   { type: "single", icon: BookOpen, label: "Cursos", href: "/docente/curso" },
-  { type: "single", icon: FileText, label: "Infografías", href: "/docente/infografia" },
+  { type: "single", icon: FileText, label: "Mi información", href: "/docente/informacion" },
   { type: "label", label: "Finanzas" },
   { type: "single", icon: CreditCard, label: "Pagos", href: "/docente/pago" },
   { type: "label", label: "Configuración" },

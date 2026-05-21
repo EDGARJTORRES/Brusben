@@ -266,7 +266,7 @@ export default function BitacoraPage() {
 
       {/* TABLE SECTION */}
 
-      <div className="rounded-2xl bg-card backdrop-blur-sm overflow-hidden border border-border/30">
+      <div className="rounded-2xl bg-card shadow-md dark:border border-0">
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 px-6 py-4">
 

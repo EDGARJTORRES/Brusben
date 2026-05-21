@@ -6,11 +6,11 @@ import React, { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import {
   Home,
-  BookOpen,
   CreditCard as PaymentIcon,
   GraduationCap,
   LogOut,
   Bell,
+  Building2,
   Search,
   ChevronLeft,
   ChevronDown,
@@ -23,11 +23,8 @@ import {
   ClipboardList,
   TrendingUp,
   TrendingDown,
-  UserCog,
-  ListChecks,
   LayoutGrid,
   Layers,
-  Hexagon,
   Briefcase,
   FileText,
 } from "lucide-react"
@@ -142,6 +139,12 @@ const getMenuGroups = (totalMatriculas: number): MenuItem[] => [
     icon: User,
     label: "Usuarios",
     href: "/admin/usuarios",
+  },
+  {
+    type: "single",
+    icon: Building2,
+    label: "Información Docente",
+    href: "/admin/informacion",
   },
   {
     type: "single",

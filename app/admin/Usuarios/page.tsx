@@ -13,6 +13,7 @@ import {
   CheckCircle2, 
   XCircle,
   Filter,
+  Phone,
   User as UserIcon,
   Fingerprint,
   ChevronLeft,
@@ -306,7 +307,7 @@ export default function UsuariosPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {ROLES.map((role) => (
-          <Card key={role.id}>
+          <Card key={role.id} className="bg-card shadow-md dark:border border-0">
             <CardContent className="py-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -324,7 +325,7 @@ export default function UsuariosPage() {
         ))}
       </div>
 
-      <div className="rounded-2xl  bg-card backdrop-blur-sm overflow-hidden border border-border/30">
+      <div className="rounded-2xl  bg-card shadow-md dark:border border-0">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50  px-6 py-4">
           {/* DERECHA: título */}
@@ -575,60 +576,98 @@ export default function UsuariosPage() {
             
             
             <div className="p-8 space-y-5 pt-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Nombre Completo */}
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <UserIcon className="h-5 w-5 text-primary" /> Nombre Completo
+                    Nombre Completo
                   </label>
-                  <Input 
-                    placeholder="Ej. Luis Alejandro Flores García" 
-                    className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                    value={formData.nombres}
-                    onChange={(e) => setFormData({...formData, nombres: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                    <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                      <Fingerprint className="h-5 w-5 text-primary" /> DNI
-                    </label>
-                    <Input 
-                      placeholder="12345678" 
-                      className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                      maxLength={8}
-                      value={formData.dni}
-                      onChange={(e) => setFormData({...formData, dni: e.target.value})}
+
+                  <div className="relative">
+                    <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+
+                    <Input
+                      placeholder="Ej. Luis Alejandro Flores García"
+                      className="h-12 pl-11 rounded-2xl  bg-card  focus-visible:ring-2 focus-visible:ring-primary/20 "
+                      value={formData.nombres}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nombres: e.target.value })
+                      }
                       required
                     />
+                  </div>
+                </div>
+
+                {/* DNI */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
+                    DNI
+                  </label>
+
+                  <div className="relative">
+                    <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+
+                    <Input
+                      placeholder="Ej: 73265692"
+                      maxLength={8}
+                      className="h-12 pl-11 rounded-2xl  bg-card  focus-visible:ring-2 focus-visible:ring-primary/20"
+                      value={formData.dni}
+                      onChange={(e) =>
+                        setFormData({ ...formData, dni: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+
+                {/* Celular */}
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Fingerprint className="h-5 w-5 text-primary" /> Celular
+                    Celular
                   </label>
-                  <Input 
-                    placeholder="Ej. 987654321" 
-                    maxLength={9}
-                    className="h-9 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
-                    value={formData.nmrCelular || ""}
-                    onChange={(e) => setFormData({...formData, nmrCelular: e.target.value})}
-                  />
+
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+
+                    <Input
+                      placeholder="Ej: 987 654 321"
+                      maxLength={9}
+                      className="h-12 pl-11 rounded-2xl  bg-card  focus-visible:ring-2 focus-visible:ring-primary/20"
+                      value={formData.nmrCelular || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nmrCelular: e.target.value })
+                      }
+                    />
+                  </div>
                 </div>
+
+                {/* Rol */}
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" /> Rol
+                    Rol
                   </label>
-                  <Select 
-                    value={formData.idRol.toString()} 
-                    onValueChange={(v) => setFormData({...formData, idRol: parseInt(v)})}
+
+                  <Select
+                    value={formData.idRol.toString()}
+                    onValueChange={(v) =>
+                      setFormData({ ...formData, idRol: parseInt(v) })
+                    }
                   >
-                    <SelectTrigger className="w-full h-12 rounded-xl bg-muted/40 border-0 px-4 focus:ring-primary font-bold">
-                      <SelectValue placeholder="Rol" />
+                    <SelectTrigger className="w-full h-16 rounded-2xl  bg-card  px-4 focus:ring-primary">
+                      <SelectValue placeholder="Seleccione un rol" />
                     </SelectTrigger>
+
                     <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
-                      {ROLES.map(role => (
-                        <SelectItem key={role.id} value={role.id.toString()} className="font-bold py-3">
+                      {ROLES.map((role) => (
+                        <SelectItem
+                          key={role.id}
+                          value={role.id.toString()}
+                          className="font-bold py-3"
+                        >
                           {role.label}
                         </SelectItem>
                       ))}
@@ -639,27 +678,31 @@ export default function UsuariosPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Mail className="h-5 w-5 text-primary" /> Correo Electrónico
+                    Correo Electrónico
                   </label>
-                  <Input 
-                    type="email"
-                    placeholder="usuario@brusben.com" 
-                    className="h-12 rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold transition-all focus-visible:bg-background"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    required
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+                    <Input 
+                      type="email"
+                      placeholder="Ej: usuario_brusben@gmail.com" 
+                      className="h-12 pl-11 rounded-2xl  bg-card  focus-visible:ring-2 focus-visible:ring-primary/20"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2 relative">
                   <label className="text-xs font-black uppercase text-muted-foreground tracking-widest pl-1 flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" /> Contraseña
+                    Contraseña
                   </label>
                   
                   <div className="relative">
+                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
                     <Input 
                       type="password"
                       placeholder="••••••••"
-                      className="h-12 w-full rounded-2xl bg-muted/40 border-0 focus-visible:ring-2 focus-visible:ring-primary/20 font-bold"
+                      className="h-12 pl-11 rounded-2xl  bg-card  focus-visible:ring-2 focus-visible:ring-primary/20"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                     />
@@ -787,7 +830,7 @@ export default function UsuariosPage() {
                   type="button" 
                   variant="ghost" 
                   onClick={() => setIsDialogOpen(false)} 
-                  className="h-12 px-10 font-bold rounded-2xl"
+                  className="h-12 px-10 rounded-2xl bg-card border"
                 >
                   Cancelar Registro
                 </Button>

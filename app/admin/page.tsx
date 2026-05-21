@@ -597,7 +597,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Gráfico ingresos */}
-        <Card className="lg:col-span-8 border border-border shadow-sm rounded-2xl overflow-hidden">
+        <Card className="lg:col-span-8 bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden">
           <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -666,7 +666,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Top cursos */}
-        <Card className="lg:col-span-5 border border-border shadow-sm rounded-2xl overflow-hidden">
+        <Card className="lg:col-span-5 bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden">
           <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -719,7 +719,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Actividad reciente */}
-        <Card className="lg:col-span-7 border border-border shadow-sm rounded-2xl overflow-hidden">
+        <Card className="lg:col-span-7 bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden">
           <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -784,7 +784,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
 
         {/* Distribución de pagos */}
-        <Card className="lg:col-span-6 border border-border shadow-sm rounded-2xl overflow-hidden">
+        <Card className="lg:col-span-6 bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden">
           <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -844,7 +844,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Estados de cursos */}
-        <Card className="lg:col-span-6 border border-border shadow-sm rounded-2xl overflow-hidden">
+        <Card className="lg:col-span-6 bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden">
           <CardHeader className="px-5 py-0 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -925,7 +925,7 @@ function KpiCard({
   const c = colors[color]
 
   return (
-    <Card className="border border-border shadow-sm rounded-2xl overflow-hidden">
+    <Card className="bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden">
       <CardContent className="px-4 py-1">
         <div className="flex items-center justify-between gap-3">
           <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", c.bg, c.text)}>
@@ -995,7 +995,7 @@ function MetricCard({
   const c = colors[color]
 
   return (
-    <Card className="border border-border shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+    <Card className="bg-card shadow-md dark:border border-0 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
       <CardContent className="px-4 py-1">
         <div className="flex items-center justify-between gap-3">
           <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0", c.bg, c.text)}>
